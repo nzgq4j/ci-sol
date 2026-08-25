@@ -4,10 +4,48 @@
 |---|---|
 | Date | 25 August 2026 |
 | Phase | Phase 1 complete (foundation built and validated offline). Phase 2 blocked on tenant access. |
-| Tenant changes made | **None.** No site, library, list, column, content type, group, label or flow has been created in any tenant. |
-| Next safe action | Supply the Entra tenant ID and a PnP connection, then run `Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c` |
+| Tenant changes made | **One, since reverted.** See section 1a. No site, library, list, column, content type, group, label or flow currently exists in any tenant. |
+| Next safe action | Create the nine Entra role groups, then `Deploy-Dms.ps1 -Environment dev -Mode Apply` |
 
 ---
+
+## 1a. Tenant connection established, and one change made and reverted
+
+Connected to `https://propfound.sharepoint.com/sites/DOX` (tenant `propfound`,
+`9fd1307f-3666-4779-b6de-0d596aaf093a`) on 25 August 2026 using an interactive delegated app
+registration. Read-only discovery returned all 7 sections with none blocked.
+
+**A change was made to the tenant and has been reverted.** An Apply ran against the site while the
+deferred-action closure defect was present. Because every deferred action read the final loop value,
+the four `Add-PnPRoleDefinition` calls all created the last configured level: a single custom
+permission level named `DMS Read Evidence` was created, and the other three failed as duplicates.
+Nothing else was created; the SharePoint layer's actions failed under strict mode before writing.
+
+The stray role definition was removed with `Remove-PnPRoleDefinition`. A subsequent plan confirms the
+site holds only the six built-in role definitions (Contribute, Design, Edit, Full Control, Limited
+Access, Read) and reports all four DMS levels as Create. The site is back to its pre-deployment state.
+
+This is recorded rather than omitted because the same discipline that forbids claiming tenant work
+that did not happen requires reporting tenant work that did.
+
+### Verified against the live tenant
+
+| Observation | Value | Consequence |
+|---|---|---|
+| DOX site template | `GROUP#0` (Teams-connected), group `fd254109-14e7-49c3-8d52-6ab15a3cd865` | Its Microsoft 365 group Members hold Edit by default. Verify that membership before relying on the library as the security boundary (F-024, R-07). |
+| DOX sharing capability | `ExternalUserSharingOnly` | External sharing is currently **enabled**, contrary to F-025 / SEC-005. The plan's `ExternalSharing` action sets it to Disabled. |
+| Existing DMS schema | None | No `Dms*` field, content type, library or list exists. A clean deployment target. |
+
+### Plan against the live tenant
+
+| Layer | Create | Blocked |
+|---|---:|---:|
+| Taxonomy | 22 | 1 (placeholder term, OQ-04) |
+| SharePoint | 61 | 4 (feature-flagged and decision-gated) |
+| Security | 43 | 9 (Entra groups awaiting governance creation) |
+| Purview | 0 | 5 (unapproved retention classes, OQ-03) |
+| Power Platform | 0 | 2 (no solution package, unresolved settings) |
+| **Total** | **126** | **21** |
 
 ## 1. Verified results
 

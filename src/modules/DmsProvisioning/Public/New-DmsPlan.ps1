@@ -139,6 +139,10 @@ function Format-DmsPlan {
     }
 
     return [PSCustomObject]@{
+        # The plan itself travels with the summary so callers and tests can inspect or execute the
+        # individual actions, not just the counts. Executing a plan's action scriptblocks against
+        # stubbed cmdlets is how the per-action closure regression is guarded.
+        plan         = $Plan
         environment  = $Plan.environment
         mode         = $Plan.mode
         correlationId= $Plan.correlationId

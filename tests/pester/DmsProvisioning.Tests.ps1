@@ -307,3 +307,126 @@ Describe 'Migration inventory (PRD F-037, DATA-012, ADR-014)' {
         @($cmds | Where-Object { $_ -in @('Remove-Item','Move-Item','Set-Content','Add-Content','Clear-Content') -and $_ -ne 'Set-Content' }) | Should -BeNullOrEmpty
     }
 }
+
+Describe 'Deferred apply actions bind their own target (PowerShell closure capture)' {
+    # Regression for a defect found in review: each -ApplyScript closed over script-scope loop
+    # variables that kept being reassigned while the plan was built. Because the scriptblocks are not
+    # executed until Apply, every action ran against the LAST loop value - so Apply would have
+    # provisioned the final column repeatedly and silently reported all the others as succeeded.
+    #
+    # Plan-only tests could never catch this: Plan does not execute the scriptblocks. This test
+    # executes them against stubbed PnP cmdlets and asserts each acted on its own target.
+
+    BeforeAll {
+        $global:DmsStubCalls = [System.Collections.Generic.List[object]]::new()
+
+        function global:Add-PnPField {
+            param($DisplayName,$InternalName,$Type,$Group,$Connection,$Choices,$Required,$List,$Field)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPField'; Target=$(if ($InternalName) { $InternalName } else { $Field }) }) | Out-Null
+        }
+        function global:Set-PnPField {
+            param($Identity,$List,$Values,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Set-PnPField'; Target=$Identity }) | Out-Null
+        }
+        function global:Add-PnPTaxonomyField {
+            param($DisplayName,$InternalName,$TermSetPath,$Group,$Connection,$MultiValue,$Required)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPTaxonomyField'; Target=$InternalName }) | Out-Null
+        }
+        function global:Set-PnPListPermission {
+            param($Identity,$Group,$User,$AddRole,$RemoveRole,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Set-PnPListPermission'; Target="$Identity|$Group|$AddRole" }) | Out-Null
+        }
+        function global:Add-PnPRoleDefinition {
+            param($RoleName,$Clone,$Description,$Include,$Exclude,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPRoleDefinition'; Target=$RoleName }) | Out-Null
+        }
+        function global:Set-PnPTenantSite {
+            param($Identity,$SharingCapability,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Set-PnPTenantSite'; Target=$Identity }) | Out-Null
+        }
+    }
+    AfterAll {
+        foreach ($f in @('Add-PnPField','Set-PnPField','Add-PnPTaxonomyField','Set-PnPListPermission','Add-PnPRoleDefinition','Set-PnPTenantSite')) {
+            Remove-Item "function:global:$f" -ErrorAction SilentlyContinue
+        }
+        Remove-Variable -Name DmsStubCalls -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    Context 'Site columns' {
+        BeforeAll {
+            $global:DmsStubCalls.Clear()
+            $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSharePoint.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            $script:ColumnActions = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'SiteColumn' -and $_.change -eq 'Create' })
+            foreach ($a in $ColumnActions) { & $a.applyScript }
+            $script:CreatedColumns = @($global:DmsStubCalls | Where-Object { $_.Cmdlet -in @('Add-PnPField','Add-PnPTaxonomyField') } | ForEach-Object { $_.Target })
+        }
+
+        It 'plans a create for every configured column' { $ColumnActions.Count | Should -BeGreaterThan 25 }
+
+        It 'creates one field per planned action, not the same field repeatedly' {
+            $CreatedColumns.Count | Should -Be $ColumnActions.Count
+            (@($CreatedColumns | Sort-Object -Unique)).Count | Should -Be $ColumnActions.Count
+        }
+
+        It 'creates exactly the fields that were planned' {
+            foreach ($a in $ColumnActions) { $CreatedColumns | Should -Contain $a.target }
+        }
+
+        It 'creates taxonomy fields through the taxonomy path rather than throwing' {
+            $tax = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Add-PnPTaxonomyField' | ForEach-Object { $_.Target })
+            $tax | Should -Contain 'DmsBusinessFunction'
+            $tax | Should -Contain 'DmsApplicability'
+        }
+    }
+
+    Context 'Security assignments' {
+        BeforeAll {
+            $global:DmsStubCalls.Clear()
+            $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSecurity.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            $script:PermActions = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'ListPermission' -and $_.change -eq 'Create' })
+            foreach ($a in $PermActions) { & $a.applyScript }
+            $script:GrantedPerms = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Set-PnPListPermission' | ForEach-Object { $_.Target })
+        }
+
+        It 'plans multiple permission grants' { $PermActions.Count | Should -BeGreaterThan 10 }
+
+        It 'grants each list/group/role combination once, not the last one repeatedly' {
+            $GrantedPerms.Count | Should -Be $PermActions.Count
+            (@($GrantedPerms | Sort-Object -Unique)).Count | Should -Be $PermActions.Count
+        }
+
+        It 'grants the automation identity write on Approval Evidence' {
+            $GrantedPerms | Should -Contain 'Approval Evidence|DMS-DEV-AutomationService|DMS Contribute No Delete'
+        }
+    }
+
+    Context 'Taxonomy' {
+        It 'provisions each term set and term against its own target' {
+            $global:DmsStubCalls.Clear()
+            $created = [System.Collections.Generic.List[string]]::new()
+            function global:New-PnPTermGroup  { param($Name,$Description,$Connection) $created.Add("group:$Name")   | Out-Null }
+            function global:New-PnPTermSet    { param($Name,$TermGroup,$Description,$IsOpenForTermCreation,$Connection) $created.Add("set:$Name") | Out-Null }
+            function global:New-PnPTerm       { param($Name,$TermSet,$TermGroup,$Connection) $created.Add("term:$Name") | Out-Null; [pscustomobject]@{ Id = [guid]::NewGuid() } }
+            function global:Add-PnPTermToTerm { param($Name,$ParentTermId,$Connection) $created.Add("child:$Name") | Out-Null }
+            try {
+                $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsTaxonomy.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+                $setActions = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'TermSet' -and $_.change -eq 'Create' })
+                foreach ($a in $setActions) { & $a.applyScript }
+                $sets = @($created | Where-Object { $_ -like 'set:*' })
+                $sets.Count | Should -Be $setActions.Count
+                (@($sets | Sort-Object -Unique)).Count | Should -Be $setActions.Count
+            } finally {
+                foreach ($f in @('New-PnPTermGroup','New-PnPTermSet','New-PnPTerm','Add-PnPTermToTerm')) {
+                    Remove-Item "function:global:$f" -ErrorAction SilentlyContinue
+                }
+            }
+        }
+
+        It 'refuses to create a placeholder term as a real vocabulary entry' {
+            $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsTaxonomy.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            $blocked = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'Term' -and $_.change -eq 'Blocked' })
+            $blocked.Count | Should -BeGreaterThan 0
+            $blocked[0].reason | Should -Match 'placeholder'
+        }
+    }
+}

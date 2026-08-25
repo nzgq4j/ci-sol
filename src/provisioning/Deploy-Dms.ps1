@@ -47,7 +47,7 @@
 param(
     [Parameter(Mandatory)][ValidateSet('dev','test','prod')][string]$Environment,
     [Parameter(Mandatory)][ValidateSet('Plan','Apply')][string]$Mode,
-    [Parameter()][ValidateSet('All','SharePoint','Security','Purview','PowerPlatform')][string[]]$Layer = @('All'),
+    [Parameter()][ValidateSet('All','Taxonomy','SharePoint','Security','Purview','PowerPlatform')][string[]]$Layer = @('All'),
     [Parameter()]$Connection = $null,
     [Parameter()]$TenantAdminConnection = $null,
     [Parameter()][switch]$ConfirmProductionChange,
@@ -106,6 +106,10 @@ $runAll = ($Layer -contains 'All')
 $results = [ordered]@{}
 $common = @{ Environment = $Environment; Mode = $Mode }
 
+if ($runAll -or $Layer -contains 'Taxonomy') {
+    # Runs FIRST: the taxonomy site columns cannot be created until their term sets exist.
+    $results['Taxonomy'] = & (Join-Path $PSScriptRoot 'Deploy-DmsTaxonomy.ps1') @common -Connection $Connection
+}
 if ($runAll -or $Layer -contains 'SharePoint') {
     $results['SharePoint'] = & (Join-Path $PSScriptRoot 'Deploy-DmsSharePoint.ps1') @common -Connection $Connection -LogPath $LogPath
 }

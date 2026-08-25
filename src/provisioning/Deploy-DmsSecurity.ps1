@@ -62,7 +62,7 @@ foreach ($level in $config.SecurityRoles.customPermissionLevels) {
                 if ($add.Count -gt 0) { $rp['Include'] = $add }
                 if ($rem.Count -gt 0) { $rp['Exclude'] = $rem }
                 Invoke-DmsWithRetry -OperationName "Add-PnPRoleDefinition $($captured.name)" -ScriptBlock { Add-PnPRoleDefinition @rp } | Out-Null
-            } | Out-Null
+            }.GetNewClosure() | Out-Null
     } else {
         Add-DmsPlanAction -Plan $plan -ResourceType 'PermissionLevel' -Target $level.name -Change 'Compliant' -Reason 'Exists.' -Requirements @('SEC-002') | Out-Null
     }
@@ -100,7 +100,7 @@ foreach ($role in $config.SecurityRoles.roles) {
                 Invoke-DmsWithRetry -OperationName "Set-PnPListPermission $capturedList" -ScriptBlock {
                     Set-PnPListPermission -Identity $capturedList -Group $capturedGroup -AddRole $capturedLevel -Connection $Connection
                 } | Out-Null
-            } | Out-Null
+            }.GetNewClosure() | Out-Null
     }
 }
 
@@ -125,7 +125,7 @@ if ($sharing -ne 'Disabled') {
             Invoke-DmsWithRetry -OperationName 'Set-PnPTenantSite sharing' -ScriptBlock {
                 Set-PnPTenantSite -Identity $capturedUrl -SharingCapability Disabled -Connection $capturedAdmin
             } | Out-Null
-        } | Out-Null
+        }.GetNewClosure() | Out-Null
 }
 
 $summary = Format-DmsPlan -Plan $plan

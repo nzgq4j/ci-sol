@@ -55,6 +55,7 @@ if (-not $ConfigPath) { $ConfigPath = Join-Path $PSScriptRoot '..' '..' 'config'
 $config = Get-DmsConfiguration -ConfigPath $ConfigPath -Environment $Environment
 $plan   = New-DmsPlan -Environment $Environment -Mode $Mode
 $isOnline = ($null -ne $Connection)
+$taxonomyGroupName = (Read-DmsJsonFile -Path (Join-Path $ConfigPath 'taxonomy.json')).termGroup
 
 Write-DmsLog -Action 'DeploySharePoint' -Target $Environment -Result 'Info' -Environment $Environment `
     -CorrelationId $plan.correlationId -LogPath $LogPath `
@@ -126,10 +127,28 @@ foreach ($col in $config.SiteColumns.columns) {
             -Reason $reason -Requirements $col.requirements -Detail @{ type = $spType; indexed = (Get-DmsPropertyOrDefault -InputObject $col -Name 'indexed' -Default $false) } `
             -ApplyScript {
                 if ($isTaxonomy) {
-                    # Taxonomy fields require the term set to exist and are bound separately by
-                    # Deploy-DmsTaxonomy. Creating an unbound taxonomy field would produce a field
-                    # that silently accepts nothing, so this is surfaced rather than guessed.
-                    throw "Taxonomy field '$($captured.internalName)' must be created after its term set exists. Run taxonomy provisioning first."
+                    # A taxonomy field must be bound to an existing term set; an unbound one silently
+                    # accepts nothing. Deploy-DmsTaxonomy.ps1 creates the term sets and the orchestrator
+                    # runs it first, so the term set is present by the time this executes.
+                    $taxParams = @{
+                        DisplayName  = $captured.displayName
+                        InternalName = $captured.internalName
+                        TermSetPath  = ('{0}|{1}' -f $taxonomyGroupName, $captured.termSet)
+                        Group        = $config.SiteColumns.fieldGroup
+                        Connection   = $Connection
+                    }
+                    if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'allowMultipleValues' -Default $false)) { $taxParams['MultiValue'] = $true }
+                    if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'required' -Default $false))            { $taxParams['Required']  = $true }
+                    Invoke-DmsWithRetry -OperationName "Add-PnPTaxonomyField $($captured.internalName)" -ScriptBlock {
+                        Add-PnPTaxonomyField @taxParams
+                    } | Out-Null
+
+                    if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'indexed' -Default $false)) {
+                        Invoke-DmsWithRetry -OperationName "Index $($captured.internalName)" -ScriptBlock {
+                            Set-PnPField -Identity $captured.internalName -Values @{ Indexed = $true } -Connection $Connection
+                        } | Out-Null
+                    }
+                    return
                 }
                 $params = @{
                     DisplayName  = $captured.displayName
@@ -147,7 +166,7 @@ foreach ($col in $config.SiteColumns.columns) {
                         Set-PnPField -Identity $captured.internalName -Values @{ Indexed = $true } -Connection $Connection
                     } | Out-Null
                 }
-            } | Out-Null
+            }.GetNewClosure() | Out-Null
     } else {
         # Only safe, mutable differences are updated. Changing a field's TYPE is destructive and is
         # therefore reported as Blocked rather than attempted.
@@ -165,7 +184,7 @@ foreach ($col in $config.SiteColumns.columns) {
                     Invoke-DmsWithRetry -OperationName "Set-PnPField $($captured.internalName)" -ScriptBlock {
                         Set-PnPField -Identity $captured.internalName -Values @{ Title = $captured.displayName } -Connection $Connection
                     } | Out-Null
-                } | Out-Null
+                }.GetNewClosure() | Out-Null
         } else {
             Add-DmsPlanAction -Plan $plan -ResourceType 'SiteColumn' -Target $col.internalName -Change 'Compliant' `
                 -Reason 'Matches configuration.' -Requirements $col.requirements | Out-Null
@@ -203,7 +222,7 @@ foreach ($ct in @($config.ContentTypes.contentTypes | Where-Object { (Get-DmsPro
                         Add-PnPFieldToContentType -Field $f -ContentType $captured.name -Connection $Connection
                     } | Out-Null
                 }
-            } | Out-Null
+            }.GetNewClosure() | Out-Null
     } else {
         $actualId = "$($existing.Id.StringValue)"
         if ($actualId -ne $ct.id) {
@@ -263,7 +282,7 @@ foreach ($lib in $config.Libraries.libraries) {
                 Set-PnPField -List $captured.title -Identity $idx -Values @{ Indexed = $true } -Connection $Connection
             } | Out-Null
         }
-    }
+    }.GetNewClosure()
 
     if ($null -eq $existing) {
         Add-DmsPlanAction -Plan $plan -ResourceType 'Library' -Target $lib.title -Change 'Create' `
@@ -275,7 +294,7 @@ foreach ($lib in $config.Libraries.libraries) {
                     New-PnPList -Title $captured.title -Template DocumentLibrary -Url $captured.urlPath -EnableContentTypes:([bool]$captured.contentTypesEnabled) -Connection $Connection
                 } | Out-Null
                 & $applySettings
-            } | Out-Null
+            }.GetNewClosure() | Out-Null
     } else {
         # Compare the settings that carry control meaning. Anything different is a safe update.
         $diffs = @()
@@ -343,7 +362,7 @@ foreach ($list in $config.Lists.lists) {
                         Set-PnPField -List $captured.title -Identity $idx -Values @{ Indexed = $true } -Connection $Connection
                     } | Out-Null
                 }
-            } | Out-Null
+            }.GetNewClosure() | Out-Null
     } else {
         Add-DmsPlanAction -Plan $plan -ResourceType 'List' -Target $list.title -Change 'Compliant' `
             -Reason 'List exists. Field-level drift is reported by Test-DmsConfiguration and the drift report.' `
@@ -386,7 +405,7 @@ foreach ($view in $config.Views.views) {
                     if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'paged'     -Default $false)) { $vp['Paged'] = $true }
                     if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'isDefault' -Default $false)) { $vp['SetAsDefault'] = $true }
                     Invoke-DmsWithRetry -OperationName "Add-PnPView $($captured.title)" -ScriptBlock { Add-PnPView @vp } | Out-Null
-                } | Out-Null
+                }.GetNewClosure() | Out-Null
         } else {
             Add-DmsPlanAction -Plan $plan -ResourceType 'View' -Target "$listTitle / $($view.title)" -Change 'Compliant' `
                 -Reason 'View exists.' -Requirements $view.requirements | Out-Null

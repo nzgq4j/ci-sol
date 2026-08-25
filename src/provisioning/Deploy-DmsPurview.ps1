@@ -93,7 +93,7 @@ foreach ($rc in $map.retentionClasses) {
             Invoke-DmsWithRetry -OperationName "New-ComplianceTag $($captured.recordClass)" -ScriptBlock {
                 New-ComplianceTag @tagParams
             } | Out-Null
-        } | Out-Null
+        }.GetNewClosure() | Out-Null
 }
 
 $summary = Format-DmsPlan -Plan $plan

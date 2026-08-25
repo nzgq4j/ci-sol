@@ -22,18 +22,37 @@ Target test bed: `https://propfound.sharepoint.com/sites/DOX` (configured in `co
 
 ## 2. One-time tenant setup
 
+PnP.PowerShell 2.x removed the built-in multi-tenant application, so **every** connection needs a
+`-ClientId` belonging to an app registered in your own tenant. Register one first.
+
 ```powershell
 Install-Module PnP.PowerShell -MinimumVersion 2.12.0 -Scope CurrentUser
 
-# Consent the PnP application (Global Administrator, once per tenant)
-Register-PnPEntraIDApp -ApplicationName "PnP-DMS-Provisioning" -Tenant proposal-foundry.com -Interactive
+# Once per tenant, as a Global Administrator.
+# This creates an Entra app registration AND a certificate. Write the certificate OUTSIDE the
+# repository - it is a credential and must never be committed (PRD SEC-004).
+New-Item -ItemType Directory -Path $HOME\.dms-certs -Force | Out-Null
+
+Register-PnPEntraIDApp `
+  -ApplicationName "PnP-DMS-Provisioning" `
+  -Tenant proposal-foundry.com `
+  -OutPath $HOME\.dms-certs `
+  -DeviceLogin
 ```
+
+Note the **AzureAppId / ClientId** it returns; every later command needs it.
+
+> `Register-PnPEntraIDApp` has no `-Interactive` parameter. Authentication is either a browser popup
+> (default) or `-DeviceLogin`, which prints a code to enter at microsoft.com/devicelogin.
 
 Find the tenant ID and complete `config/environments.json`:
 
 ```powershell
-Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive
-(Get-PnPTenantId)   # or read it from the Entra admin centre overview
+$clientId = "<AzureAppId from the previous step>"
+
+Connect-PnPOnline -Url https://propfound.sharepoint.com/sites/DOX `
+  -Interactive -ClientId $clientId -Tenant proposal-foundry.com
+Get-PnPTenantId
 ```
 
 ## 3. Create the test-bed site
@@ -41,7 +60,7 @@ Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive
 Only if it does not already exist. **Additive — touches no existing content.**
 
 ```powershell
-Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive
+Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ClientId $clientId -Tenant proposal-foundry.com
 New-PnPSite -Type CommunicationSite -Title "DMS Dev" -Url https://propfound.sharepoint.com/sites/dms-dev
 ```
 
@@ -65,8 +84,12 @@ conformance, and the PnP cmdlet-usage check. Do not proceed on a failure.
 ## 5. Read-only discovery
 
 ```powershell
-$c = Connect-PnPOnline -Url https://propfound.sharepoint.com/sites/DOX -Interactive -ReturnConnection
-$admin = Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ReturnConnection
+$clientId = "<AzureAppId>"
+$c     = Connect-PnPOnline -Url https://propfound.sharepoint.com/sites/DOX `
+           -Interactive -ClientId $clientId -Tenant proposal-foundry.com -ReturnConnection
+$admin = Connect-PnPOnline -Url https://propfound-admin.sharepoint.com `
+           -Interactive -ClientId $clientId -Tenant proposal-foundry.com -ReturnConnection
+
 ./src/provisioning/Invoke-DmsDiscovery.ps1 -Connection $c -TenantAdminConnection $admin
 ```
 
@@ -75,7 +98,7 @@ Changes nothing. Output goes to `artifacts/discovery/` (git-ignored). Review bef
 ## 6. Plan
 
 ```powershell
-./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c
+./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c -TenantAdminConnection $admin
 ```
 
 Read every line. Expect roughly 104 create actions and around 25 blocked. Blocked is normal and
@@ -87,7 +110,7 @@ expect; the site URL is the test bed, not a production site.
 ## 7. Apply (dev)
 
 ```powershell
-./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Apply -Connection $c
+./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Apply -Connection $c -TenantAdminConnection $admin
 ```
 
 Exit codes: `0` success · `1` an action failed · `2` blocking issues · `3` prerequisites missing ·
@@ -100,7 +123,7 @@ them. It is safe to rerun.
 
 ```powershell
 ./src/provisioning/Export-DmsConfiguration.ps1 -Environment dev -Connection $c -CompareToBaseline
-./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c
+./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c -TenantAdminConnection $admin
 ```
 
 A second plan should report everything `Compliant` with zero creates. That is the idempotency proof.

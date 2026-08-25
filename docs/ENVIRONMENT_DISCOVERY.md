@@ -120,11 +120,15 @@ Run from a workstation with a browser, signed in as a SharePoint Administrator:
 ```powershell
 Install-Module PnP.PowerShell -MinimumVersion 2.12.0 -Scope CurrentUser
 
-# One-time: consent the PnP Entra application in the tenant (Global Administrator).
-Register-PnPEntraIDApp -ApplicationName "PnP-DMS-Provisioning" -Tenant proposal-foundry.com -Interactive
+# One-time: register an Entra application in the tenant (Global Administrator).
+# PnP 2.x has no built-in multi-tenant app, so every connection needs its ClientId.
+# The certificate it creates is a credential: write it OUTSIDE the repository.
+Register-PnPEntraIDApp -ApplicationName "PnP-DMS-Provisioning" `
+  -Tenant proposal-foundry.com -OutPath $HOME\.dms-certs -DeviceLogin
 
 # Create the isolated test-bed site FIRST (additive; touches no existing content)
-Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive
+$clientId = "<AzureAppId from the previous step>"
+Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ClientId $clientId -Tenant proposal-foundry.com
 New-PnPSite -Type CommunicationSite -Title "DMS Dev" -Url https://propfound.sharepoint.com/sites/dms-dev
 
 # Then plan, review, and only then apply

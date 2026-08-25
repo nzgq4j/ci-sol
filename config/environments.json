@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "tenant": {
     "tenantName": "propfound",
-    "tenantId": "REQUIRES_TENANT_DISCOVERY",
+    "tenantId": "9fd1307f-3666-4779-b6de-0d596aaf093a",
     "sharePointAdminUrl": "https://propfound-admin.sharepoint.com",
     "contentTypeHubUrl": "https://propfound.sharepoint.com/sites/contentTypeHub",
     "defaultTimeZone": "Europe/London",

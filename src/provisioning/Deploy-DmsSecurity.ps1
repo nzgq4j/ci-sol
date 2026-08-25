@@ -47,9 +47,22 @@ $isOnline = ($null -ne $Connection)
 $prefix   = Get-DmsPropertyOrDefault -InputObject $config.Environment -Name 'entraGroupPrefix' -Default 'DMS'
 
 # ---------------------------------------------------------------- custom permission levels
+# Enumerate the site's role definitions once and match by name, rather than probing each name and
+# inferring absence from an exception. Probing made existence depend on CSOM error behaviour, which
+# reported a level as present that had never been created - and a false Compliant is worse than a
+# false Create here, because Apply skips the level and every grant that references it then fails.
+$existingRoleNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+if ($isOnline) {
+    foreach ($rd in @(Get-PnPRoleDefinition -Connection $Connection)) {
+        [void]$existingRoleNames.Add("$($rd.Name)")
+    }
+    Write-DmsLog -Action 'ReadRoleDefinitions' -Target $config.Environment.dmsSiteUrl -Result 'Info' `
+        -Environment $Environment -CorrelationId $plan.correlationId `
+        -Message "Site has $($existingRoleNames.Count) role definition(s): $((@($existingRoleNames) | Sort-Object) -join ', ')" | Out-Null
+}
+
 foreach ($level in $config.SecurityRoles.customPermissionLevels) {
-    $existing = $null
-    if ($isOnline) { try { $existing = Get-PnPRoleDefinition -Identity $level.name -Connection $Connection -ErrorAction Stop } catch { $existing = $null } }
+    $existing = if ($isOnline -and $existingRoleNames.Contains($level.name)) { $level.name } else { $null }
     $captured = $level
     if ($null -eq $existing) {
         Add-DmsPlanAction -Plan $plan -ResourceType 'PermissionLevel' -Target $level.name -Change 'Create' `

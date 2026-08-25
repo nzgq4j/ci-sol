@@ -15,7 +15,12 @@
 .PARAMETER Mode
     Plan or Apply.
 .PARAMETER Connection
-    PnP connection. Omit for offline desired-state planning.
+    PnP connection to the DMS SITE. Omit for offline desired-state planning.
+.PARAMETER TenantAdminConnection
+    PnP connection to the SharePoint ADMIN endpoint (https://<tenant>-admin.sharepoint.com).
+    Required only for tenant-scoped actions: setting the site sharing capability. Site-scoped
+    connections cannot perform them, so the action is reported as Blocked rather than attempted
+    and failing mid-run.
 .PARAMETER ConfigPath
     Configuration directory.
 .EXAMPLE
@@ -28,6 +33,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('dev','test','prod')][string]$Environment,
     [Parameter(Mandatory)][ValidateSet('Plan','Apply')][string]$Mode,
     [Parameter()]$Connection = $null,
+    [Parameter()]$TenantAdminConnection = $null,
     [Parameter()][string]$ConfigPath
 )
 Set-StrictMode -Version Latest
@@ -104,13 +110,20 @@ if ($sharing -ne 'Disabled') {
     Add-DmsPlanAction -Plan $plan -ResourceType 'ExternalSharing' -Target $config.Environment.dmsSiteUrl -Change 'Blocked' `
         -Reason "Configured external sharing is '$sharing'. PRD F-025 and SEC-005 require Disabled on MVP controlled sites unless Security, Privacy, Legal and the information owner approve a scoped, time-bounded exception (OQ-08)." `
         -Requirements @('F-025','SEC-005') | Out-Null
+} elseif ($null -eq $TenantAdminConnection) {
+    # Setting sharing capability is a TENANT-scoped operation. A site connection cannot perform it.
+    # Report it rather than attempting a call that would fail partway through Apply.
+    Add-DmsPlanAction -Plan $plan -ResourceType 'ExternalSharing' -Target $config.Environment.dmsSiteUrl -Change 'Blocked' `
+        -Reason 'Setting the site sharing capability requires a SharePoint admin connection. Re-run with -TenantAdminConnection (connect to https://<tenant>-admin.sharepoint.com), or set sharing to Disabled in the SharePoint admin centre and re-run to verify.' `
+        -Requirements @('F-025','SEC-005') | Out-Null
 } else {
-    $capturedUrl = $config.Environment.dmsSiteUrl
+    $capturedUrl   = $config.Environment.dmsSiteUrl
+    $capturedAdmin = $TenantAdminConnection
     Add-DmsPlanAction -Plan $plan -ResourceType 'ExternalSharing' -Target $capturedUrl -Change 'Create' `
         -Reason 'Set site sharing capability to Disabled.' -Requirements @('F-025','SEC-005') `
         -ApplyScript {
             Invoke-DmsWithRetry -OperationName 'Set-PnPTenantSite sharing' -ScriptBlock {
-                Set-PnPTenantSite -Identity $capturedUrl -SharingCapability Disabled -Connection $Connection
+                Set-PnPTenantSite -Identity $capturedUrl -SharingCapability Disabled -Connection $capturedAdmin
             } | Out-Null
         } | Out-Null
 }

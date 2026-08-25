@@ -24,7 +24,10 @@
 .PARAMETER Layer
     Which layers to run. Defaults to all.
 .PARAMETER Connection
-    PnP connection for SharePoint and security layers.
+    PnP connection to the DMS site, used by the SharePoint and security layers.
+.PARAMETER TenantAdminConnection
+    Optional PnP connection to the SharePoint admin endpoint. Needed only for tenant-scoped actions
+    such as setting the site sharing capability.
 .PARAMETER ConfirmProductionChange
     Explicit authorisation for a production Apply. Required in addition to the environment flag.
 .PARAMETER RollbackPlanReference
@@ -46,6 +49,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('Plan','Apply')][string]$Mode,
     [Parameter()][ValidateSet('All','SharePoint','Security','Purview','PowerPlatform')][string[]]$Layer = @('All'),
     [Parameter()]$Connection = $null,
+    [Parameter()]$TenantAdminConnection = $null,
     [Parameter()][switch]$ConfirmProductionChange,
     [Parameter()][AllowEmptyString()][string]$RollbackPlanReference = '',
     [Parameter()][string[]]$PriorSuccessfulDeployment = @(),
@@ -106,7 +110,7 @@ if ($runAll -or $Layer -contains 'SharePoint') {
     $results['SharePoint'] = & (Join-Path $PSScriptRoot 'Deploy-DmsSharePoint.ps1') @common -Connection $Connection -LogPath $LogPath
 }
 if ($runAll -or $Layer -contains 'Security') {
-    $results['Security'] = & (Join-Path $PSScriptRoot 'Deploy-DmsSecurity.ps1') @common -Connection $Connection
+    $results['Security'] = & (Join-Path $PSScriptRoot 'Deploy-DmsSecurity.ps1') @common -Connection $Connection -TenantAdminConnection $TenantAdminConnection
 }
 if ($runAll -or $Layer -contains 'Purview') {
     # Purview always defaults to Plan; it is never applied implicitly by the orchestrator.

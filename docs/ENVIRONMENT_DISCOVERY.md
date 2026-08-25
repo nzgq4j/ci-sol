@@ -120,15 +120,21 @@ Run from a workstation with a browser, signed in as a SharePoint Administrator:
 ```powershell
 Install-Module PnP.PowerShell -MinimumVersion 2.12.0 -Scope CurrentUser
 
-# One-time: register an Entra application in the tenant (Global Administrator).
-# PnP 2.x has no built-in multi-tenant app, so every connection needs its ClientId.
-# The certificate it creates is a credential: write it OUTSIDE the repository.
-Register-PnPEntraIDApp -ApplicationName "PnP-DMS-Provisioning" `
-  -Tenant proposal-foundry.com -OutPath $HOME\.dms-certs -DeviceLogin
+# One-time: register an Entra application for INTERACTIVE (delegated) login.
+# This needs only Application Developer or equivalent, not Global Administrator, and creates no
+# certificate. Use Register-PnPEntraIDApp instead only for unattended CI, which needs a certificate
+# and Global Administrator consent.
+# Pass -Tenant the tenant GUID: PnP puts the value straight into the auth URL, and a domain mismatch
+# surfaces as AADSTS90013.
+Register-PnPEntraIDAppForInteractiveLogin `
+  -ApplicationName "PnP-DMS-Interactive" `
+  -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a `
+  -SharePointDelegatePermissions AllSites.FullControl `
+  -GraphDelegatePermissions Group.Read.All
 
 # Create the isolated test-bed site FIRST (additive; touches no existing content)
 $clientId = "<AzureAppId from the previous step>"
-Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ClientId $clientId -Tenant proposal-foundry.com
+Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a
 New-PnPSite -Type CommunicationSite -Title "DMS Dev" -Url https://propfound.sharepoint.com/sites/dms-dev
 
 # Then plan, review, and only then apply

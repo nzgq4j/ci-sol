@@ -25,33 +25,48 @@ Target test bed: `https://propfound.sharepoint.com/sites/DOX` (configured in `co
 PnP.PowerShell 2.x removed the built-in multi-tenant application, so **every** connection needs a
 `-ClientId` belonging to an app registered in your own tenant. Register one first.
 
+There are two registration cmdlets and they are not interchangeable:
+
+| Cmdlet | Creates | Use for | Privilege needed |
+|---|---|---|---|
+| `Register-PnPEntraIDAppForInteractiveLogin` | Delegated app, redirect URI `http://localhost`, **no certificate** | Interactive deployment by a person | Tenant permits user app registration, **or** Application Developer / Application Administrator / Cloud Application Administrator / Global Administrator |
+| `Register-PnPEntraIDApp` | App-only registration **plus a certificate** | Unattended CI/CD | Global Administrator (application permissions need admin consent) |
+
+For a pilot deployment run by a person, use the first.
+
 ```powershell
 Install-Module PnP.PowerShell -MinimumVersion 2.12.0 -Scope CurrentUser
 
-# Once per tenant, as a Global Administrator.
-# This creates an Entra app registration AND a certificate. Write the certificate OUTSIDE the
-# repository - it is a credential and must never be committed (PRD SEC-004).
-New-Item -ItemType Directory -Path $HOME\.dms-certs -Force | Out-Null
-
-Register-PnPEntraIDApp `
-  -ApplicationName "PnP-DMS-Provisioning" `
-  -Tenant proposal-foundry.com `
-  -OutPath $HOME\.dms-certs `
-  -DeviceLogin
+Register-PnPEntraIDAppForInteractiveLogin `
+  -ApplicationName "PnP-DMS-Interactive" `
+  -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a `
+  -SharePointDelegatePermissions AllSites.FullControl `
+  -GraphDelegatePermissions Group.Read.All
 ```
 
 Note the **AzureAppId / ClientId** it returns; every later command needs it.
 
-> `Register-PnPEntraIDApp` has no `-Interactive` parameter. Authentication is either a browser popup
-> (default) or `-DeviceLogin`, which prints a code to enter at microsoft.com/devicelogin.
+> **Pass `-Tenant` the tenant GUID, not a domain name.** PnP inserts the value directly into the
+> authentication URL (`{endpoint}/{Tenant}/v2.0/adminconsent?...`). A verified custom domain usually
+> resolves, but a mismatch produces `AADSTS90013: Invalid input received from the user`, which reads
+> like a sign-in problem rather than a parameter problem. The GUID is unambiguous.
 
-Find the tenant ID and complete `config/environments.json`:
+> `Register-PnPEntraIDApp` has no `-Interactive` parameter. Authentication is a browser popup by
+> default, or `-DeviceLogin` for a machine without a browser. Its certificate is a credential and
+> must be written outside the repository.
+
+Store the client ID for reuse. It is an identifier, not a credential:
 
 ```powershell
-$clientId = "<AzureAppId from the previous step>"
+[Environment]::SetEnvironmentVariable("DMS_CLIENT_ID", "<AzureAppId>", "User")
+```
 
+Find the tenant ID (already recorded in `config/environments.json` for this tenant):
+
+```powershell
+$clientId = $env:DMS_CLIENT_ID
 Connect-PnPOnline -Url https://propfound.sharepoint.com/sites/DOX `
-  -Interactive -ClientId $clientId -Tenant proposal-foundry.com
+  -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a
 Get-PnPTenantId
 ```
 
@@ -60,7 +75,7 @@ Get-PnPTenantId
 Only if it does not already exist. **Additive — touches no existing content.**
 
 ```powershell
-Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ClientId $clientId -Tenant proposal-foundry.com
+Connect-PnPOnline -Url https://propfound-admin.sharepoint.com -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a
 New-PnPSite -Type CommunicationSite -Title "DMS Dev" -Url https://propfound.sharepoint.com/sites/dms-dev
 ```
 
@@ -86,9 +101,9 @@ conformance, and the PnP cmdlet-usage check. Do not proceed on a failure.
 ```powershell
 $clientId = "<AzureAppId>"
 $c     = Connect-PnPOnline -Url https://propfound.sharepoint.com/sites/DOX `
-           -Interactive -ClientId $clientId -Tenant proposal-foundry.com -ReturnConnection
+           -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a -ReturnConnection
 $admin = Connect-PnPOnline -Url https://propfound-admin.sharepoint.com `
-           -Interactive -ClientId $clientId -Tenant proposal-foundry.com -ReturnConnection
+           -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a -ReturnConnection
 
 ./src/provisioning/Invoke-DmsDiscovery.ps1 -Connection $c -TenantAdminConnection $admin
 ```

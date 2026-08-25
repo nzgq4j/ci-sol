@@ -77,7 +77,12 @@ foreach ($level in $config.SecurityRoles.customPermissionLevels) {
                 Invoke-DmsWithRetry -OperationName "Add-PnPRoleDefinition $($captured.name)" -ScriptBlock { Add-PnPRoleDefinition @rp } | Out-Null
             }.GetNewClosure() | Out-Null
     } else {
-        Add-DmsPlanAction -Plan $plan -ResourceType 'PermissionLevel' -Target $level.name -Change 'Compliant' -Reason 'Exists.' -Requirements @('SEC-002') | Out-Null
+        # Only the NAME is compared. The permissions the level actually grants are not read back, so
+        # a level created by an earlier or partial run could differ from configuration and still
+        # report Compliant. Say so rather than implying the level was verified against config.
+        Add-DmsPlanAction -Plan $plan -ResourceType 'PermissionLevel' -Target $level.name -Change 'Compliant' `
+            -Reason "A role definition with this name exists. Name match only - the granted permissions were not compared against configuration. If this level may have been created by an earlier or partial run, remove it and re-apply so it is built from config." `
+            -Requirements @('SEC-002') | Out-Null
     }
 }
 

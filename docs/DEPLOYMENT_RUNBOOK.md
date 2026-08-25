@@ -96,16 +96,28 @@ New-PnPSite -Type CommunicationSite -Title "DMS Dev" -Url https://propfound.shar
 Exit 0 required. This runs schema conformance, referential integrity, lifecycle and routing rule
 conformance, and the PnP cmdlet-usage check. Do not proceed on a failure.
 
-## 5. Read-only discovery
+## 5. Connect and run read-only discovery
+
+`Connect-Dms.ps1` reads the tenant ID, site URL and client ID from `config/environments.json` and
+opens both endpoints, so no GUID is retyped and the deployment cannot target the wrong tenant.
 
 ```powershell
-$clientId = "<AzureAppId>"
-$c     = Connect-PnPOnline -Url https://propfound.sharepoint.com/sites/DOX `
-           -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a -ReturnConnection
-$admin = Connect-PnPOnline -Url https://propfound-admin.sharepoint.com `
-           -Interactive -ClientId $clientId -Tenant 9fd1307f-3666-4779-b6de-0d596aaf093a -ReturnConnection
+$conn = ./src/provisioning/Connect-Dms.ps1 -Environment dev
 
-./src/provisioning/Invoke-DmsDiscovery.ps1 -Connection $c -TenantAdminConnection $admin
+$conn.Site.Url    # https://propfound.sharepoint.com/sites/DOX
+$conn.Admin.Url   # https://propfound-admin.sharepoint.com
+```
+
+Two connections are needed because they are different endpoints: site-scoped operations (columns,
+content types, libraries, views) go to the site, and tenant-scoped operations (sharing capability,
+site creation) go to the admin endpoint. Passing one where the other is required fails with
+"The provided connection through -Connection holds no SharePoint context".
+
+If the admin connection fails you can still proceed; tenant-scoped actions are reported as `Blocked`
+rather than attempted.
+
+```powershell
+./src/provisioning/Invoke-DmsDiscovery.ps1 -Connection $conn.Site -TenantAdminConnection $conn.Admin
 ```
 
 Changes nothing. Output goes to `artifacts/discovery/` (git-ignored). Review before planning.
@@ -113,7 +125,7 @@ Changes nothing. Output goes to `artifacts/discovery/` (git-ignored). Review bef
 ## 6. Plan
 
 ```powershell
-./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c -TenantAdminConnection $admin
+./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $conn.Site -TenantAdminConnection $conn.Admin
 ```
 
 Read every line. Expect roughly 104 create actions and around 25 blocked. Blocked is normal and
@@ -125,7 +137,7 @@ expect; the site URL is the test bed, not a production site.
 ## 7. Apply (dev)
 
 ```powershell
-./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Apply -Connection $c -TenantAdminConnection $admin
+./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Apply -Connection $conn.Site -TenantAdminConnection $conn.Admin
 ```
 
 Exit codes: `0` success · `1` an action failed · `2` blocking issues · `3` prerequisites missing ·
@@ -138,7 +150,7 @@ them. It is safe to rerun.
 
 ```powershell
 ./src/provisioning/Export-DmsConfiguration.ps1 -Environment dev -Connection $c -CompareToBaseline
-./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $c -TenantAdminConnection $admin
+./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan -Connection $conn.Site -TenantAdminConnection $conn.Admin
 ```
 
 A second plan should report everything `Compliant` with zero creates. That is the idempotency proof.
@@ -173,7 +185,7 @@ Production Apply requires **all seven** conditions. Any missing condition is rep
 bypassed.
 
 ```powershell
-./src/provisioning/Deploy-Dms.ps1 -Environment prod -Mode Apply -Connection $prodConn `
+./src/provisioning/Deploy-Dms.ps1 -Environment prod -Mode Apply -Connection $conn.Site -TenantAdminConnection $conn.Admin `
   -ConfirmProductionChange `
   -PriorSuccessfulDeployment @('dev','test') `
   -RollbackPlanReference 'docs/BACKUP_RECOVERY_PLAN.md#rollback'

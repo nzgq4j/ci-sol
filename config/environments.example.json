@@ -22,7 +22,8 @@
       "externalSharing": "Disabled",
       "staleCheckOutThresholdBusinessDays": 3,
       "entraGroupPrefix": "DMS-DEV",
-      "requiresApprovalToDeploy": false
+      "requiresApprovalToDeploy": false,
+      "entraClientId": "REQUIRES_TENANT_DISCOVERY"
     },
     "test": {
       "environmentType": "test",
@@ -36,7 +37,8 @@
       "externalSharing": "Disabled",
       "staleCheckOutThresholdBusinessDays": 3,
       "entraGroupPrefix": "DMS-TEST",
-      "requiresApprovalToDeploy": true
+      "requiresApprovalToDeploy": true,
+      "entraClientId": "REQUIRES_TENANT_DISCOVERY"
     },
     "prod": {
       "environmentType": "prod",
@@ -50,7 +52,8 @@
       "externalSharing": "Disabled",
       "staleCheckOutThresholdBusinessDays": 3,
       "entraGroupPrefix": "DMS",
-      "requiresApprovalToDeploy": true
+      "requiresApprovalToDeploy": true,
+      "entraClientId": "REQUIRES_TENANT_DISCOVERY"
     }
   },
   "provisional": [

@@ -22,7 +22,8 @@
       "externalSharing": "Disabled",
       "staleCheckOutThresholdBusinessDays": 3,
       "entraGroupPrefix": "DMS-DEV",
-      "requiresApprovalToDeploy": false
+      "requiresApprovalToDeploy": false,
+      "entraClientId": "56ac1ccd-e448-42f3-8e9d-230c56f194cb"
     },
     "test": {
       "environmentType": "test",

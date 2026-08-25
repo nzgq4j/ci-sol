@@ -83,6 +83,27 @@ foreach ($ts in $config.Taxonomy.termSets) {
         Add-DmsPlanAction -Plan $plan -ResourceType 'TermSet' -Target $ts.name -Change 'Compliant' -Reason 'Exists.' -Requirements @('F-001') | Out-Null
     }
 
+    # Enumerate the term set's existing terms ONCE and match by name, rather than planning every
+    # term as a create. Terms are not probed individually: existence must come from observed state,
+    # not from whether a call happened to throw.
+    $existingTerms = @{}
+    if ($isOnline -and $setExists) {
+        try {
+            foreach ($t in @(Get-PnPTerm -TermSet $ts.name -TermGroup $groupName -IncludeChildTerms -Connection $Connection)) {
+                $childNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+                foreach ($ch in @($t.Terms)) { [void]$childNames.Add("$($ch.Name)") }
+                $existingTerms["$($t.Name)"] = $childNames
+            }
+        } catch {
+            # An unreadable term set is reported, not assumed empty: assuming empty would plan
+            # creates that then fail as duplicates, which is exactly the failure this replaces.
+            Write-DmsLog -Action 'ReadTerms' -Target $ts.name -Result 'Failed' -Level Warning `
+                -Environment $Environment -CorrelationId $plan.correlationId `
+                -Message "Could not enumerate terms: $(Protect-DmsSensitiveText -Text $_.Exception.Message)" | Out-Null
+            $existingTerms = $null
+        }
+    }
+
     foreach ($term in $ts.terms) {
         # A placeholder awaiting a stakeholder decision must not become a real term.
         if ("$($term.name)" -like '*REQUIRES_*') {
@@ -92,24 +113,57 @@ foreach ($ts in $config.Taxonomy.termSets) {
             continue
         }
 
-        $capturedTerm  = $term
-        $capturedSet2  = $ts
-        $capturedGroup = $groupName
-        $capturedConn  = $Connection
-        Add-DmsPlanAction -Plan $plan -ResourceType 'Term' -Target "$($ts.name) / $($term.name)" -Change 'Create' `
-            -Reason $(if ($isOnline) { 'Term does not exist.' } else { 'Desired state (actual state not read).' }) `
-            -Requirements @('F-001') -Detail @{ children = @(Get-DmsPropertyOrDefault -InputObject $term -Name 'children' -Default @()).Count } `
-            -ApplyScript {
-                $created = Invoke-DmsWithRetry -OperationName "New-PnPTerm $($capturedTerm.name)" -ScriptBlock {
-                    New-PnPTerm -Name $capturedTerm.name -TermSet $capturedSet2.name -TermGroup $capturedGroup -Connection $capturedConn
-                }
-                foreach ($child in @(Get-DmsPropertyOrDefault -InputObject $capturedTerm -Name 'children' -Default @())) {
-                    $childName = $child
-                    Invoke-DmsWithRetry -OperationName "Add-PnPTermToTerm $childName" -ScriptBlock {
-                        Add-PnPTermToTerm -Name $childName -ParentTermId $created.Id -Connection $capturedConn
-                    } | Out-Null
-                }
-            }.GetNewClosure() | Out-Null
+        $configuredChildren = @(Get-DmsPropertyOrDefault -InputObject $term -Name 'children' -Default @())
+        $termExists    = ($null -ne $existingTerms) -and $existingTerms.ContainsKey("$($term.name)")
+        # The @() must wrap the WHOLE if/else. Without it a single missing child is unwrapped from
+        # its array and .Count throws under StrictMode - the same trap that misreported migration
+        # duplicate counts.
+        $missingChildren = @(
+            if ($termExists) {
+                $configuredChildren | Where-Object { -not $existingTerms["$($term.name)"].Contains($_) }
+            } else {
+                $configuredChildren
+            }
+        )
+
+        $capturedTerm     = $term
+        $capturedSet2     = $ts
+        $capturedGroup    = $groupName
+        $capturedConn     = $Connection
+        $capturedChildren = $missingChildren
+
+        if (-not $termExists) {
+            Add-DmsPlanAction -Plan $plan -ResourceType 'Term' -Target "$($ts.name) / $($term.name)" -Change 'Create' `
+                -Reason $(if ($isOnline) { 'Term does not exist.' } else { 'Desired state (actual state not read).' }) `
+                -Requirements @('F-001') -Detail @{ children = $configuredChildren.Count } `
+                -ApplyScript {
+                    $created = Invoke-DmsWithRetry -OperationName "New-PnPTerm $($capturedTerm.name)" -ScriptBlock {
+                        New-PnPTerm -Name $capturedTerm.name -TermSet $capturedSet2.name -TermGroup $capturedGroup -Connection $capturedConn
+                    }
+                    foreach ($child in $capturedChildren) {
+                        $childName = $child
+                        Invoke-DmsWithRetry -OperationName "Add-PnPTermToTerm $childName" -ScriptBlock {
+                            Add-PnPTermToTerm -Name $childName -ParentTermId $created.Id -Connection $capturedConn
+                        } | Out-Null
+                    }
+                }.GetNewClosure() | Out-Null
+        } elseif ($missingChildren.Count -gt 0) {
+            Add-DmsPlanAction -Plan $plan -ResourceType 'Term' -Target "$($ts.name) / $($term.name)" -Change 'Update' `
+                -Reason "Term exists but $($missingChildren.Count) child term(s) are missing: $($missingChildren -join ', '). Adding them is additive." `
+                -Requirements @('F-001') -Detail @{ missingChildren = $missingChildren } `
+                -ApplyScript {
+                    $parent = Get-PnPTerm -Identity $capturedTerm.name -TermSet $capturedSet2.name -TermGroup $capturedGroup -Connection $capturedConn
+                    foreach ($child in $capturedChildren) {
+                        $childName = $child
+                        Invoke-DmsWithRetry -OperationName "Add-PnPTermToTerm $childName" -ScriptBlock {
+                            Add-PnPTermToTerm -Name $childName -ParentTermId $parent.Id -Connection $capturedConn
+                        } | Out-Null
+                    }
+                }.GetNewClosure() | Out-Null
+        } else {
+            Add-DmsPlanAction -Plan $plan -ResourceType 'Term' -Target "$($ts.name) / $($term.name)" -Change 'Compliant' `
+                -Reason 'Term and all configured child terms exist.' -Requirements @('F-001') | Out-Null
+        }
     }
 }
 

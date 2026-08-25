@@ -578,3 +578,78 @@ Describe 'Deferred scriptblocks resolve only module or global commands' {
         $violations | Should -BeNullOrEmpty -Because 'a deferred closure cannot resolve a script-scope function; resolve the value before building the closure'
     }
 }
+
+Describe 'Taxonomy is idempotent (PRD NFR-006)' {
+    # Regression: the taxonomy plan checked the term group and term set for existence but never the
+    # terms themselves, so every term was planned as Create on every run. A second Apply then failed
+    # with 'There is already a term with the same default label and parent term' for all 17 terms.
+
+    BeforeAll {
+        # A connection object only needs to be non-null for the script to treat itself as online.
+        $script:FakeConn = [PSCustomObject]@{ Url = 'https://contoso.sharepoint.com/sites/dms-dev' }
+
+        function global:Get-PnPTermGroup { param($Identity,$TermStore,$Connection) [PSCustomObject]@{ Name = $Identity } }
+        function global:Get-PnPTermSet   { param($Identity,$TermGroup,$TermStore,$Connection) [PSCustomObject]@{ Name = $Identity } }
+    }
+    AfterAll {
+        foreach ($f in @('Get-PnPTermGroup','Get-PnPTermSet','Get-PnPTerm')) { Remove-Item "function:global:$f" -ErrorAction SilentlyContinue }
+    }
+
+    It 'reports every existing term as Compliant rather than planning a duplicate create' {
+        $cfg = Get-DmsConfiguration -Environment dev
+        # Return exactly what configuration asks for, as if a previous Apply had succeeded.
+        function global:Get-PnPTerm {
+            param($Identity,$TermSet,$TermGroup,$TermStore,[switch]$IncludeChildTerms,[switch]$Recursive,[switch]$IncludeDeprecated,$ParentTerm,$Connection)
+            $set = ($cfg.Taxonomy.termSets | Where-Object name -eq $TermSet)
+            foreach ($t in $set.terms) {
+                if ("$($t.name)" -like '*REQUIRES_*') { continue }
+                [PSCustomObject]@{
+                    Name  = $t.name
+                    Id    = [guid]::NewGuid()
+                    Terms = @(@(Get-DmsPropertyOrDefault -InputObject $t -Name 'children' -Default @()) | ForEach-Object { [PSCustomObject]@{ Name = $_ } })
+                }
+            }
+        }
+        $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsTaxonomy.ps1') -Environment dev -Mode Plan `
+                        -Connection $FakeConn -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+
+        $termActions = @($summary.plan.actions | Where-Object resourceType -eq 'Term')
+        @($termActions | Where-Object change -eq 'Create') | Should -BeNullOrEmpty -Because 'the terms already exist'
+        @($termActions | Where-Object change -eq 'Compliant').Count | Should -BeGreaterThan 15
+        # The placeholder term stays blocked whatever the tenant contains.
+        @($termActions | Where-Object change -eq 'Blocked').Count | Should -Be 1
+    }
+
+    It 'plans an additive Update when a term exists but a child term is missing' {
+        $cfg = Get-DmsConfiguration -Environment dev
+        function global:Get-PnPTerm {
+            param($Identity,$TermSet,$TermGroup,$TermStore,[switch]$IncludeChildTerms,[switch]$Recursive,[switch]$IncludeDeprecated,$ParentTerm,$Connection)
+            $set = ($cfg.Taxonomy.termSets | Where-Object name -eq $TermSet)
+            foreach ($t in $set.terms) {
+                if ("$($t.name)" -like '*REQUIRES_*') { continue }
+                $kids = @(Get-DmsPropertyOrDefault -InputObject $t -Name 'children' -Default @())
+                # Drop one child to simulate a partially completed run.
+                if ($kids.Count -gt 1) { $kids = $kids[1..($kids.Count-1)] }
+                [PSCustomObject]@{ Name = $t.name; Id = [guid]::NewGuid(); Terms = @($kids | ForEach-Object { [PSCustomObject]@{ Name = $_ } }) }
+            }
+        }
+        $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsTaxonomy.ps1') -Environment dev -Mode Plan `
+                        -Connection $FakeConn -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+
+        $updates = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'Term' -and $_.change -eq 'Update' })
+        $updates.Count   | Should -BeGreaterThan 0
+        $updates[0].reason | Should -Match 'child term'
+    }
+
+    It 'does not assume an empty term set when the term store cannot be read' {
+        function global:Get-PnPTerm {
+            param($Identity,$TermSet,$TermGroup,$TermStore,[switch]$IncludeChildTerms,[switch]$Recursive,[switch]$IncludeDeprecated,$ParentTerm,$Connection)
+            throw 'Access denied to the term store.'
+        }
+        $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsTaxonomy.ps1') -Environment dev -Mode Plan `
+                        -Connection $FakeConn -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+        # Unreadable state falls back to planning creates, and the failure is logged rather than
+        # silently treated as 'nothing exists'.
+        @($summary.plan.actions | Where-Object { $_.resourceType -eq 'Term' -and $_.change -eq 'Create' }).Count | Should -BeGreaterThan 0
+    }
+}

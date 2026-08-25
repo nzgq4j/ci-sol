@@ -115,74 +115,101 @@ function ConvertTo-SharePointFieldType {
 
 # ---------------------------------------------------------------------------- 1. site columns
 
+# Everything a create needs is resolved HERE, before the closure is built. A deferred scriptblock
+# created with GetNewClosure() runs in its own module scope, which cannot see functions defined in
+# this script's scope when the script is invoked from the orchestrator. Resolving the field spec up
+# front removes that dependency entirely, and makes the plan carry exactly what Apply will execute.
+function Resolve-DmsFieldSpec {
+    param($Column, [string]$FieldGroup, [string]$TaxonomyGroup)
+
+    $spType   = ConvertTo-SharePointFieldType -ConfigType $Column.type
+    $required = [bool](Get-DmsPropertyOrDefault -InputObject $Column -Name 'required' -Default $false)
+    $indexed  = [bool](Get-DmsPropertyOrDefault -InputObject $Column -Name 'indexed'  -Default $false)
+
+    if ($spType -like 'TaxonomyField*') {
+        $p = @{
+            DisplayName  = $Column.displayName
+            InternalName = $Column.internalName
+            TermSetPath  = ('{0}|{1}' -f $TaxonomyGroup, $Column.termSet)
+            Group        = $FieldGroup
+        }
+        if ([bool](Get-DmsPropertyOrDefault -InputObject $Column -Name 'allowMultipleValues' -Default $false)) { $p['MultiValue'] = $true }
+        if ($required) { $p['Required'] = $true }
+        return [PSCustomObject]@{ Kind='Taxonomy'; Type=$spType; Params=$p; Xml=$null; Indexed=$indexed; InternalName=$Column.internalName }
+    }
+
+    if ($spType -eq 'UserMulti') {
+        # The CSOM FieldType enum has User but no UserMulti, so Add-PnPField cannot create a
+        # multi-value person field. UserMulti is a valid SharePoint *schema* type, so the field is
+        # created from field XML instead.
+        $mode = Get-DmsPropertyOrDefault -InputObject $Column -Name 'selectionMode' -Default 'PeopleOnly'
+        $xml  = '<Field Type="UserMulti" DisplayName="{0}" Name="{1}" StaticName="{1}" ID="{2}" Group="{3}" Mult="TRUE" UserSelectionMode="{4}" List="UserInfo"{5} />' -f `
+                    [System.Security.SecurityElement]::Escape($Column.displayName),
+                    $Column.internalName,
+                    ('{' + [guid]::NewGuid().ToString() + '}'),
+                    [System.Security.SecurityElement]::Escape($FieldGroup),
+                    $mode,
+                    $(if ($required) { ' Required="TRUE"' } else { '' })
+        return [PSCustomObject]@{ Kind='Xml'; Type=$spType; Params=$null; Xml=$xml; Indexed=$indexed; InternalName=$Column.internalName }
+    }
+
+    $p = @{
+        DisplayName  = $Column.displayName
+        InternalName = $Column.internalName
+        Type         = $spType
+        Group        = $FieldGroup
+    }
+    if ($Column.type -in @('Choice','MultiChoice')) { $p['Choices'] = @($Column.choices) }
+    if ($required) { $p['Required'] = $true }
+    return [PSCustomObject]@{ Kind='Standard'; Type=$spType; Params=$p; Xml=$null; Indexed=$indexed; InternalName=$Column.internalName }
+}
+
 foreach ($col in $config.SiteColumns.columns) {
-    $spType   = ConvertTo-SharePointFieldType -ConfigType $col.type
+    $spec     = Resolve-DmsFieldSpec -Column $col -FieldGroup $config.SiteColumns.fieldGroup -TaxonomyGroup $taxonomyGroupName
     $existing = Get-ExistingField -InternalName $col.internalName
-    $isTaxonomy = $spType -like 'TaxonomyField*'
 
     if ($null -eq $existing) {
-        $reason = if ($isOnline) { 'Field does not exist.' } else { 'Desired state (actual state not read).' }
-        $captured = $col
+        $capturedSpec = $spec
+        $capturedConn = $Connection
         Add-DmsPlanAction -Plan $plan -ResourceType 'SiteColumn' -Target $col.internalName -Change 'Create' `
-            -Reason $reason -Requirements $col.requirements -Detail @{ type = $spType; indexed = (Get-DmsPropertyOrDefault -InputObject $col -Name 'indexed' -Default $false) } `
+            -Reason $(if ($isOnline) { 'Field does not exist.' } else { 'Desired state (actual state not read).' }) `
+            -Requirements $col.requirements -Detail @{ type = $spec.Type; kind = $spec.Kind; indexed = $spec.Indexed } `
             -ApplyScript {
-                if ($isTaxonomy) {
-                    # A taxonomy field must be bound to an existing term set; an unbound one silently
-                    # accepts nothing. Deploy-DmsTaxonomy.ps1 creates the term sets and the orchestrator
-                    # runs it first, so the term set is present by the time this executes.
-                    $taxParams = @{
-                        DisplayName  = $captured.displayName
-                        InternalName = $captured.internalName
-                        TermSetPath  = ('{0}|{1}' -f $taxonomyGroupName, $captured.termSet)
-                        Group        = $config.SiteColumns.fieldGroup
-                        Connection   = $Connection
+                switch ($capturedSpec.Kind) {
+                    'Taxonomy' {
+                        $tp = $capturedSpec.Params.Clone(); $tp['Connection'] = $capturedConn
+                        Invoke-DmsWithRetry -OperationName "Add-PnPTaxonomyField $($capturedSpec.InternalName)" -ScriptBlock { Add-PnPTaxonomyField @tp } | Out-Null
                     }
-                    if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'allowMultipleValues' -Default $false)) { $taxParams['MultiValue'] = $true }
-                    if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'required' -Default $false))            { $taxParams['Required']  = $true }
-                    Invoke-DmsWithRetry -OperationName "Add-PnPTaxonomyField $($captured.internalName)" -ScriptBlock {
-                        Add-PnPTaxonomyField @taxParams
-                    } | Out-Null
-
-                    if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'indexed' -Default $false)) {
-                        Invoke-DmsWithRetry -OperationName "Index $($captured.internalName)" -ScriptBlock {
-                            Set-PnPField -Identity $captured.internalName -Values @{ Indexed = $true } -Connection $Connection
-                        } | Out-Null
+                    'Xml' {
+                        $x = $capturedSpec.Xml; $c = $capturedConn
+                        Invoke-DmsWithRetry -OperationName "Add-PnPFieldFromXml $($capturedSpec.InternalName)" -ScriptBlock { Add-PnPFieldFromXml -FieldXml $x -Connection $c } | Out-Null
                     }
-                    return
+                    default {
+                        $fp = $capturedSpec.Params.Clone(); $fp['Connection'] = $capturedConn
+                        Invoke-DmsWithRetry -OperationName "Add-PnPField $($capturedSpec.InternalName)" -ScriptBlock { Add-PnPField @fp } | Out-Null
+                    }
                 }
-                $params = @{
-                    DisplayName  = $captured.displayName
-                    InternalName = $captured.internalName
-                    Type         = $spType
-                    Group        = $config.SiteColumns.fieldGroup
-                    Connection   = $Connection
-                }
-                if ($captured.type -in @('Choice','MultiChoice')) { $params['Choices'] = @($captured.choices) }
-                if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'required' -Default $false)) { $params['Required'] = $true }
-                Invoke-DmsWithRetry -OperationName "Add-PnPField $($captured.internalName)" -ScriptBlock { Add-PnPField @params } | Out-Null
-
-                if ([bool](Get-DmsPropertyOrDefault -InputObject $captured -Name 'indexed' -Default $false)) {
-                    Invoke-DmsWithRetry -OperationName "Index $($captured.internalName)" -ScriptBlock {
-                        Set-PnPField -Identity $captured.internalName -Values @{ Indexed = $true } -Connection $Connection
+                if ($capturedSpec.Indexed) {
+                    $n = $capturedSpec.InternalName; $c2 = $capturedConn
+                    Invoke-DmsWithRetry -OperationName "Index $n" -ScriptBlock {
+                        Set-PnPField -Identity $n -Values @{ Indexed = $true } -Connection $c2
                     } | Out-Null
                 }
             }.GetNewClosure() | Out-Null
     } else {
-        # Only safe, mutable differences are updated. Changing a field's TYPE is destructive and is
-        # therefore reported as Blocked rather than attempted.
         $actualType = "$($existing.TypeAsString)"
-        if ($actualType -ne $spType) {
+        if ($actualType -ne $spec.Type) {
             Add-DmsPlanAction -Plan $plan -ResourceType 'SiteColumn' -Target $col.internalName -Change 'Blocked' `
-                -Reason "Field exists with type '$actualType' but configuration requires '$spType'. Changing a field type can destroy data, so it is not attempted. Resolve manually or rename the configured column." `
+                -Reason "Field exists with type '$actualType' but configuration requires '$($spec.Type)'. Changing a field type can destroy data, so it is not attempted. Resolve manually or rename the configured column." `
                 -Requirements $col.requirements | Out-Null
         } elseif ("$($existing.Title)" -ne "$($col.displayName)") {
-            $captured = $col
+            $n = $col.internalName; $t = $col.displayName; $c3 = $Connection
             Add-DmsPlanAction -Plan $plan -ResourceType 'SiteColumn' -Target $col.internalName -Change 'Update' `
                 -Reason "Display name differs (actual '$($existing.Title)', desired '$($col.displayName)'). Safe to update; the internal name is unchanged." `
                 -Requirements $col.requirements `
                 -ApplyScript {
-                    Invoke-DmsWithRetry -OperationName "Set-PnPField $($captured.internalName)" -ScriptBlock {
-                        Set-PnPField -Identity $captured.internalName -Values @{ Title = $captured.displayName } -Connection $Connection
+                    Invoke-DmsWithRetry -OperationName "Set-PnPField $n" -ScriptBlock {
+                        Set-PnPField -Identity $n -Values @{ Title = $t } -Connection $c3
                     } | Out-Null
                 }.GetNewClosure() | Out-Null
         } else {
@@ -192,36 +219,52 @@ foreach ($col in $config.SiteColumns.columns) {
     }
 }
 
+
 # ---------------------------------------------------------------------------- 2. content types
 
 foreach ($ct in @($config.ContentTypes.contentTypes | Where-Object { (Get-DmsPropertyOrDefault -InputObject $_ -Name 'status' -Default '') -ne 'Deferred' })) {
     $existing = Get-ExistingContentType -Name $ct.name
+    $required = @(Get-DmsPropertyOrDefault -InputObject $ct -Name 'requiredFields' -Default @())
+    $optional = @(Get-DmsPropertyOrDefault -InputObject $ct -Name 'optionalFields' -Default @())
+
+    # Field binding is done per field with its own error handling. Binding them in one unbroken
+    # sequence meant a single unavailable column aborted every remaining binding, which is how a
+    # content type ended up existing with most of its optional fields missing.
+    $bindFields = {
+        param($CtName, $RequiredFields, $OptionalFields, $Conn)
+        $failures = [System.Collections.Generic.List[string]]::new()
+        foreach ($f in $RequiredFields) {
+            try   { Add-PnPFieldToContentType -Field $f -ContentType $CtName -Required -Connection $Conn | Out-Null }
+            catch { $failures.Add("$f (required): $($_.Exception.Message)") | Out-Null }
+        }
+        foreach ($f in $OptionalFields) {
+            try   { Add-PnPFieldToContentType -Field $f -ContentType $CtName -Connection $Conn | Out-Null }
+            catch { $failures.Add("$f (optional): $($_.Exception.Message)") | Out-Null }
+        }
+        if ($failures.Count -gt 0) { throw "Content type '$CtName' created, but $($failures.Count) field binding(s) failed: $($failures -join ' | ')" }
+    }
+
     if ($null -eq $existing) {
-        $captured = $ct
+        $capturedCt   = $ct
+        $capturedReq  = $required
+        $capturedOpt  = $optional
+        $capturedGrp  = $config.ContentTypes.group
+        $capturedConn = $Connection
+        $capturedBind = $bindFields
         Add-DmsPlanAction -Plan $plan -ResourceType 'ContentType' -Target $ct.name -Change 'Create' `
             -Reason $(if ($isOnline) { 'Content type does not exist.' } else { 'Desired state (actual state not read).' }) `
             -Requirements (Get-DmsPropertyOrDefault -InputObject $ct -Name 'requirements' -Default @()) `
-            -Detail @{ id = $ct.id; parentId = $ct.parentId } `
+            -Detail @{ id = $ct.id; parentId = $ct.parentId; fieldCount = ($required.Count + $optional.Count) } `
             -ApplyScript {
                 $ctParams = @{
-                    Name          = $captured.name
-                    ContentTypeId = $captured.id
-                    Description   = $captured.description
-                    Group         = $config.ContentTypes.group
-                    Connection    = $Connection
+                    Name          = $capturedCt.name
+                    ContentTypeId = $capturedCt.id
+                    Description   = $capturedCt.description
+                    Group         = $capturedGrp
+                    Connection    = $capturedConn
                 }
-                Invoke-DmsWithRetry -OperationName "Add-PnPContentType $($captured.name)" -ScriptBlock { Add-PnPContentType @ctParams } | Out-Null
-
-                foreach ($f in @(Get-DmsPropertyOrDefault -InputObject $captured -Name 'requiredFields' -Default @())) {
-                    Invoke-DmsWithRetry -OperationName "Bind required $f" -ScriptBlock {
-                        Add-PnPFieldToContentType -Field $f -ContentType $captured.name -Required -Connection $Connection
-                    } | Out-Null
-                }
-                foreach ($f in @(Get-DmsPropertyOrDefault -InputObject $captured -Name 'optionalFields' -Default @())) {
-                    Invoke-DmsWithRetry -OperationName "Bind optional $f" -ScriptBlock {
-                        Add-PnPFieldToContentType -Field $f -ContentType $captured.name -Connection $Connection
-                    } | Out-Null
-                }
+                Invoke-DmsWithRetry -OperationName "Add-PnPContentType $($capturedCt.name)" -ScriptBlock { Add-PnPContentType @ctParams } | Out-Null
+                & $capturedBind $capturedCt.name $capturedReq $capturedOpt $capturedConn
             }.GetNewClosure() | Out-Null
     } else {
         $actualId = "$($existing.Id.StringValue)"
@@ -230,11 +273,38 @@ foreach ($ct in @($config.ContentTypes.contentTypes | Where-Object { (Get-DmsPro
                 -Reason "Content type exists with id '$actualId' but configuration declares '$($ct.id)'. Content type IDs are immutable contracts; this indicates a name collision or a regenerated id. Resolve manually." `
                 -Requirements @('F-001') | Out-Null
         } else {
-            Add-DmsPlanAction -Plan $plan -ResourceType 'ContentType' -Target $ct.name -Change 'Compliant' `
-                -Reason 'Exists with the expected content type id.' -Requirements @('F-001') | Out-Null
+            # Existence alone is not compliance. A content type created by a partially failed run can
+            # exist with fields missing, and reporting it Compliant would leave those fields unbound
+            # for good, because the next run would skip it too.
+            $missing = @()
+            if ($isOnline -and ($required.Count + $optional.Count) -gt 0) {
+                try {
+                    $bound = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+                    foreach ($fl in @((Get-PnPContentType -Identity $ct.name -Connection $Connection).Fields)) { [void]$bound.Add("$($fl.InternalName)") }
+                    if ($bound.Count -gt 0) { $missing = @(($required + $optional) | Where-Object { -not $bound.Contains($_) }) }
+                } catch { $missing = @() }
+            }
+
+            if ($missing.Count -gt 0) {
+                $capturedCt2  = $ct
+                $capturedMissReq = @($required | Where-Object { $_ -in $missing })
+                $capturedMissOpt = @($optional | Where-Object { $_ -in $missing })
+                $capturedConn2   = $Connection
+                $capturedBind2   = $bindFields
+                Add-DmsPlanAction -Plan $plan -ResourceType 'ContentType' -Target $ct.name -Change 'Update' `
+                    -Reason "Content type exists but $($missing.Count) configured field(s) are not bound: $($missing -join ', '). Binding the missing fields is safe and additive." `
+                    -Requirements @('F-001') -Detail @{ missingFields = $missing } `
+                    -ApplyScript {
+                        & $capturedBind2 $capturedCt2.name $capturedMissReq $capturedMissOpt $capturedConn2
+                    }.GetNewClosure() | Out-Null
+            } else {
+                Add-DmsPlanAction -Plan $plan -ResourceType 'ContentType' -Target $ct.name -Change 'Compliant' `
+                    -Reason 'Exists with the expected content type id and all configured fields bound.' -Requirements @('F-001') | Out-Null
+            }
         }
     }
 }
+
 
 # ---------------------------------------------------------------------------- 3. libraries
 
@@ -327,40 +397,52 @@ foreach ($list in $config.Lists.lists) {
     }
 
     $existing = Get-ExistingList -Title $list.title
-    $captured = $list
+
+    # Field specs are resolved BEFORE the closure, so the deferred scriptblock never calls a
+    # function defined in this script's scope. It could not see one when this script is invoked
+    # from the orchestrator, which is what made every list creation fail.
+    $fieldSpecs = [System.Collections.Generic.List[object]]::new()
+    foreach ($f in @($list.fields)) {
+        if ($f.internalName -eq 'Title') { continue }
+        if ([bool](Get-DmsPropertyOrDefault -InputObject $f -Name 'reuseSiteColumn' -Default $false)) {
+            $fieldSpecs.Add([PSCustomObject]@{ Kind='SiteColumn'; InternalName=$f.internalName; Params=$null; Xml=$null }) | Out-Null
+        } else {
+            $spec = Resolve-DmsFieldSpec -Column $f -FieldGroup $config.SiteColumns.fieldGroup -TaxonomyGroup $taxonomyGroupName
+            $fieldSpecs.Add($spec) | Out-Null
+        }
+    }
 
     if ($null -eq $existing) {
+        $capturedList = $list
+        $capturedSpecs= $fieldSpecs.ToArray()
+        $capturedIdx  = @(Get-DmsPropertyOrDefault -InputObject $list -Name 'indexedColumns' -Default @())
+        $capturedConn = $Connection
         Add-DmsPlanAction -Plan $plan -ResourceType 'List' -Target $list.title -Change 'Create' `
             -Reason $(if ($isOnline) { 'List does not exist.' } else { 'Desired state (actual state not read).' }) `
-            -Requirements $list.requirements -Detail @{ fieldCount = @($list.fields).Count } `
+            -Requirements $list.requirements -Detail @{ fieldCount = $fieldSpecs.Count } `
             -ApplyScript {
-                Invoke-DmsWithRetry -OperationName "New-PnPList $($captured.title)" -ScriptBlock {
-                    New-PnPList -Title $captured.title -Template GenericList -Url $captured.urlPath -Connection $Connection
+                Invoke-DmsWithRetry -OperationName "New-PnPList $($capturedList.title)" -ScriptBlock {
+                    New-PnPList -Title $capturedList.title -Template GenericList -Url $capturedList.urlPath -Connection $capturedConn
                 } | Out-Null
 
-                foreach ($f in @($captured.fields)) {
-                    if ($f.internalName -eq 'Title') { continue }
-                    if ([bool](Get-DmsPropertyOrDefault -InputObject $f -Name 'reuseSiteColumn' -Default $false)) {
-                        Invoke-DmsWithRetry -OperationName "Add site column $($f.internalName)" -ScriptBlock {
-                            Add-PnPField -List $captured.title -Field $f.internalName -Connection $Connection
-                        } | Out-Null
-                    } else {
-                        $fp = @{
-                            List         = $captured.title
-                            DisplayName  = $f.displayName
-                            InternalName = $f.internalName
-                            Type         = (ConvertTo-SharePointFieldType -ConfigType $f.type)
-                            Connection   = $Connection
+                # Each field is added independently so one failure cannot abort the rest of the list.
+                $fieldFailures = [System.Collections.Generic.List[string]]::new()
+                foreach ($s in $capturedSpecs) {
+                    try {
+                        switch ($s.Kind) {
+                            'SiteColumn' { $n=$s.InternalName; Add-PnPField -List $capturedList.title -Field $n -Connection $capturedConn | Out-Null }
+                            'Xml'        { $x=$s.Xml;          Add-PnPFieldFromXml -List $capturedList.title -FieldXml $x -Connection $capturedConn | Out-Null }
+                            'Taxonomy'   { $tp=$s.Params.Clone(); $tp['List']=$capturedList.title; $tp['Connection']=$capturedConn; Add-PnPTaxonomyField @tp | Out-Null }
+                            default      { $fp=$s.Params.Clone(); $fp['List']=$capturedList.title; $fp['Connection']=$capturedConn; Add-PnPField @fp | Out-Null }
                         }
-                        if ($f.type -in @('Choice','MultiChoice')) { $fp['Choices'] = @($f.choices) }
-                        if ([bool](Get-DmsPropertyOrDefault -InputObject $f -Name 'required' -Default $false)) { $fp['Required'] = $true }
-                        Invoke-DmsWithRetry -OperationName "Add list field $($f.internalName)" -ScriptBlock { Add-PnPField @fp } | Out-Null
-                    }
+                    } catch { $fieldFailures.Add("$($s.InternalName): $($_.Exception.Message)") | Out-Null }
                 }
-                foreach ($idx in @(Get-DmsPropertyOrDefault -InputObject $captured -Name 'indexedColumns' -Default @())) {
-                    Invoke-DmsWithRetry -OperationName "Index $idx" -ScriptBlock {
-                        Set-PnPField -List $captured.title -Identity $idx -Values @{ Indexed = $true } -Connection $Connection
-                    } | Out-Null
+                foreach ($idx in $capturedIdx) {
+                    try { Set-PnPField -List $capturedList.title -Identity $idx -Values @{ Indexed = $true } -Connection $capturedConn | Out-Null }
+                    catch { $fieldFailures.Add("index $idx : $($_.Exception.Message)") | Out-Null }
+                }
+                if ($fieldFailures.Count -gt 0) {
+                    throw "List '$($capturedList.title)' created, but $($fieldFailures.Count) field operation(s) failed: $($fieldFailures -join ' | ')"
                 }
             }.GetNewClosure() | Out-Null
     } else {
@@ -369,6 +451,7 @@ foreach ($list in $config.Lists.lists) {
             -Requirements $list.requirements | Out-Null
     }
 }
+
 
 # ---------------------------------------------------------------------------- 5. views
 

@@ -344,9 +344,27 @@ Describe 'Deferred apply actions bind their own target (PowerShell closure captu
             param($Identity,$SharingCapability,$Connection)
             $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Set-PnPTenantSite'; Target=$Identity }) | Out-Null
         }
+        function global:Add-PnPFieldFromXml {
+            param($FieldXml,$List,$Connection)
+            # Recover the internal name from the field XML so the assertions can match on it.
+            $name = if ($FieldXml -match 'StaticName="([^"]+)"') { $Matches[1] } else { '(unparsed)' }
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPFieldFromXml'; Target=$name; Xml=$FieldXml }) | Out-Null
+        }
+        function global:Add-PnPContentType {
+            param($Name,$ContentTypeId,$Description,$Group,$ParentContentType,$DocumentTemplate,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPContentType'; Target=$Name }) | Out-Null
+        }
+        function global:Add-PnPFieldToContentType {
+            param($Field,$ContentType,[switch]$Required,[switch]$Hidden,[switch]$UpdateChildren,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPFieldToContentType'; Target="$ContentType|$Field" }) | Out-Null
+        }
+        function global:New-PnPList {
+            param($Title,$Template,$Url,$EnableContentTypes,$EnableVersioning,[switch]$Hidden,[switch]$OnQuickLaunch,$Connection)
+            $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='New-PnPList'; Target=$Title }) | Out-Null
+        }
     }
     AfterAll {
-        foreach ($f in @('Add-PnPField','Set-PnPField','Add-PnPTaxonomyField','Set-PnPListPermission','Add-PnPRoleDefinition','Set-PnPTenantSite')) {
+        foreach ($f in @('Add-PnPField','Set-PnPField','Add-PnPTaxonomyField','Set-PnPListPermission','Add-PnPRoleDefinition','Set-PnPTenantSite','Add-PnPFieldFromXml','Add-PnPContentType','Add-PnPFieldToContentType','New-PnPList')) {
             Remove-Item "function:global:$f" -ErrorAction SilentlyContinue
         }
         Remove-Variable -Name DmsStubCalls -Scope Global -ErrorAction SilentlyContinue
@@ -358,7 +376,7 @@ Describe 'Deferred apply actions bind their own target (PowerShell closure captu
             $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSharePoint.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
             $script:ColumnActions = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'SiteColumn' -and $_.change -eq 'Create' })
             foreach ($a in $ColumnActions) { & $a.applyScript }
-            $script:CreatedColumns = @($global:DmsStubCalls | Where-Object { $_.Cmdlet -in @('Add-PnPField','Add-PnPTaxonomyField') } | ForEach-Object { $_.Target })
+            $script:CreatedColumns = @($global:DmsStubCalls | Where-Object { $_.Cmdlet -in @('Add-PnPField','Add-PnPTaxonomyField','Add-PnPFieldFromXml') } | ForEach-Object { $_.Target })
         }
 
         It 'plans a create for every configured column' { $ColumnActions.Count | Should -BeGreaterThan 25 }
@@ -376,6 +394,93 @@ Describe 'Deferred apply actions bind their own target (PowerShell closure captu
             $tax = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Add-PnPTaxonomyField' | ForEach-Object { $_.Target })
             $tax | Should -Contain 'DmsBusinessFunction'
             $tax | Should -Contain 'DmsApplicability'
+        }
+
+        It 'creates multi-value person fields from field XML, not through the CSOM FieldType enum' {
+            # UserMulti is a valid SharePoint schema type but is absent from the CSOM FieldType enum,
+            # so Add-PnPField -Type UserMulti fails. These must go through the XML path.
+            $xmlFields = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Add-PnPFieldFromXml')
+            @($xmlFields | ForEach-Object { $_.Target }) | Should -Contain 'DmsAuthor'
+            @($xmlFields | ForEach-Object { $_.Target }) | Should -Contain 'DmsReviewer'
+            @($xmlFields | ForEach-Object { $_.Target }) | Should -Contain 'DmsApprover'
+            foreach ($x in $xmlFields) { $x.Xml | Should -Match 'Type="UserMulti"'; $x.Xml | Should -Match 'Mult="TRUE"' }
+        }
+
+        It 'never passes UserMulti to Add-PnPField' {
+            @($global:DmsStubCalls | Where-Object { $_.Cmdlet -eq 'Add-PnPField' -and $_.Target -in @('DmsAuthor','DmsReviewer','DmsApprover') }) |
+                Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'Content types' {
+        BeforeAll {
+            $global:DmsStubCalls.Clear()
+            $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSharePoint.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            $script:CtActions = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'ContentType' -and $_.change -eq 'Create' })
+            foreach ($a in $CtActions) { & $a.applyScript }
+        }
+
+        It 'creates each content type once' {
+            $created = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Add-PnPContentType' | ForEach-Object { $_.Target })
+            $created.Count | Should -Be $CtActions.Count
+            (@($created | Sort-Object -Unique)).Count | Should -Be $CtActions.Count
+        }
+
+        It 'binds every configured field, and does not stop at the first that fails' {
+            # Regression: bindings ran in one unbroken sequence, so a single unavailable column
+            # aborted all remaining bindings and left the content type incompletely configured.
+            $bound = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Add-PnPFieldToContentType' | ForEach-Object { $_.Target })
+            $bound | Should -Contain 'Controlled Document|DmsDocumentId'
+            $bound | Should -Contain 'Controlled Document|DmsAuthor'
+            # DmsCurrentEffective is late in the optional list; it is the one that went missing.
+            $bound | Should -Contain 'Controlled Document|DmsCurrentEffective'
+            $bound | Should -Contain 'Controlled Document|DmsEffectiveDate'
+        }
+
+        It 'continues binding after a failure and reports what failed' {
+            $global:DmsStubCalls.Clear()
+            function global:Add-PnPFieldToContentType {
+                param($Field,$ContentType,[switch]$Required,[switch]$Hidden,[switch]$UpdateChildren,$Connection)
+                $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPFieldToContentType'; Target="$ContentType|$Field" }) | Out-Null
+                if ($Field -eq 'DmsAuthor') { throw "Column 'DmsAuthor' does not exist." }
+            }
+            try {
+                $action = $CtActions | Where-Object target -eq 'Controlled Document' | Select-Object -First 1
+                { & $action.applyScript } | Should -Throw -ExpectedMessage '*field binding*'
+                $bound = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'Add-PnPFieldToContentType' | ForEach-Object { $_.Target })
+                # Fields after the failing one must still have been attempted.
+                $bound | Should -Contain 'Controlled Document|DmsCurrentEffective'
+            } finally {
+                function global:Add-PnPFieldToContentType {
+                    param($Field,$ContentType,[switch]$Required,[switch]$Hidden,[switch]$UpdateChildren,$Connection)
+                    $global:DmsStubCalls.Add([pscustomobject]@{ Cmdlet='Add-PnPFieldToContentType'; Target="$ContentType|$Field" }) | Out-Null
+                }
+            }
+        }
+    }
+
+    Context 'Lists' {
+        BeforeAll {
+            $global:DmsStubCalls.Clear()
+            $summary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSharePoint.ps1') -Environment dev -Mode Plan -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            $script:ListActions = @($summary.plan.actions | Where-Object { $_.resourceType -eq 'List' -and $_.change -eq 'Create' })
+            foreach ($a in $ListActions) { & $a.applyScript }
+        }
+
+        It 'creates every planned list' {
+            # Regression: the deferred scriptblock called a script-scope helper function, which a
+            # closure module cannot resolve when the script is invoked from the orchestrator. Every
+            # list creation failed with 'ConvertTo-SharePointFieldType is not recognized'.
+            $created = @($global:DmsStubCalls | Where-Object Cmdlet -eq 'New-PnPList' | ForEach-Object { $_.Target })
+            $created.Count | Should -Be $ListActions.Count
+            (@($created | Sort-Object -Unique)).Count | Should -Be $ListActions.Count
+            $created | Should -Contain 'Approval Evidence'
+            $created | Should -Contain 'Document Register'
+        }
+
+        It 'adds list fields without calling a script-scope helper at execution time' {
+            $added = @($global:DmsStubCalls | Where-Object { $_.Cmdlet -in @('Add-PnPField','Add-PnPFieldFromXml') })
+            $added.Count | Should -BeGreaterThan 40
         }
     }
 
@@ -428,5 +533,48 @@ Describe 'Deferred apply actions bind their own target (PowerShell closure captu
             $blocked.Count | Should -BeGreaterThan 0
             $blocked[0].reason | Should -Match 'placeholder'
         }
+    }
+}
+
+Describe 'Deferred scriptblocks resolve only module or global commands' {
+    # A scriptblock created with .GetNewClosure() executes in its own module scope. That scope can
+    # reach module-exported and global commands, but NOT functions defined in the enclosing script -
+    # and whether it appears to work depends on how the script was invoked, so it passes when run
+    # directly and fails when run from the orchestrator.
+    #
+    # This asserts the invariant structurally, so the trap cannot be reintroduced anywhere.
+
+    It '<_> has no deferred action calling a function defined in that script' -ForEach @(
+        'Deploy-DmsSharePoint.ps1','Deploy-DmsSecurity.ps1','Deploy-DmsPurview.ps1','Deploy-DmsTaxonomy.ps1'
+    ) {
+        $file = Join-Path $RepoRoot 'src/provisioning' $_
+        $tokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($file, [ref]$tokens, [ref]$errors)
+        $errors | Should -BeNullOrEmpty
+
+        # Functions defined at script scope in this file.
+        $localFunctions = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($fn in $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true)) {
+            [void]$localFunctions.Add($fn.Name)
+        }
+
+        # Scriptblocks that have .GetNewClosure() invoked on them are the deferred ones.
+        $deferred = $ast.FindAll({
+            param($n)
+            $n -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and
+            "$($n.Member)" -eq 'GetNewClosure'
+        }, $true)
+
+        $violations = [System.Collections.Generic.List[string]]::new()
+        foreach ($d in $deferred) {
+            foreach ($cmd in $d.Expression.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)) {
+                $name = $cmd.GetCommandName()
+                if ($name -and $localFunctions.Contains($name)) {
+                    $violations.Add("$name at line $($cmd.Extent.StartLineNumber)") | Out-Null
+                }
+            }
+        }
+
+        $violations | Should -BeNullOrEmpty -Because 'a deferred closure cannot resolve a script-scope function; resolve the value before building the closure'
     }
 }

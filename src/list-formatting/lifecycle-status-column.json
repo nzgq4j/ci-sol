@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
+  "_comment": "DmsLifecycleStatus column formatting. Status is conveyed by text AND an icon AND colour, never colour alone (WCAG 2.2 AA 1.4.1).",
+  "elmType": "div",
+  "style": { "display": "flex", "align-items": "center", "gap": "6px" },
+  "children": [
+    {
+      "elmType": "span",
+      "attributes": {
+        "iconName": "=if(@currentField == 'Effective', 'CheckMark', if(@currentField == 'Superseded' || @currentField == 'Withdrawn' || @currentField == 'Obsolete', 'Blocked', if(@currentField == 'In Review' || @currentField == 'Approved Pending Effective', 'Clock', 'Edit')))",
+        "title": "=@currentField"
+      }
+    },
+    { "elmType": "span", "txtContent": "@currentField" }
+  ]
+}

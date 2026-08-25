@@ -1,0 +1,5270 @@
+{
+ "_provenance": {
+  "source": "https://github.com/pnp/powershell",
+  "branch": "dev",
+  "commit": "7e05503fa23000a3af1f6385a1c1c109ff632f80",
+  "commitDate": "2026-08-24",
+  "note": "Generated from PnP.PowerShell C# source. Used by tests to prevent fabricated cmdlet/parameter usage."
+ },
+ "commonParameters": [
+  "AADDomain",
+  "Accept",
+  "AccessToken",
+  "All",
+  "AppId",
+  "AutoFlush",
+  "AzureADLoginEndPoint",
+  "AzureADWorkloadIdentity",
+  "AzureEnvironment",
+  "Batch",
+  "CertificateBase64Encoded",
+  "CertificatePassword",
+  "CertificatePath",
+  "ClearPersistedLogin",
+  "ClientId",
+  "ClientObject",
+  "ClientSecret",
+  "CommandName",
+  "CommonName",
+  "Connection",
+  "Content",
+  "ContentType",
+  "Context",
+  "Country",
+  "CreateDrive",
+  "Credentials",
+  "CurrentCredentials",
+  "Decoded",
+  "Details",
+  "DeviceLogin",
+  "DriveName",
+  "EllapsedMilliseconds",
+  "EnvironmentVariable",
+  "FederatedIdentity",
+  "Force",
+  "ForceAuthentication",
+  "Interactive",
+  "Level",
+  "List",
+  "ListPermissionScopes",
+  "Locality",
+  "LogLine",
+  "ManagedIdentity",
+  "Message",
+  "Method",
+  "MicrosoftGraphEndPoint",
+  "Name",
+  "Nightly",
+  "OSLogin",
+  "Organization",
+  "OrganizationUnit",
+  "OutCert",
+  "OutPfx",
+  "Overwrite",
+  "Password",
+  "Path",
+  "PersistLogin",
+  "Property",
+  "Raw",
+  "Realm",
+  "RedirectUri",
+  "ResourceTypeName",
+  "ResourceUrl",
+  "ResponseHeadersVariable",
+  "RetainRequests",
+  "RetryCount",
+  "ReturnConnection",
+  "SanNames",
+  "Scopes",
+  "Source",
+  "State",
+  "StopConsoleLogging",
+  "StopFileLogging",
+  "StopLogStreamLogging",
+  "StopOnException",
+  "Store",
+  "Tenant",
+  "TenantAdminUrl",
+  "Thumbprint",
+  "TransformationOnPrem",
+  "Url",
+  "UserAssignedManagedIdentityAzureResourceId",
+  "UserAssignedManagedIdentityClientId",
+  "UserAssignedManagedIdentityObjectId",
+  "Username",
+  "ValidYears",
+  "ValidateConnection",
+  "Version",
+  "WriteToConsole",
+  "WriteToLogStream",
+  "X509KeyStorageFlags"
+ ],
+ "cmdlets": {
+  "Add-PnPAlert": [
+   "AlertTemplateName",
+   "ChangeType",
+   "DeliveryMethod",
+   "Filter",
+   "Frequency",
+   "List",
+   "Time",
+   "Title",
+   "User"
+  ],
+  "Add-PnPApp": [
+   "Force",
+   "Overwrite",
+   "Path",
+   "Publish",
+   "Scope",
+   "SkipFeatureDeployment",
+   "Timeout"
+  ],
+  "Add-PnPApplicationCustomizer": [
+   "ClientSideComponentId",
+   "ClientSideComponentProperties",
+   "ClientSideHostProperties",
+   "Description",
+   "Name",
+   "Scope",
+   "Sequence",
+   "Title"
+  ],
+  "Add-PnPAvailableSiteClassification": [
+   "Classifications"
+  ],
+  "Add-PnPBrandCenterFont": [
+   "Path",
+   "Visible"
+  ],
+  "Add-PnPBrandCenterFontPackage": [
+   "BodyFont",
+   "BodyFontStyle",
+   "ContentFont",
+   "DisplayFont",
+   "HeadlineFont",
+   "HeadlineFontStyle",
+   "InteractiveFont",
+   "InteractiveFontStyle",
+   "Name",
+   "Store",
+   "TitleFont",
+   "TitleFontStyle",
+   "Visible"
+  ],
+  "Add-PnPContentType": [
+   "ContentTypeId",
+   "Description",
+   "DocumentTemplate",
+   "Group",
+   "Name",
+   "ParentContentType"
+  ],
+  "Add-PnPContentTypeToDocumentSet": [
+   "ContentType",
+   "DocumentSet"
+  ],
+  "Add-PnPContentTypeToList": [
+   "ContentType",
+   "DefaultContentType",
+   "List"
+  ],
+  "Add-PnPContentTypesFromContentTypeHub": [
+   "ContentTypes",
+   "Site"
+  ],
+  "Add-PnPCustomAction": [
+   "ClientSideComponentId",
+   "ClientSideComponentProperties",
+   "ClientSideHostProperties",
+   "CommandUIExtension",
+   "Description",
+   "Group",
+   "ImageUrl",
+   "Location",
+   "Name",
+   "RegistrationId",
+   "RegistrationType",
+   "Rights",
+   "Scope",
+   "Sequence",
+   "Title",
+   "Url"
+  ],
+  "Add-PnPDataRowsToSiteTemplate": [
+   "Fields",
+   "IncludeSecurity",
+   "KeyColumn",
+   "List",
+   "Path",
+   "Query",
+   "TemplateProviderExtensions",
+   "TokenizeUrls"
+  ],
+  "Add-PnPDocumentSet": [
+   "ContentType",
+   "Folder",
+   "List",
+   "Name"
+  ],
+  "Add-PnPEntraIDGroupMember": [
+   "Identity",
+   "RemoveExisting",
+   "Users"
+  ],
+  "Add-PnPEntraIDGroupOwner": [
+   "Identity",
+   "RemoveExisting",
+   "Users"
+  ],
+  "Add-PnPEntraIDServicePrincipalAppRole": [
+   "AppRole",
+   "BuiltInType",
+   "Principal",
+   "Resource"
+  ],
+  "Add-PnPEntraIDServicePrincipalAppRoleAssignment": [
+   "AppRole",
+   "Group",
+   "Resource",
+   "User"
+  ],
+  "Add-PnPEventReceiver": [
+   "EventReceiverType",
+   "Force",
+   "List",
+   "Name",
+   "Scope",
+   "SequenceNumber",
+   "Synchronization",
+   "Url"
+  ],
+  "Add-PnPField": [
+   "AddToAllContentTypes",
+   "AddToDefaultView",
+   "Choices",
+   "ClientSideComponentId",
+   "ClientSideComponentProperties",
+   "DisplayName",
+   "Field",
+   "Formula",
+   "Group",
+   "Id",
+   "InternalName",
+   "List",
+   "Required",
+   "ResultType",
+   "Type"
+  ],
+  "Add-PnPFieldFromXml": [
+   "FieldXml",
+   "List"
+  ],
+  "Add-PnPFieldToContentType": [
+   "ContentType",
+   "Field",
+   "Hidden",
+   "Required",
+   "UpdateChildren"
+  ],
+  "Add-PnPFile": [
+   "Approve",
+   "ApproveComment",
+   "CheckInComment",
+   "CheckinType",
+   "Checkout",
+   "Content",
+   "ContentType",
+   "FileName",
+   "Folder",
+   "NewFileName",
+   "Path",
+   "Publish",
+   "PublishComment",
+   "Stream",
+   "UseWebDav",
+   "Values"
+  ],
+  "Add-PnPFileAnonymousSharingLink": [
+   "ExpirationDateTime",
+   "FileUrl",
+   "Password",
+   "ShareType"
+  ],
+  "Add-PnPFileOrganizationalSharingLink": [
+   "FileUrl",
+   "ShareType"
+  ],
+  "Add-PnPFileSensitivityLabel": [
+   "AssignmentMethod",
+   "Batch",
+   "Identity",
+   "JustificationText",
+   "SensitivityLabelId"
+  ],
+  "Add-PnPFileSharingInvite": [
+   "ExpirationDateTime",
+   "FileUrl",
+   "Message",
+   "RequireSignIn",
+   "Role",
+   "SendInvitation",
+   "Users"
+  ],
+  "Add-PnPFileToSiteTemplate": [
+   "Container",
+   "FileLevel",
+   "FileOverwrite",
+   "Folder",
+   "Path",
+   "Source",
+   "SourceUrl",
+   "TemplateProviderExtensions"
+  ],
+  "Add-PnPFileUserSharingLink": [
+   "FileUrl",
+   "ShareType",
+   "Users"
+  ],
+  "Add-PnPFlowOwner": [
+   "AsAdmin",
+   "Environment",
+   "Identity",
+   "Role",
+   "User"
+  ],
+  "Add-PnPFolder": [
+   "Folder",
+   "Name"
+  ],
+  "Add-PnPFolderAnonymousSharingLink": [
+   "ExpirationDateTime",
+   "Folder",
+   "Password",
+   "ShareType"
+  ],
+  "Add-PnPFolderOrganizationalSharingLink": [
+   "Folder",
+   "ShareType"
+  ],
+  "Add-PnPFolderSharingInvite": [
+   "ExpirationDateTime",
+   "Folder",
+   "Message",
+   "RequireSignIn",
+   "Role",
+   "SendInvitation",
+   "Users"
+  ],
+  "Add-PnPFolderUserSharingLink": [
+   "Folder",
+   "ShareType",
+   "Users"
+  ],
+  "Add-PnPGeoAdministrator": [
+   "GroupAlias",
+   "ObjectId",
+   "UserPrincipalName"
+  ],
+  "Add-PnPGroupMember": [
+   "Batch",
+   "EmailAddress",
+   "EmailBody",
+   "Group",
+   "LoginName",
+   "SendEmail"
+  ],
+  "Add-PnPHomeSite": [
+   "HomeSiteUrl"
+  ],
+  "Add-PnPHtmlPublishingPageLayout": [
+   "AssociatedContentTypeID",
+   "Description",
+   "DestinationFolderHierarchy",
+   "SourceFilePath",
+   "Title"
+  ],
+  "Add-PnPHubSiteAssociation": [
+   "HubSite",
+   "Site"
+  ],
+  "Add-PnPHubToHubAssociation": [
+   "Source",
+   "SourceUrl",
+   "Target",
+   "TargetUrl"
+  ],
+  "Add-PnPIndexedProperty": [
+   "Key",
+   "List"
+  ],
+  "Add-PnPJavaScriptBlock": [
+   "Name",
+   "Scope",
+   "Script",
+   "Sequence"
+  ],
+  "Add-PnPJavaScriptLink": [
+   "Name",
+   "Scope",
+   "Sequence",
+   "Url"
+  ],
+  "Add-PnPListDesign": [
+   "Description",
+   "ListColor",
+   "ListIcon",
+   "SiteScript",
+   "SiteScriptIds",
+   "ThumbnailUrl",
+   "Title"
+  ],
+  "Add-PnPListFoldersToSiteTemplate": [
+   "IncludeSecurity",
+   "List",
+   "Path",
+   "Recursive",
+   "TemplateProviderExtensions"
+  ],
+  "Add-PnPListItem": [
+   "Batch",
+   "ContentType",
+   "Folder",
+   "Label",
+   "List",
+   "Values"
+  ],
+  "Add-PnPListItemAttachment": [
+   "Content",
+   "FileName",
+   "Identity",
+   "List",
+   "NewFileName",
+   "Path",
+   "Stream"
+  ],
+  "Add-PnPListItemComment": [
+   "Identity",
+   "List",
+   "Text"
+  ],
+  "Add-PnPMasterPage": [
+   "DefaultCssFile",
+   "Description",
+   "DestinationFolderHierarchy",
+   "SourceFilePath",
+   "Title",
+   "UIVersion"
+  ],
+  "Add-PnPMicrosoft365GroupMember": [
+   "Identity",
+   "RemoveExisting",
+   "Users"
+  ],
+  "Add-PnPMicrosoft365GroupOwner": [
+   "Identity",
+   "RemoveExisting",
+   "Users"
+  ],
+  "Add-PnPMicrosoft365GroupToSite": [
+   "Alias",
+   "Classification",
+   "Description",
+   "DisplayName",
+   "HubSiteId",
+   "IsPublic",
+   "KeepOldHomePage",
+   "Owners",
+   "Url"
+  ],
+  "Add-PnPNavigationNode": [
+   "AudienceIds",
+   "External",
+   "First",
+   "Location",
+   "OpenInNewTab",
+   "Parent",
+   "PreviousNode",
+   "Title",
+   "Url"
+  ],
+  "Add-PnPOrgAssetsLibrary": [
+   "CdnType",
+   "DefaultOriginAdded",
+   "IsCopilotSearchable",
+   "LibraryUrl",
+   "OrgAssetType",
+   "ThumbnailUrl"
+  ],
+  "Add-PnPOrgNewsSite": [
+   "OrgNewsSiteUrl"
+  ],
+  "Add-PnPPage": [
+   "CommentsEnabled",
+   "ContentType",
+   "HeaderLayoutType",
+   "LayoutType",
+   "Name",
+   "PromoteAs",
+   "Publish",
+   "ScheduledPublishDate",
+   "Title",
+   "Translate",
+   "TranslationLanguageCodes"
+  ],
+  "Add-PnPPageImageWebPart": [
+   "AlternativeText",
+   "Caption",
+   "Column",
+   "ImageHeight",
+   "ImageUrl",
+   "ImageWidth",
+   "Link",
+   "Order",
+   "Page",
+   "PageImageAlignment",
+   "Section"
+  ],
+  "Add-PnPPageSection": [
+   "Collapsible",
+   "DisplayName",
+   "IsExpanded",
+   "Order",
+   "Page",
+   "SectionTemplate",
+   "VerticalZoneEmphasis",
+   "ZoneEmphasis",
+   "ZoneReflowStrategy"
+  ],
+  "Add-PnPPageTextPart": [
+   "Column",
+   "ImageHeight",
+   "ImageUrl",
+   "ImageWidth",
+   "Order",
+   "Page",
+   "PageImageAlignment",
+   "Section",
+   "Text",
+   "TextAfterImage",
+   "TextBeforeImage"
+  ],
+  "Add-PnPPageWebPart": [
+   "Column",
+   "Component",
+   "DefaultWebPartType",
+   "Order",
+   "Page",
+   "Section",
+   "WebPartProperties"
+  ],
+  "Add-PnPPlannerBucket": [
+   "Group",
+   "Name",
+   "Plan",
+   "PlanId"
+  ],
+  "Add-PnPPlannerRoster": [],
+  "Add-PnPPlannerRosterMember": [
+   "Identity",
+   "User"
+  ],
+  "Add-PnPPlannerTask": [
+   "AppliedCategories",
+   "AssignedTo",
+   "Bucket",
+   "Description",
+   "DueDateTime",
+   "Group",
+   "OutputTask",
+   "PercentComplete",
+   "Plan",
+   "PlanId",
+   "Priority",
+   "StartDateTime",
+   "Title"
+  ],
+  "Add-PnPPublishingImageRendition": [
+   "Height",
+   "Name",
+   "Width"
+  ],
+  "Add-PnPPublishingPage": [
+   "FolderPath",
+   "PageName",
+   "PageTemplateName",
+   "Publish",
+   "Title"
+  ],
+  "Add-PnPPublishingPageLayout": [
+   "AssociatedContentTypeID",
+   "Description",
+   "DestinationFolderHierarchy",
+   "SourceFilePath",
+   "Title"
+  ],
+  "Add-PnPRoleDefinition": [
+   "Clone",
+   "Description",
+   "Exclude",
+   "Include",
+   "RoleName"
+  ],
+  "Add-PnPSiteCollectionAdmin": [
+   "Owners",
+   "PrimarySiteCollectionAdmin"
+  ],
+  "Add-PnPSiteCollectionAppCatalog": [
+   "Site"
+  ],
+  "Add-PnPSiteDesign": [
+   "Description",
+   "DesignPackageId",
+   "IsDefault",
+   "PreviewImageAltText",
+   "PreviewImageUrl",
+   "SiteScript",
+   "SiteScriptIds",
+   "ThumbnailUrl",
+   "Title",
+   "WebTemplate"
+  ],
+  "Add-PnPSiteDesignFromWeb": [
+   "Description",
+   "DesignPackageId",
+   "IncludeAll",
+   "IncludeBranding",
+   "IncludeLinksToExportedItems",
+   "IncludeRegionalSettings",
+   "IncludeSiteExternalSharingCapability",
+   "IncludeTheme",
+   "IsDefault",
+   "Lists",
+   "PreviewImageAltText",
+   "PreviewImageUrl",
+   "ThumbnailUrl",
+   "Title",
+   "Url",
+   "WebTemplate"
+  ],
+  "Add-PnPSiteDesignTask": [
+   "SiteDesignId",
+   "WebUrl"
+  ],
+  "Add-PnPSiteScript": [
+   "Content",
+   "Description",
+   "Title"
+  ],
+  "Add-PnPSiteScriptPackage": [
+   "ContentPath",
+   "Description",
+   "Title"
+  ],
+  "Add-PnPSiteTemplate": [
+   "SiteTemplate",
+   "TenantTemplate"
+  ],
+  "Add-PnPStoredCredential": [
+   "Name",
+   "Overwrite",
+   "Password",
+   "Username"
+  ],
+  "Add-PnPTaxonomyField": [
+   "AddToDefaultView",
+   "DisplayName",
+   "FieldOptions",
+   "Group",
+   "Id",
+   "InternalName",
+   "List",
+   "MultiValue",
+   "Required",
+   "TaxonomyItemId",
+   "TermPathDelimiter",
+   "TermSetPath"
+  ],
+  "Add-PnPTeamsChannel": [
+   "ChannelType",
+   "Description",
+   "DisplayName",
+   "OwnerUPN",
+   "Team"
+  ],
+  "Add-PnPTeamsChannelUser": [
+   "Channel",
+   "Role",
+   "Team",
+   "User"
+  ],
+  "Add-PnPTeamsTab": [
+   "Channel",
+   "ContentUrl",
+   "DisplayName",
+   "EntityId",
+   "RemoveUrl",
+   "Team",
+   "TeamsAppId",
+   "Type",
+   "WebsiteUrl"
+  ],
+  "Add-PnPTeamsTeam": [],
+  "Add-PnPTeamsUser": [
+   "Channel",
+   "Team",
+   "User",
+   "Users"
+  ],
+  "Add-PnPTenantCdnOrigin": [
+   "CdnType",
+   "OriginUrl"
+  ],
+  "Add-PnPTenantRestrictedSearchAllowedList": [
+   "ContainsHeader",
+   "SitesList",
+   "SitesListFileUrl"
+  ],
+  "Add-PnPTenantSearchCrawledProperty": [
+   "Force",
+   "Name",
+   "PropertySet",
+   "PropertySetGuid"
+  ],
+  "Add-PnPTenantSequence": [
+   "Sequence",
+   "Template"
+  ],
+  "Add-PnPTenantSequenceSite": [
+   "Sequence",
+   "Site"
+  ],
+  "Add-PnPTenantSequenceSubSite": [
+   "Site",
+   "SubSite"
+  ],
+  "Add-PnPTenantTheme": [
+   "Identity",
+   "IsInverted",
+   "Overwrite",
+   "Palette"
+  ],
+  "Add-PnPTermToTerm": [
+   "CustomProperties",
+   "Description",
+   "Id",
+   "Lcid",
+   "LocalCustomProperties",
+   "Name",
+   "ParentTermId",
+   "TermStore"
+  ],
+  "Add-PnPTodoTaskFileAttachment": [
+   "ContentType",
+   "List",
+   "Name",
+   "Path",
+   "Task",
+   "User"
+  ],
+  "Add-PnPView": [
+   "Aggregations",
+   "Fields",
+   "List",
+   "Paged",
+   "Personal",
+   "Query",
+   "RowLimit",
+   "SetAsDefault",
+   "Title",
+   "ViewType"
+  ],
+  "Add-PnPViewsFromXML": [
+   "List",
+   "ViewsXML"
+  ],
+  "Add-PnPVivaConnectionsDashboardACE": [
+   "CardSize",
+   "Description",
+   "IconProperty",
+   "Identity",
+   "Order",
+   "PropertiesJSON",
+   "Title"
+  ],
+  "Add-PnPWebPartToWebPartPage": [
+   "Path",
+   "ServerRelativePageUrl",
+   "Xml",
+   "ZoneId",
+   "ZoneIndex"
+  ],
+  "Add-PnPWebPartToWikiPage": [
+   "AddSpace",
+   "Column",
+   "Path",
+   "Row",
+   "ServerRelativePageUrl",
+   "Xml"
+  ],
+  "Add-PnPWebhookSubscription": [
+   "ClientState",
+   "ExpirationDate",
+   "List",
+   "NotificationUrl"
+  ],
+  "Add-PnPWikiPage": [
+   "Content",
+   "Layout",
+   "ServerRelativePageUrl"
+  ],
+  "Approve-PnPTenantServicePrincipalPermissionRequest": [
+   "Force",
+   "RequestId"
+  ],
+  "Clear-PnPDefaultColumnValues": [
+   "Field",
+   "Folder",
+   "List"
+  ],
+  "Clear-PnPEntraIDGroupMember": [
+   "Identity"
+  ],
+  "Clear-PnPEntraIDGroupOwner": [
+   "Identity"
+  ],
+  "Clear-PnPListItemAsRecord": [
+   "Identity",
+   "List"
+  ],
+  "Clear-PnPMicrosoft365GroupMember": [
+   "Identity"
+  ],
+  "Clear-PnPMicrosoft365GroupOwner": [
+   "Identity"
+  ],
+  "Clear-PnPRecycleBinItem": [
+   "All",
+   "Force",
+   "Identity",
+   "RowLimit",
+   "SecondStageOnly"
+  ],
+  "Clear-PnPTenantAppCatalogUrl": [],
+  "Clear-PnPTenantRecycleBinItem": [
+   "Force",
+   "Url",
+   "Wait"
+  ],
+  "Clear-PnPTraceLog": [],
+  "Connect-PnPOnline": [
+   "AADDomain",
+   "AccessToken",
+   "AzureADLoginEndPoint",
+   "AzureADWorkloadIdentity",
+   "AzureEnvironment",
+   "CertificateBase64Encoded",
+   "CertificatePassword",
+   "CertificatePath",
+   "ClientId",
+   "ClientSecret",
+   "Connection",
+   "CreateDrive",
+   "Credentials",
+   "CurrentCredentials",
+   "DeviceLogin",
+   "DriveName",
+   "EnvironmentVariable",
+   "FederatedIdentity",
+   "ForceAuthentication",
+   "Interactive",
+   "ManagedIdentity",
+   "MicrosoftGraphEndPoint",
+   "OSLogin",
+   "PersistLogin",
+   "Realm",
+   "RedirectUri",
+   "ReturnConnection",
+   "Tenant",
+   "TenantAdminUrl",
+   "Thumbprint",
+   "TransformationOnPrem",
+   "Url",
+   "UserAssignedManagedIdentityAzureResourceId",
+   "UserAssignedManagedIdentityClientId",
+   "UserAssignedManagedIdentityObjectId",
+   "ValidateConnection",
+   "X509KeyStorageFlags"
+  ],
+  "Convert-PnPFile": [
+   "AsMemoryStream",
+   "ConvertToFormat",
+   "Folder",
+   "Force",
+   "NewFileName",
+   "Path",
+   "Url"
+  ],
+  "Convert-PnPFolderToSiteTemplate": [
+   "Folder",
+   "Force",
+   "Out"
+  ],
+  "Convert-PnPSiteTemplate": [
+   "Encoding",
+   "Force",
+   "Out",
+   "Path",
+   "ToSchema"
+  ],
+  "Convert-PnPSiteTemplateToMarkdown": [
+   "Force",
+   "Out",
+   "TemplatePath"
+  ],
+  "ConvertTo-PnPPage": [
+   "AddPageAcceptBanner",
+   "AddTableListImageAsImageWebPart",
+   "BlogPage",
+   "ClearCache",
+   "CopyPageMetadata",
+   "DelveBlogPage",
+   "DelveKeepSubTitle",
+   "DisablePageComments",
+   "DontPublish",
+   "Folder",
+   "Identity",
+   "KeepPageCreationModificationInformation",
+   "LDAPConnectionString",
+   "Library",
+   "LogFolder",
+   "LogSkipFlush",
+   "LogType",
+   "LogVerbose",
+   "Overwrite",
+   "PageLayoutMapping",
+   "PostAsNews",
+   "PublishingPage",
+   "PublishingTargetPageName",
+   "RemoveEmptySectionsAndColumns",
+   "ReplaceHomePageWithDefault",
+   "SetAuthorInPageHeader",
+   "SkipDefaultUrlRewriting",
+   "SkipHiddenWebParts",
+   "SkipItemLevelPermissionCopyToClientSidePage",
+   "SkipTermStoreMapping",
+   "SkipUrlRewriting",
+   "SkipUserMapping",
+   "SummaryLinksToHtml",
+   "TakeSourcePageName",
+   "TargetPageFolder",
+   "TargetPageFolderOverridesDefaultFolder",
+   "TargetPageName",
+   "TargetWebUrl",
+   "TermMappingFile",
+   "UrlMappingFile",
+   "UseCommunityScriptEditor",
+   "UserMappingFile",
+   "WebPartMappingFile"
+  ],
+  "Copy-PnPFile": [
+   "AllowSchemaMismatch",
+   "Force",
+   "IgnoreVersionHistory",
+   "NoWait",
+   "Overwrite",
+   "SourceUrl",
+   "TargetUrl"
+  ],
+  "Copy-PnPFileMetadata": [
+   "Fields",
+   "Force",
+   "Recursive",
+   "SourceConnection",
+   "SourceUrl",
+   "TargetConnection",
+   "TargetUrl"
+  ],
+  "Copy-PnPFolder": [
+   "AllowSchemaMismatch",
+   "Force",
+   "IgnoreVersionHistory",
+   "LocalPath",
+   "NoWait",
+   "Overwrite",
+   "Recurse",
+   "RemoveAfterCopy",
+   "SourceUrl",
+   "TargetUrl"
+  ],
+  "Copy-PnPList": [
+   "DestinationWebUrl",
+   "Identity",
+   "SourceListUrl",
+   "Title",
+   "WhatIf"
+  ],
+  "Copy-PnPPage": [
+   "DestinationSite",
+   "PageName",
+   "SourceSite"
+  ],
+  "Copy-PnPTeamsTeam": [
+   "Classification",
+   "Description",
+   "DisplayName",
+   "Identity",
+   "PartsToClone",
+   "Visibility"
+  ],
+  "Deny-PnPTenantServicePrincipalPermissionRequest": [
+   "Force",
+   "RequestId"
+  ],
+  "Disable-PnPFeature": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Disable-PnPFlow": [
+   "AsAdmin",
+   "Environment",
+   "Identity"
+  ],
+  "Disable-PnPPageScheduling": [],
+  "Disable-PnPPowerShellTelemetry": [
+   "Force"
+  ],
+  "Disable-PnPSharingForNonOwnersOfSite": [
+   "Identity"
+  ],
+  "Disable-PnPSiteClassification": [],
+  "Disable-PnPTenantServicePrincipal": [
+   "Force"
+  ],
+  "Disconnect-PnPOnline": [
+   "ClearPersistedLogin"
+  ],
+  "Enable-PnPCommSite": [
+   "DesignPackageId"
+  ],
+  "Enable-PnPFeature": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Enable-PnPFlow": [
+   "AsAdmin",
+   "Environment",
+   "Identity"
+  ],
+  "Enable-PnPPageScheduling": [],
+  "Enable-PnPPowerShellTelemetry": [
+   "Force"
+  ],
+  "Enable-PnPPrivilegedIdentityManagement": [
+   "EligibleAssignment",
+   "ExpireInHours",
+   "Justification",
+   "PrincipalId",
+   "Role",
+   "StartAt",
+   "User"
+  ],
+  "Enable-PnPSiteClassification": [
+   "Classifications",
+   "DefaultClassification",
+   "UsageGuidelinesUrl"
+  ],
+  "Enable-PnPTenantServicePrincipal": [
+   "Force"
+  ],
+  "Export-PnPFlow": [
+   "AsZipPackage",
+   "Environment",
+   "Force",
+   "Identity",
+   "OutPath",
+   "PackageCreatedBy",
+   "PackageDescription",
+   "PackageDisplayName",
+   "PackageSourceEnvironment"
+  ],
+  "Export-PnPListToSiteTemplate": [
+   "Force",
+   "List",
+   "Out",
+   "OutputInstance",
+   "Schema"
+  ],
+  "Export-PnPPage": [
+   "Configuration",
+   "Force",
+   "Identity",
+   "Out",
+   "OutputInstance",
+   "PersistBrandingFiles"
+  ],
+  "Export-PnPPageMapping": [
+   "AnalyzeOOBPageLayouts",
+   "BuiltInPageLayoutMapping",
+   "BuiltInWebPartMapping",
+   "CustomPageLayoutMapping",
+   "Folder",
+   "Logging",
+   "Overwrite",
+   "PublishingPage"
+  ],
+  "Export-PnPPowerApp": [
+   "Environment",
+   "Force",
+   "Identity",
+   "OutPath",
+   "PackageCreatedBy",
+   "PackageDescription",
+   "PackageDisplayName",
+   "PackageSourceEnvironment"
+  ],
+  "Export-PnPTaxonomy": [
+   "Delimiter",
+   "Encoding",
+   "ExcludeDeprecated",
+   "Force",
+   "IncludeID",
+   "Lcid",
+   "Path",
+   "TermSetId",
+   "TermStoreName"
+  ],
+  "Export-PnPTermGroupToXml": [
+   "Encoding",
+   "Force",
+   "FullTemplate",
+   "Identity",
+   "Out"
+  ],
+  "Export-PnPUserInfo": [
+   "LoginName",
+   "Site"
+  ],
+  "Export-PnPUserProfile": [
+   "LoginName"
+  ],
+  "Find-PnPFile": [
+   "Folder",
+   "List",
+   "Match"
+  ],
+  "Format-PnPTraceLog": [
+   "LogLine"
+  ],
+  "Get-PnPAccessToken": [
+   "Decoded",
+   "ListPermissionScopes",
+   "ResourceTypeName",
+   "ResourceUrl",
+   "Scopes"
+  ],
+  "Get-PnPAlert": [
+   "AllUsers",
+   "List",
+   "Title",
+   "User"
+  ],
+  "Get-PnPApp": [
+   "Identity",
+   "Scope"
+  ],
+  "Get-PnPAppErrors": [
+   "EndTimeInUtc",
+   "ProductId",
+   "StartTimeInUtc"
+  ],
+  "Get-PnPAppInfo": [
+   "Name",
+   "ProductId"
+  ],
+  "Get-PnPApplicationCustomizer": [
+   "ClientSideComponentId",
+   "Identity",
+   "Scope",
+   "ThrowExceptionIfCustomActionNotFound"
+  ],
+  "Get-PnPAuditing": [],
+  "Get-PnPAuthenticationRealm": [
+   "Url"
+  ],
+  "Get-PnPAvailableLanguage": [],
+  "Get-PnPAvailablePageComponents": [
+   "Component",
+   "Page"
+  ],
+  "Get-PnPAvailableSensitivityLabel": [
+   "Identity",
+   "User"
+  ],
+  "Get-PnPAvailableSiteClassification": [],
+  "Get-PnPAzureACSPrincipal": [
+   "IncludeSubsites",
+   "Scope"
+  ],
+  "Get-PnPAzureCertificate": [
+   "Password",
+   "Path"
+  ],
+  "Get-PnPBrandCenterConfig": [],
+  "Get-PnPBrandCenterFont": [],
+  "Get-PnPBrandCenterFontPackage": [
+   "Identity",
+   "Store"
+  ],
+  "Get-PnPBrowserIdleSignout": [],
+  "Get-PnPBuiltInDesignPackageVisibility": [
+   "DesignPackage"
+  ],
+  "Get-PnPBuiltInSiteTemplateSettings": [
+   "Identity",
+   "Template"
+  ],
+  "Get-PnPChangeLog": [
+   "Nightly",
+   "Version"
+  ],
+  "Get-PnPCommandPermission": [
+   "CommandName",
+   "ResourceTypeName",
+   "Source"
+  ],
+  "Get-PnPCompatibleHubContentTypes": [
+   "ListUrl",
+   "WebUrl"
+  ],
+  "Get-PnPConnection": [],
+  "Get-PnPContainer": [
+   "ArchiveStatus",
+   "Identity",
+   "OwningApplicationId",
+   "Paged",
+   "PagingToken",
+   "SortByStorage"
+  ],
+  "Get-PnPContainerType": [],
+  "Get-PnPContainerTypeConfiguration": [
+   "Identity"
+  ],
+  "Get-PnPContentType": [
+   "Identity",
+   "InSiteHierarchy",
+   "List"
+  ],
+  "Get-PnPContentTypePublishingHubUrl": [],
+  "Get-PnPContentTypePublishingStatus": [
+   "ContentType"
+  ],
+  "Get-PnPContext": [],
+  "Get-PnPCopilotAdminLimitedMode": [],
+  "Get-PnPCopilotAgent": [
+   "ServerRelativeUrl"
+  ],
+  "Get-PnPCustomAction": [
+   "Identity",
+   "Scope",
+   "ThrowExceptionIfCustomActionNotFound"
+  ],
+  "Get-PnPDefaultColumnValues": [
+   "List"
+  ],
+  "Get-PnPDeletedContainer": [],
+  "Get-PnPDeletedFlow": [
+   "Environment"
+  ],
+  "Get-PnPDeletedMicrosoft365Group": [
+   "Identity"
+  ],
+  "Get-PnPDeletedTeam": [],
+  "Get-PnPDiagnostics": [],
+  "Get-PnPDisableSpacesActivation": [],
+  "Get-PnPDocumentSetTemplate": [
+   "Identity"
+  ],
+  "Get-PnPEnterpriseAppInsightsReport": [
+   "Action",
+   "ReportId"
+  ],
+  "Get-PnPEntraIDActivityReportDirectoryAudit": [
+   "Filter",
+   "Identity"
+  ],
+  "Get-PnPEntraIDActivityReportSignIn": [
+   "Filter",
+   "Identity"
+  ],
+  "Get-PnPEntraIDApp": [
+   "Filter",
+   "Identity"
+  ],
+  "Get-PnPEntraIDAppFilePermission": [
+   "AppIdentity",
+   "FileId",
+   "List",
+   "Path",
+   "PermissionId",
+   "Site"
+  ],
+  "Get-PnPEntraIDAppListItemPermission": [
+   "AppIdentity",
+   "List",
+   "ListItem",
+   "PermissionId",
+   "Site"
+  ],
+  "Get-PnPEntraIDAppListPermission": [
+   "AppIdentity",
+   "List",
+   "PermissionId",
+   "Site"
+  ],
+  "Get-PnPEntraIDAppPermission": [
+   "Identity"
+  ],
+  "Get-PnPEntraIDAppSitePermission": [
+   "AppIdentity",
+   "PermissionId",
+   "Site"
+  ],
+  "Get-PnPEntraIDGroup": [
+   "Identity"
+  ],
+  "Get-PnPEntraIDGroupMember": [
+   "Identity",
+   "Transitive"
+  ],
+  "Get-PnPEntraIDGroupOwner": [
+   "Identity"
+  ],
+  "Get-PnPEntraIDServicePrincipal": [
+   "AppId",
+   "AppName",
+   "BuiltInType",
+   "Filter",
+   "ObjectId"
+  ],
+  "Get-PnPEntraIDServicePrincipalAppRoleAssignment": [
+   "AppRole",
+   "Group",
+   "Resource",
+   "User"
+  ],
+  "Get-PnPEntraIDServicePrincipalAssignedAppRole": [
+   "Identity",
+   "Principal"
+  ],
+  "Get-PnPEntraIDServicePrincipalAvailableAppRole": [
+   "Identity",
+   "Principal"
+  ],
+  "Get-PnPEntraIDUser": [
+   "Delta",
+   "DeltaToken",
+   "EndIndex",
+   "Filter",
+   "Identity",
+   "IgnoreDefaultProperties",
+   "OrderBy",
+   "Select",
+   "StartIndex",
+   "UseBeta"
+  ],
+  "Get-PnPEventReceiver": [
+   "Identity",
+   "List",
+   "Scope"
+  ],
+  "Get-PnPException": [
+   "All"
+  ],
+  "Get-PnPExternalUser": [
+   "Filter",
+   "PageSize",
+   "Position",
+   "ShowOnlyUsersWithAcceptingAccountNotMatchInvitedAccount",
+   "SiteUrl",
+   "SortOrder"
+  ],
+  "Get-PnPFeature": [
+   "Identity",
+   "Scope"
+  ],
+  "Get-PnPField": [
+   "Group",
+   "Identity",
+   "InSiteHierarchy",
+   "List"
+  ],
+  "Get-PnPFile": [
+   "AsFile",
+   "AsFileObject",
+   "AsListItem",
+   "AsMemoryStream",
+   "AsString",
+   "Filename",
+   "Force",
+   "Path",
+   "ThrowExceptionIfFileNotFound",
+   "Url"
+  ],
+  "Get-PnPFileAnalyticsData": [
+   "All",
+   "AnalyticsAggregationInterval",
+   "EndDate",
+   "LastSevenDays",
+   "StartDate",
+   "Url"
+  ],
+  "Get-PnPFileCheckedOut": [
+   "List"
+  ],
+  "Get-PnPFileInFolder": [
+   "ExcludeSystemFolders",
+   "FolderSiteRelativeUrl",
+   "Identity",
+   "ItemName",
+   "List",
+   "Recursive"
+  ],
+  "Get-PnPFileRetentionLabel": [
+   "Url"
+  ],
+  "Get-PnPFileSensitivityLabel": [
+   "Url"
+  ],
+  "Get-PnPFileSensitivityLabelInfo": [
+   "Url"
+  ],
+  "Get-PnPFileSharingLink": [
+   "Identity"
+  ],
+  "Get-PnPFileVersion": [
+   "Url",
+   "UseVersionExpirationReport"
+  ],
+  "Get-PnPFlow": [
+   "AsAdmin",
+   "Environment",
+   "Identity",
+   "SharingStatus"
+  ],
+  "Get-PnPFlowOwner": [
+   "AsAdmin",
+   "Environment",
+   "Identity"
+  ],
+  "Get-PnPFlowRun": [
+   "Environment",
+   "Flow",
+   "Identity"
+  ],
+  "Get-PnPFolder": [
+   "AsListItem",
+   "CurrentWebRootFolder",
+   "List",
+   "ListRootFolder",
+   "Url"
+  ],
+  "Get-PnPFolderInFolder": [
+   "ExcludeSystemFolders",
+   "FolderSiteRelativeUrl",
+   "Identity",
+   "ItemName",
+   "List",
+   "Recursive"
+  ],
+  "Get-PnPFolderItem": [
+   "FolderSiteRelativeUrl",
+   "Identity",
+   "Includes",
+   "ItemName",
+   "ItemType",
+   "List",
+   "Recursive"
+  ],
+  "Get-PnPFolderSharingLink": [
+   "Folder"
+  ],
+  "Get-PnPFolderStorageMetric": [
+   "FolderSiteRelativeUrl",
+   "Identity",
+   "List"
+  ],
+  "Get-PnPFooter": [],
+  "Get-PnPGeoAdministrator": [],
+  "Get-PnPGeoMoveCrossCompatibilityStatus": [],
+  "Get-PnPGeoStorageQuota": [
+   "AllLocations"
+  ],
+  "Get-PnPGraphSubscription": [
+   "Identity"
+  ],
+  "Get-PnPGroup": [
+   "AssociatedMemberGroup",
+   "AssociatedOwnerGroup",
+   "AssociatedVisitorGroup",
+   "Identity"
+  ],
+  "Get-PnPGroupMember": [
+   "Group",
+   "User"
+  ],
+  "Get-PnPGroupPermissions": [
+   "Identity"
+  ],
+  "Get-PnPHideDefaultThemes": [],
+  "Get-PnPHomePage": [],
+  "Get-PnPHomeSite": [
+   "Detailed",
+   "IsVivaConnectionsDefaultStartForCompanyPortalSiteEnabled"
+  ],
+  "Get-PnPHubSite": [
+   "Identity"
+  ],
+  "Get-PnPHubSiteChild": [
+   "Identity"
+  ],
+  "Get-PnPInPlaceRecordsManagement": [],
+  "Get-PnPIndexedPropertyKeys": [
+   "List"
+  ],
+  "Get-PnPIsSiteAliasAvailable": [
+   "Identity"
+  ],
+  "Get-PnPJavaScriptLink": [
+   "Name",
+   "Scope",
+   "ThrowExceptionIfJavaScriptLinkNotFound"
+  ],
+  "Get-PnPKnowledgeHubSite": [],
+  "Get-PnPLargeListOperationStatus": [
+   "Identity",
+   "OperationId"
+  ],
+  "Get-PnPLibraryFileVersionBatchDeleteJobStatus": [
+   "Identity"
+  ],
+  "Get-PnPLibraryFileVersionExpirationReportJobStatus": [
+   "Identity",
+   "ReportUrl"
+  ],
+  "Get-PnPList": [
+   "Identity",
+   "ThrowExceptionIfListNotFound"
+  ],
+  "Get-PnPListDesign": [
+   "Identity"
+  ],
+  "Get-PnPListInformationRightsManagement": [
+   "List"
+  ],
+  "Get-PnPListItem": [
+   "Fields",
+   "FolderServerRelativeUrl",
+   "Id",
+   "IncludeContentType",
+   "List",
+   "PageSize",
+   "Query",
+   "ScriptBlock",
+   "UniqueId"
+  ],
+  "Get-PnPListItemAttachment": [
+   "Force",
+   "Identity",
+   "List",
+   "Path"
+  ],
+  "Get-PnPListItemComment": [
+   "Identity",
+   "List"
+  ],
+  "Get-PnPListItemPermission": [
+   "Identity",
+   "List"
+  ],
+  "Get-PnPListItemVersion": [
+   "Identity",
+   "List"
+  ],
+  "Get-PnPListPermissions": [
+   "Identity",
+   "PrincipalId"
+  ],
+  "Get-PnPListRecordDeclaration": [
+   "List"
+  ],
+  "Get-PnPListVersionPolicy": [],
+  "Get-PnPManagedAppId": [
+   "Url"
+  ],
+  "Get-PnPMasterPage": [],
+  "Get-PnPMessageCenterAnnouncement": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365ExpiringGroup": [
+   "IncludeOwners",
+   "IncludeSiteUrl",
+   "Limit"
+  ],
+  "Get-PnPMicrosoft365Group": [
+   "Detailed",
+   "Filter",
+   "Identity",
+   "IncludeExtensionAttributes",
+   "IncludeOwners",
+   "IncludeSensitivityLabels",
+   "IncludeSiteUrl"
+  ],
+  "Get-PnPMicrosoft365GroupEndpoint": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365GroupMember": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365GroupOwner": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365GroupSettingTemplates": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365GroupSettings": [
+   "GroupSetting",
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365GroupTeam": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365GroupYammerCommunity": [
+   "Identity"
+  ],
+  "Get-PnPMicrosoft365Roadmap": [
+   "RoadmapUrl"
+  ],
+  "Get-PnPMultiGeoCompanyAllowedDataLocation": [],
+  "Get-PnPMultiGeoExperience": [],
+  "Get-PnPNavigationNode": [
+   "Id",
+   "Location",
+   "Tree"
+  ],
+  "Get-PnPOrgAssetsLibrary": [],
+  "Get-PnPOrgNewsSite": [],
+  "Get-PnPPage": [
+   "Identity"
+  ],
+  "Get-PnPPageComponent": [
+   "InstanceId",
+   "ListAvailable",
+   "Page"
+  ],
+  "Get-PnPPageCopyProgress": [
+   "DestinationSite",
+   "WorkItemId"
+  ],
+  "Get-PnPPageLikedByInformation": [
+   "Identity"
+  ],
+  "Get-PnPPageSchedulingEnabled": [],
+  "Get-PnPPlannerBucket": [
+   "Group",
+   "Identity",
+   "Plan",
+   "PlanId"
+  ],
+  "Get-PnPPlannerConfiguration": [],
+  "Get-PnPPlannerPlan": [
+   "Group",
+   "Id",
+   "Identity",
+   "ResolveIdentities"
+  ],
+  "Get-PnPPlannerRosterMember": [
+   "Identity"
+  ],
+  "Get-PnPPlannerRosterPlan": [
+   "Identity",
+   "User"
+  ],
+  "Get-PnPPlannerTask": [
+   "Bucket",
+   "Group",
+   "IncludeDetails",
+   "Plan",
+   "PlanId",
+   "ResolveUserDisplayNames",
+   "TaskId"
+  ],
+  "Get-PnPPlannerUserPolicy": [
+   "Identity"
+  ],
+  "Get-PnPPowerApp": [
+   "AsAdmin",
+   "Environment",
+   "Identity"
+  ],
+  "Get-PnPPowerAppPermission": [
+   "AsAdmin",
+   "Environment",
+   "Identity"
+  ],
+  "Get-PnPPowerPlatformCustomConnector": [
+   "AsAdmin",
+   "Environment",
+   "Identity"
+  ],
+  "Get-PnPPowerPlatformEnvironment": [
+   "Identity",
+   "IsDefault"
+  ],
+  "Get-PnPPowerPlatformSolution": [
+   "Environment",
+   "Name"
+  ],
+  "Get-PnPPowerShellTelemetryEnabled": [],
+  "Get-PnPPrivilegedIdentityManagementEligibleAssignment": [
+   "Identity"
+  ],
+  "Get-PnPPrivilegedIdentityManagementRole": [
+   "Identity"
+  ],
+  "Get-PnPProfileCardProperty": [
+   "PropertyName"
+  ],
+  "Get-PnPProperty": [
+   "ClientObject",
+   "Property"
+  ],
+  "Get-PnPPropertyBag": [
+   "Folder",
+   "Key"
+  ],
+  "Get-PnPPublishingImageRendition": [
+   "Identity"
+  ],
+  "Get-PnPRecycleBinItem": [
+   "FirstStage",
+   "Identity",
+   "RowLimit",
+   "SecondStage"
+  ],
+  "Get-PnPRequestAccessEmails": [],
+  "Get-PnPRetentionLabel": [
+   "List",
+   "Raw"
+  ],
+  "Get-PnPRoleDefinition": [
+   "Identity"
+  ],
+  "Get-PnPSearchConfiguration": [
+   "BookmarkStatus",
+   "ExcludeVisualPromotedResults",
+   "OutputFormat",
+   "Path",
+   "PromotedResultsToBookmarkCSV",
+   "Scope"
+  ],
+  "Get-PnPSearchCrawlLog": [
+   "ContentSource",
+   "EndDate",
+   "Filter",
+   "GetCountOnly",
+   "IncreaseRequestTimeout",
+   "LogLevel",
+   "RawFormat",
+   "RowLimit",
+   "StartDate"
+  ],
+  "Get-PnPSearchExternalConnection": [
+   "Identity"
+  ],
+  "Get-PnPSearchExternalItem": [
+   "ConnectionId",
+   "Identity"
+  ],
+  "Get-PnPSearchExternalSchema": [
+   "ConnectionId"
+  ],
+  "Get-PnPSearchResultType": [
+   "Identity",
+   "Scope"
+  ],
+  "Get-PnPSearchSettings": [],
+  "Get-PnPSearchSiteConnection": [
+   "Identity"
+  ],
+  "Get-PnPSearchVertical": [
+   "Identity",
+   "Scope"
+  ],
+  "Get-PnPServiceCurrentHealth": [
+   "Identity"
+  ],
+  "Get-PnPServiceHealthIssue": [
+   "Identity"
+  ],
+  "Get-PnPSharePointAddIn": [
+   "IncludeSubsites"
+  ],
+  "Get-PnPSharingForNonOwnersOfSite": [
+   "Identity"
+  ],
+  "Get-PnPSite": [],
+  "Get-PnPSiteAnalyticsData": [
+   "All",
+   "AnalyticsAggregationInterval",
+   "EndDate",
+   "Identity",
+   "LastSevenDays",
+   "StartDate"
+  ],
+  "Get-PnPSiteClosure": [],
+  "Get-PnPSiteCollectionAdmin": [],
+  "Get-PnPSiteCollectionAppCatalog": [
+   "CurrentSite",
+   "ExcludeDeletedSites",
+   "SkipUrlValidation"
+  ],
+  "Get-PnPSiteCollectionTermStore": [],
+  "Get-PnPSiteContentMoveState": [
+   "Limit",
+   "MoveDirection",
+   "MoveEndTime",
+   "MoveStartTime",
+   "MoveState",
+   "SiteMoveId",
+   "SourceSiteUrl"
+  ],
+  "Get-PnPSiteDesign": [
+   "BuiltIn",
+   "Identity"
+  ],
+  "Get-PnPSiteDesignRights": [
+   "Identity"
+  ],
+  "Get-PnPSiteDesignRun": [
+   "SiteDesignId",
+   "WebUrl"
+  ],
+  "Get-PnPSiteDesignRunStatus": [
+   "Run"
+  ],
+  "Get-PnPSiteDesignTask": [
+   "Identity",
+   "WebUrl"
+  ],
+  "Get-PnPSiteFileVersionBatchDeleteJobStatus": [],
+  "Get-PnPSiteFileVersionExpirationReportJobStatus": [
+   "ReportUrl"
+  ],
+  "Get-PnPSiteGroup": [
+   "Group",
+   "Site"
+  ],
+  "Get-PnPSitePolicy": [
+   "AllAvailable",
+   "Name"
+  ],
+  "Get-PnPSiteScript": [
+   "Identity",
+   "SiteDesign"
+  ],
+  "Get-PnPSiteScriptFromList": [
+   "List",
+   "Url"
+  ],
+  "Get-PnPSiteScriptFromWeb": [
+   "IncludeAll",
+   "IncludeAllLists",
+   "IncludeBranding",
+   "IncludeLinksToExportedItems",
+   "IncludeRegionalSettings",
+   "IncludeSiteExternalSharingCapability",
+   "IncludeTheme",
+   "Lists",
+   "Url"
+  ],
+  "Get-PnPSiteSearchQueryResults": [
+   "All",
+   "MaxResults",
+   "Query",
+   "StartRow"
+  ],
+  "Get-PnPSiteSensitivityLabel": [],
+  "Get-PnPSiteTemplate": [
+   "Configuration",
+   "ContentTypeGroups",
+   "Encoding",
+   "ExcludeContentTypesFromSyndication",
+   "ExcludeHandlers",
+   "ExtensibilityHandlers",
+   "Force",
+   "Handlers",
+   "IncludeAllPages",
+   "IncludeAllTermGroups",
+   "IncludeHiddenLists",
+   "IncludeNativePublishingFiles",
+   "IncludeSearchConfiguration",
+   "IncludeSiteCollectionTermGroup",
+   "IncludeSiteGroups",
+   "IncludeTermGroupsSecurity",
+   "ListsToExtract",
+   "Out",
+   "OutputInstance",
+   "PersistBrandingFiles",
+   "PersistMultiLanguageResources",
+   "PersistPublishingFiles",
+   "ResourceFilePrefix",
+   "Schema",
+   "SkipVersionCheck",
+   "TemplateDisplayName",
+   "TemplateImagePreviewUrl",
+   "TemplateProperties",
+   "TemplateProviderExtensions"
+  ],
+  "Get-PnPSiteUserInvitations": [
+   "EmailAddress",
+   "Site"
+  ],
+  "Get-PnPSiteVersionPolicy": [],
+  "Get-PnPSiteVersionPolicyStatus": [],
+  "Get-PnPStorageEntity": [
+   "Key",
+   "Scope"
+  ],
+  "Get-PnPStoredCredential": [
+   "List",
+   "Name"
+  ],
+  "Get-PnPStructuralNavigationCacheSiteState": [
+   "SiteUrl"
+  ],
+  "Get-PnPStructuralNavigationCacheWebState": [
+   "WebUrl"
+  ],
+  "Get-PnPSubWeb": [
+   "Identity",
+   "IncludeRootWeb",
+   "Recurse"
+  ],
+  "Get-PnPSyntexModel": [
+   "Identity"
+  ],
+  "Get-PnPSyntexModelPublication": [
+   "Model"
+  ],
+  "Get-PnPTaxonomyItem": [
+   "TermPath"
+  ],
+  "Get-PnPTaxonomySession": [],
+  "Get-PnPTeamsApp": [
+   "Identity"
+  ],
+  "Get-PnPTeamsChannel": [
+   "Identity",
+   "IncludeModerationSettings",
+   "Team"
+  ],
+  "Get-PnPTeamsChannelFilesFolder": [
+   "Channel",
+   "Team"
+  ],
+  "Get-PnPTeamsChannelMessage": [
+   "Channel",
+   "Identity",
+   "IncludeDeleted",
+   "Team"
+  ],
+  "Get-PnPTeamsChannelMessageReply": [
+   "Channel",
+   "Identity",
+   "IncludeDeleted",
+   "Message",
+   "Team"
+  ],
+  "Get-PnPTeamsChannelUser": [
+   "Channel",
+   "Identity",
+   "Role",
+   "Team"
+  ],
+  "Get-PnPTeamsPrimaryChannel": [
+   "Team"
+  ],
+  "Get-PnPTeamsTab": [
+   "Channel",
+   "Identity",
+   "Team"
+  ],
+  "Get-PnPTeamsTag": [
+   "Identity",
+   "Team"
+  ],
+  "Get-PnPTeamsTeam": [
+   "Filter",
+   "Identity",
+   "User"
+  ],
+  "Get-PnPTeamsUser": [
+   "Channel",
+   "Team"
+  ],
+  "Get-PnPTemporarilyDisableAppBar": [],
+  "Get-PnPTenant": [],
+  "Get-PnPTenantAppCatalogUrl": [],
+  "Get-PnPTenantCdnEnabled": [
+   "CdnType"
+  ],
+  "Get-PnPTenantCdnOrigin": [
+   "CdnType"
+  ],
+  "Get-PnPTenantCdnPolicies": [
+   "CdnType"
+  ],
+  "Get-PnPTenantDeletedSite": [
+   "Detailed",
+   "Identity",
+   "IncludeOnlyPersonalSite",
+   "IncludePersonalSite",
+   "Limit"
+  ],
+  "Get-PnPTenantId": [
+   "AzureEnvironment",
+   "Connection",
+   "TenantUrl"
+  ],
+  "Get-PnPTenantInfo": [
+   "CurrentTenant",
+   "DomainName",
+   "TenantId"
+  ],
+  "Get-PnPTenantInstance": [],
+  "Get-PnPTenantInternalSetting": [],
+  "Get-PnPTenantPronounsSetting": [],
+  "Get-PnPTenantRecycleBinItem": [],
+  "Get-PnPTenantRestrictedSearchAllowedList": [],
+  "Get-PnPTenantRestrictedSearchMode": [],
+  "Get-PnPTenantRetentionLabel": [
+   "Identity"
+  ],
+  "Get-PnPTenantSequence": [
+   "Identity",
+   "Template"
+  ],
+  "Get-PnPTenantSequenceSite": [
+   "Identity",
+   "Sequence"
+  ],
+  "Get-PnPTenantServicePrincipal": [],
+  "Get-PnPTenantServicePrincipalPermissionGrants": [],
+  "Get-PnPTenantServicePrincipalPermissionRequests": [],
+  "Get-PnPTenantSite": [
+   "Detailed",
+   "DisableSharingForNonOwnersStatus",
+   "Filter",
+   "GroupIdDefined",
+   "Identity",
+   "IncludeOneDriveSites",
+   "Template"
+  ],
+  "Get-PnPTenantSyncClientRestriction": [],
+  "Get-PnPTenantTemplate": [
+   "AsInstance",
+   "Configuration",
+   "Force",
+   "Out",
+   "SiteUrl"
+  ],
+  "Get-PnPTenantTheme": [
+   "AsJson",
+   "Name"
+  ],
+  "Get-PnPTerm": [
+   "Identity",
+   "IncludeChildTerms",
+   "IncludeDeprecated",
+   "ParentTerm",
+   "Recursive",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "Get-PnPTermGroup": [
+   "Identity",
+   "TermStore"
+  ],
+  "Get-PnPTermLabel": [
+   "Lcid",
+   "Term",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "Get-PnPTermSet": [
+   "Identity",
+   "TermGroup",
+   "TermStore"
+  ],
+  "Get-PnPTheme": [
+   "DetectCurrentComposedLook"
+  ],
+  "Get-PnPTimeZoneId": [
+   "Match"
+  ],
+  "Get-PnPTodoList": [
+   "Identity",
+   "User"
+  ],
+  "Get-PnPTodoTask": [
+   "Identity",
+   "List",
+   "User"
+  ],
+  "Get-PnPTodoTaskChecklistItem": [
+   "Identity",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Get-PnPTodoTaskFileAttachment": [
+   "DoNotIncludeFileContent",
+   "Identity",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Get-PnPTodoTaskLinkedResource": [
+   "Identity",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Get-PnPTraceLog": [
+   "Path"
+  ],
+  "Get-PnPUPABulkImportStatus": [
+   "IncludeErrorDetails",
+   "JobId"
+  ],
+  "Get-PnPUnfurlLink": [
+   "Url"
+  ],
+  "Get-PnPUnifiedAuditLog": [
+   "ContentType",
+   "EndTime",
+   "StartTime"
+  ],
+  "Get-PnPUnifiedGroupMoveState": [
+   "GroupAlias"
+  ],
+  "Get-PnPUser": [
+   "Identity",
+   "WithRightsAssigned",
+   "WithRightsAssignedDetailed"
+  ],
+  "Get-PnPUserAndContentMoveState": [
+   "Limit",
+   "MoveDirection",
+   "MoveEndTime",
+   "MoveStartTime",
+   "MoveState",
+   "OdbMoveId",
+   "UserPrincipalName"
+  ],
+  "Get-PnPUserOneDriveLocation": [
+   "UserPrincipalName"
+  ],
+  "Get-PnPUserOneDriveQuota": [
+   "Account"
+  ],
+  "Get-PnPUserProfilePhoto": [
+   "Filename",
+   "Force",
+   "Identity"
+  ],
+  "Get-PnPUserProfileProperty": [
+   "Account",
+   "Properties"
+  ],
+  "Get-PnPView": [
+   "Identity",
+   "List"
+  ],
+  "Get-PnPVivaConnectionsDashboardACE": [
+   "Identity"
+  ],
+  "Get-PnPVivaEngageCommunity": [
+   "Identity"
+  ],
+  "Get-PnPWeb": [
+   "Identity"
+  ],
+  "Get-PnPWebAlert": [
+   "ListId",
+   "ListTitle",
+   "ListUrl",
+   "UserId",
+   "UserName"
+  ],
+  "Get-PnPWebHeader": [],
+  "Get-PnPWebPart": [
+   "Identity",
+   "ServerRelativePageUrl"
+  ],
+  "Get-PnPWebPartProperty": [
+   "Identity",
+   "Key",
+   "ServerRelativePageUrl"
+  ],
+  "Get-PnPWebPartXml": [
+   "Identity",
+   "ServerRelativePageUrl"
+  ],
+  "Get-PnPWebPermission": [
+   "Identity",
+   "PrincipalId"
+  ],
+  "Get-PnPWebTemplates": [
+   "CompatibilityLevel",
+   "Lcid"
+  ],
+  "Get-PnPWebhookSubscription": [
+   "List"
+  ],
+  "Get-PnPWikiPageContent": [
+   "ServerRelativePageUrl"
+  ],
+  "Grant-PnPEntraIDAppFilePermission": [
+   "AppId",
+   "DisplayName",
+   "FileId",
+   "List",
+   "Path",
+   "Permissions",
+   "Site"
+  ],
+  "Grant-PnPEntraIDAppListItemPermission": [
+   "AppId",
+   "DisplayName",
+   "List",
+   "ListItem",
+   "Permissions",
+   "Site"
+  ],
+  "Grant-PnPEntraIDAppListPermission": [
+   "AppId",
+   "DisplayName",
+   "List",
+   "Permissions",
+   "Site"
+  ],
+  "Grant-PnPEntraIDAppSitePermission": [
+   "AppId",
+   "DisplayName",
+   "Permissions",
+   "Site"
+  ],
+  "Grant-PnPHubSiteRights": [
+   "Identity",
+   "Principals"
+  ],
+  "Grant-PnPSiteDesignRights": [
+   "Identity",
+   "Principals",
+   "Rights"
+  ],
+  "Grant-PnPTenantServicePrincipalPermission": [
+   "Resource",
+   "Scope"
+  ],
+  "Import-PnPFlow": [
+   "Delay",
+   "Environment",
+   "Name",
+   "PackagePath",
+   "RetryCount"
+  ],
+  "Import-PnPTaxonomy": [
+   "Delimiter",
+   "Lcid",
+   "Path",
+   "SynchronizeDeletions",
+   "TermStoreName",
+   "Terms"
+  ],
+  "Import-PnPTermGroupFromXml": [
+   "Path",
+   "Xml"
+  ],
+  "Import-PnPTermSet": [
+   "Contact",
+   "GroupName",
+   "IsOpen",
+   "Owner",
+   "Path",
+   "SynchronizeDeletions",
+   "TermSetId",
+   "TermStoreName"
+  ],
+  "Install-PnPApp": [
+   "Identity",
+   "Scope",
+   "Wait"
+  ],
+  "Invoke-PnPBatch": [
+   "Batch",
+   "Details",
+   "Force",
+   "StopOnException"
+  ],
+  "Invoke-PnPGraphMethod": [
+   "AdditionalHeaders",
+   "All",
+   "Batch",
+   "ConsistencyLevelEventual",
+   "Content",
+   "ContentType",
+   "Method",
+   "OutFile",
+   "OutStream",
+   "Raw",
+   "Url"
+  ],
+  "Invoke-PnPListDesign": [
+   "Identity",
+   "WebUrl"
+  ],
+  "Invoke-PnPQuery": [
+   "RetryCount"
+  ],
+  "Invoke-PnPSPRestMethod": [
+   "Accept",
+   "Batch",
+   "Content",
+   "ContentType",
+   "Method",
+   "Raw",
+   "ResponseHeadersVariable",
+   "Url"
+  ],
+  "Invoke-PnPSiteDesign": [
+   "Identity",
+   "Template",
+   "WebUrl"
+  ],
+  "Invoke-PnPSiteScript": [
+   "Identity",
+   "Script",
+   "WebUrl",
+   "WhatIf"
+  ],
+  "Invoke-PnPSiteSwap": [
+   "ArchiveUrl",
+   "DisableRedirection",
+   "Identity",
+   "NoWait",
+   "SourceUrl",
+   "TargetUrl"
+  ],
+  "Invoke-PnPSiteTemplate": [
+   "ClearNavigation",
+   "ExcludeHandlers",
+   "ExtensibilityHandlers",
+   "Handlers",
+   "Identity",
+   "IgnoreDuplicateDataRowErrors",
+   "InputInstance",
+   "OverwriteSystemPropertyBagValues",
+   "Parameters",
+   "Path",
+   "ProvisionContentTypesToSubWebs",
+   "ProvisionFieldsToSubWebs",
+   "ResourceFolder",
+   "Stream",
+   "TemplateId",
+   "TemplateProviderExtensions"
+  ],
+  "Invoke-PnPTenantTemplate": [
+   "ClearNavigation",
+   "Configuration",
+   "ExcludeHandlers",
+   "ExtensibilityHandlers",
+   "Handlers",
+   "IgnoreDuplicateDataRowErrors",
+   "OverwriteSystemPropertyBagValues",
+   "Parameters",
+   "Path",
+   "ProvisionContentTypesToSubWebs",
+   "ProvisionFieldsToSubWebs",
+   "ResourceFolder",
+   "SequenceId",
+   "Template",
+   "TemplateProviderExtensions"
+  ],
+  "Invoke-PnPWebAction": [
+   "DisableStatisticsOutput",
+   "ListAction",
+   "ListItemAction",
+   "ListItemProperties",
+   "ListName",
+   "ListProperties",
+   "PostListAction",
+   "PostWebAction",
+   "ShouldProcessListAction",
+   "ShouldProcessListItemAction",
+   "ShouldProcessPostListAction",
+   "ShouldProcessPostWebAction",
+   "ShouldProcessWebAction",
+   "SkipCounting",
+   "SubWebs",
+   "WebAction",
+   "WebProperties",
+   "Webs"
+  ],
+  "Measure-PnPList": [
+   "BrokenPermissions",
+   "Identity",
+   "ItemLevel"
+  ],
+  "Measure-PnPWeb": [
+   "Identity",
+   "IncludeHiddenList",
+   "Recursive"
+  ],
+  "Merge-PnPTerm": [
+   "Identity",
+   "TargetTerm",
+   "TermStore"
+  ],
+  "Move-PnPFile": [
+   "AllowSchemaMismatch",
+   "AllowSmallerVersionLimitOnDestination",
+   "Force",
+   "IgnoreVersionHistory",
+   "NoWait",
+   "Overwrite",
+   "SourceUrl",
+   "TargetUrl"
+  ],
+  "Move-PnPFolder": [
+   "Folder",
+   "TargetFolder"
+  ],
+  "Move-PnPListItemToRecycleBin": [
+   "Force",
+   "Identity",
+   "List"
+  ],
+  "Move-PnPPage": [
+   "DestinationSite",
+   "PageName",
+   "SourceSite"
+  ],
+  "Move-PnPPageComponent": [
+   "Column",
+   "InstanceId",
+   "Page",
+   "Position",
+   "Section"
+  ],
+  "Move-PnPRecycleBinItem": [
+   "Force",
+   "Identity"
+  ],
+  "Move-PnPTerm": [
+   "Identity",
+   "MoveToTerm",
+   "TargetTerm",
+   "TargetTermGroup",
+   "TargetTermSet",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "Move-PnPTermSet": [
+   "Identity",
+   "TargetTermGroup",
+   "TermGroup",
+   "TermStore"
+  ],
+  "New-PnPAzureCertificate": [
+   "CertificatePassword",
+   "CommonName",
+   "Country",
+   "Locality",
+   "Organization",
+   "OrganizationUnit",
+   "OutCert",
+   "OutPfx",
+   "SanNames",
+   "State",
+   "Store",
+   "ValidYears"
+  ],
+  "New-PnPBatch": [
+   "RetainRequests"
+  ],
+  "New-PnPContainerType": [
+   "AzureSubscriptionId",
+   "ContainerTypeName",
+   "OwningApplicationId",
+   "Region",
+   "ResourceGroup",
+   "TrialContainerType"
+  ],
+  "New-PnPEntraIDGroup": [
+   "Description",
+   "DisplayName",
+   "Force",
+   "IsMailEnabled",
+   "IsSecurityEnabled",
+   "MailNickname",
+   "Members",
+   "Owners"
+  ],
+  "New-PnPEntraIDUserTemporaryAccessPass": [
+   "Identity",
+   "IsUsableOnce",
+   "LifeTimeInMinutes",
+   "StartDateTime"
+  ],
+  "New-PnPExtensibilityHandlerObject": [
+   "Assembly",
+   "Configuration",
+   "Disabled",
+   "Type"
+  ],
+  "New-PnPGraphSubscription": [
+   "ChangeType",
+   "ClientState",
+   "ExpirationDateTime",
+   "LatestSupportedTlsVersion",
+   "NotificationUrl",
+   "Resource"
+  ],
+  "New-PnPGroup": [
+   "AllowMembersEditMembership",
+   "AllowRequestToJoinLeave",
+   "AutoAcceptRequestToJoinLeave",
+   "Description",
+   "DisallowMembersViewMembership",
+   "Owner",
+   "RequestToJoinEmail",
+   "Title"
+  ],
+  "New-PnPLibraryFileVersionBatchDeleteJob": [
+   "Automatic",
+   "DeleteBeforeDays",
+   "Force",
+   "Identity",
+   "MajorVersionLimit",
+   "MajorWithMinorVersionsLimit"
+  ],
+  "New-PnPLibraryFileVersionExpirationReportJob": [
+   "Identity",
+   "ReportUrl"
+  ],
+  "New-PnPList": [
+   "EnableContentTypes",
+   "EnableVersioning",
+   "Hidden",
+   "OnQuickLaunch",
+   "Template",
+   "Title",
+   "Url"
+  ],
+  "New-PnPMicrosoft365Group": [
+   "CreateTeam",
+   "Description",
+   "DisplayName",
+   "DynamicMembershipRule",
+   "DynamicMembershipRuleProcessingState",
+   "Force",
+   "HideFromAddressLists",
+   "HideFromOutlookClients",
+   "IsPrivate",
+   "LogoPath",
+   "MailEnabled",
+   "MailNickname",
+   "Members",
+   "Owners",
+   "PreferredDataLocation",
+   "PreferredLanguage",
+   "ResourceBehaviorOptions",
+   "SecurityEnabled",
+   "SensitivityLabels"
+  ],
+  "New-PnPMicrosoft365GroupSettings": [
+   "DisplayName",
+   "Identity",
+   "TemplateId",
+   "Values"
+  ],
+  "New-PnPPersonalSite": [
+   "Email"
+  ],
+  "New-PnPPlannerPlan": [
+   "Group",
+   "Title"
+  ],
+  "New-PnPProfileCardProperty": [
+   "DisplayName",
+   "Localizations",
+   "PropertyName"
+  ],
+  "New-PnPSdnProvider": [
+   "Identity",
+   "License"
+  ],
+  "New-PnPSearchExternalConnection": [
+   "AuthorizedAppIds",
+   "Description",
+   "Identity",
+   "Name"
+  ],
+  "New-PnPSearchResultType": [
+   "ContentSource",
+   "DisplayProperties",
+   "DisplayTemplate",
+   "Identity",
+   "Name",
+   "Payload",
+   "Rules",
+   "Scope",
+   "Validate"
+  ],
+  "New-PnPSearchResultTypeRule": [
+   "Operator",
+   "PropertyName",
+   "Values"
+  ],
+  "New-PnPSearchVertical": [
+   "ContentSources",
+   "DisplayName",
+   "Enabled",
+   "Identity",
+   "IncludeConnectorResults",
+   "Payload",
+   "QueryTemplate",
+   "Scope"
+  ],
+  "New-PnPSite": [
+   "Alias",
+   "AllowOnlyMembersToPost",
+   "CalendarMemberReadOnly",
+   "Classification",
+   "ConnectorsDisabled",
+   "Description",
+   "HideGroupInOutlook",
+   "HubSiteId",
+   "IsPublic",
+   "Lcid",
+   "Members",
+   "Owner",
+   "Owners",
+   "PreferredDataLocation",
+   "SensitivityLabel",
+   "ShareByEmailEnabled",
+   "SiteAlias",
+   "SiteDesign",
+   "SiteDesignId",
+   "SubscribeMembersToCalendarEventsDisabled",
+   "SubscribeNewGroupMembers",
+   "TimeZone",
+   "Title",
+   "Type",
+   "Url",
+   "Wait",
+   "WelcomeEmailDisabled"
+  ],
+  "New-PnPSiteCollectionTermStore": [],
+  "New-PnPSiteFileVersionBatchDeleteJob": [
+   "Automatic",
+   "DeleteBeforeDays",
+   "Force",
+   "MajorVersionLimit",
+   "MajorWithMinorVersionsLimit"
+  ],
+  "New-PnPSiteFileVersionExpirationReportJob": [
+   "ReportUrl"
+  ],
+  "New-PnPSiteGroup": [
+   "Name",
+   "PermissionLevels",
+   "Site"
+  ],
+  "New-PnPSiteManageVersionPolicyJob": [
+   "ExcludeDefaultPolicy",
+   "FileTypes",
+   "Force",
+   "Identity",
+   "NoWait",
+   "SyncListPolicy",
+   "TrimUseListPolicy"
+  ],
+  "New-PnPSiteTemplate": [],
+  "New-PnPSiteTemplateFromFolder": [
+   "AsIncludeFile",
+   "ContentType",
+   "Encoding",
+   "Folder",
+   "Force",
+   "Match",
+   "Out",
+   "Properties",
+   "Schema",
+   "TargetFolder"
+  ],
+  "New-PnPTeamsApp": [
+   "Path"
+  ],
+  "New-PnPTeamsTeam": [
+   "AllowAddRemoveApps",
+   "AllowChannelMentions",
+   "AllowCreatePrivateChannels",
+   "AllowCreateUpdateChannels",
+   "AllowCreateUpdateRemoveConnectors",
+   "AllowCreateUpdateRemoveTabs",
+   "AllowCustomMemes",
+   "AllowDeleteChannels",
+   "AllowGiphy",
+   "AllowGuestCreateUpdateChannels",
+   "AllowGuestDeleteChannels",
+   "AllowOwnerDeleteMessages",
+   "AllowStickersAndMemes",
+   "AllowTeamMentions",
+   "AllowUserDeleteMessages",
+   "AllowUserEditMessages",
+   "Classification",
+   "Description",
+   "DisplayName",
+   "GiphyContentRating",
+   "GroupId",
+   "MailNickName",
+   "Members",
+   "Owners",
+   "ResourceBehaviorOptions",
+   "SensitivityLabels",
+   "ShowInTeamsSearchAndSuggestions",
+   "Template",
+   "Visibility"
+  ],
+  "New-PnPTenantSequence": [
+   "Id"
+  ],
+  "New-PnPTenantSequenceCommunicationSite": [
+   "AllowFileSharingForGuestUsers",
+   "Classification",
+   "Description",
+   "HubSite",
+   "Language",
+   "Owner",
+   "SiteDesignId",
+   "TemplateIds",
+   "Title",
+   "Url"
+  ],
+  "New-PnPTenantSequenceTeamNoGroupSite": [
+   "Description",
+   "HubSite",
+   "Language",
+   "Owner",
+   "TemplateIds",
+   "TimeZoneId",
+   "Title",
+   "Url"
+  ],
+  "New-PnPTenantSequenceTeamNoGroupSubSite": [
+   "Description",
+   "Language",
+   "QuickLaunchDisabled",
+   "TemplateIds",
+   "TimeZoneId",
+   "Title",
+   "Url",
+   "UseDifferentPermissionsFromParentSite"
+  ],
+  "New-PnPTenantSequenceTeamSite": [
+   "Alias",
+   "Classification",
+   "Description",
+   "DisplayName",
+   "HubSite",
+   "Public",
+   "TemplateIds",
+   "Title"
+  ],
+  "New-PnPTenantSite": [
+   "Lcid",
+   "Owner",
+   "RemoveDeletedSite",
+   "ResourceQuota",
+   "ResourceQuotaWarningLevel",
+   "SharingCapability",
+   "StorageQuota",
+   "StorageQuotaWarningLevel",
+   "Template",
+   "TimeZone",
+   "Title",
+   "Url",
+   "Wait"
+  ],
+  "New-PnPTenantTemplate": [
+   "Author",
+   "Description",
+   "DisplayName",
+   "Generator"
+  ],
+  "New-PnPTerm": [
+   "CustomProperties",
+   "Description",
+   "Id",
+   "Lcid",
+   "LocalCustomProperties",
+   "Name",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "New-PnPTermGroup": [
+   "Contributors",
+   "Description",
+   "Id",
+   "Managers",
+   "Name",
+   "TermStore"
+  ],
+  "New-PnPTermLabel": [
+   "IsDefault",
+   "Lcid",
+   "Name",
+   "Term",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "New-PnPTermSet": [
+   "Contact",
+   "CustomProperties",
+   "Description",
+   "Id",
+   "IsNotAvailableForTagging",
+   "IsOpenForTermCreation",
+   "Lcid",
+   "Name",
+   "Owner",
+   "StakeHolders",
+   "TermGroup",
+   "TermStore"
+  ],
+  "New-PnPTodoList": [
+   "DisplayName",
+   "User"
+  ],
+  "New-PnPTodoTask": [
+   "Body",
+   "BodyContentType",
+   "Categories",
+   "DueDateTime",
+   "Importance",
+   "IsReminderOn",
+   "List",
+   "ReminderDateTime",
+   "StartDateTime",
+   "Status",
+   "TimeZone",
+   "Title",
+   "User"
+  ],
+  "New-PnPTodoTaskChecklistItem": [
+   "DisplayName",
+   "List",
+   "Task",
+   "User"
+  ],
+  "New-PnPTodoTaskLinkedResource": [
+   "ApplicationName",
+   "DisplayName",
+   "ExternalId",
+   "List",
+   "Task",
+   "User",
+   "WebUrl"
+  ],
+  "New-PnPUPABulkImportJob": [
+   "Folder",
+   "IdProperty",
+   "IdType",
+   "Path",
+   "Url",
+   "UserProfilePropertyMapping",
+   "Wait",
+   "WhatIf"
+  ],
+  "New-PnPUser": [
+   "LoginName"
+  ],
+  "New-PnPVivaEngageCommunity": [
+   "Description",
+   "DisplayName",
+   "Owners",
+   "Privacy"
+  ],
+  "New-PnPWeb": [
+   "BreakInheritance",
+   "Description",
+   "InheritNavigation",
+   "Locale",
+   "Template",
+   "Title",
+   "Url"
+  ],
+  "Publish-PnPApp": [
+   "Force",
+   "Identity",
+   "Scope",
+   "SkipFeatureDeployment"
+  ],
+  "Publish-PnPContentType": [
+   "ContentType"
+  ],
+  "Publish-PnPSyntexModel": [
+   "Batch",
+   "List",
+   "ListWebUrl",
+   "Model",
+   "PublicationViewOption",
+   "TargetLibraryServerRelativeUrl",
+   "TargetSiteUrl",
+   "TargetWebServerRelativeUrl"
+  ],
+  "Read-PnPSiteTemplate": [
+   "Path",
+   "Stream",
+   "TemplateProviderExtensions",
+   "Xml"
+  ],
+  "Read-PnPTenantTemplate": [
+   "Path",
+   "Stream",
+   "Xml"
+  ],
+  "Receive-PnPCopyMoveJobStatus": [
+   "Job",
+   "Wait"
+  ],
+  "Register-PnPAppCatalogSite": [
+   "Force",
+   "Owner",
+   "TimeZoneId",
+   "Url"
+  ],
+  "Register-PnPEntraIDApp": [
+   "ApplicationName",
+   "AzureEnvironment",
+   "CertificatePassword",
+   "CertificatePath",
+   "CommonName",
+   "Country",
+   "DeviceLogin",
+   "EntraIDLoginEndPoint",
+   "Locality",
+   "LogoFilePath",
+   "MicrosoftGraphEndPoint",
+   "Organization",
+   "OrganizationUnit",
+   "OutPath",
+   "ResourcePermissions",
+   "SignInAudience",
+   "SkipCertCreation",
+   "State",
+   "Store",
+   "Tenant",
+   "ValidYears"
+  ],
+  "Register-PnPEntraIDAppForInteractiveLogin": [
+   "ApplicationName",
+   "AzureEnvironment",
+   "DeviceLogin",
+   "EntraIDLoginEndPoint",
+   "LogoFilePath",
+   "MicrosoftGraphEndPoint",
+   "SignInAudience",
+   "Tenant"
+  ],
+  "Register-PnPHubSite": [
+   "Principals",
+   "Site"
+  ],
+  "Remove-PnPAdaptiveScopeProperty": [
+   "Force",
+   "Key"
+  ],
+  "Remove-PnPAlert": [
+   "Force",
+   "Identity",
+   "User"
+  ],
+  "Remove-PnPApp": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Remove-PnPApplicationCustomizer": [
+   "ClientSideComponentId",
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Remove-PnPAvailableSiteClassification": [
+   "Classifications",
+   "Force"
+  ],
+  "Remove-PnPContainer": [
+   "Identity"
+  ],
+  "Remove-PnPContainerType": [
+   "Identity"
+  ],
+  "Remove-PnPContentType": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPContentTypeFromDocumentSet": [
+   "ContentType",
+   "DocumentSet"
+  ],
+  "Remove-PnPContentTypeFromList": [
+   "ContentType",
+   "List"
+  ],
+  "Remove-PnPCustomAction": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Remove-PnPDeletedMicrosoft365Group": [
+   "Identity"
+  ],
+  "Remove-PnPEntraIDApp": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPEntraIDGroup": [
+   "Identity"
+  ],
+  "Remove-PnPEntraIDGroupMember": [
+   "Identity",
+   "MemberObjectId",
+   "Users"
+  ],
+  "Remove-PnPEntraIDGroupOwner": [
+   "Identity",
+   "MemberObjectId",
+   "Users"
+  ],
+  "Remove-PnPEntraIDServicePrincipalAppRoleAssignment": [
+   "AppRole",
+   "Force",
+   "Group",
+   "Identity",
+   "Resource",
+   "User"
+  ],
+  "Remove-PnPEntraIDServicePrincipalAssignedAppRole": [
+   "AppRoleName",
+   "BuiltInType",
+   "Identity",
+   "Principal"
+  ],
+  "Remove-PnPEntraIDUser": [
+   "Identity",
+   "WhatIf"
+  ],
+  "Remove-PnPEventReceiver": [
+   "Force",
+   "Identity",
+   "List",
+   "Scope"
+  ],
+  "Remove-PnPExternalUser": [
+   "UniqueIDs"
+  ],
+  "Remove-PnPField": [
+   "Batch",
+   "Force",
+   "Identity",
+   "List"
+  ],
+  "Remove-PnPFieldFromContentType": [
+   "ContentType",
+   "DoNotUpdateChildren",
+   "Field"
+  ],
+  "Remove-PnPFile": [
+   "Force",
+   "Recycle",
+   "ServerRelativeUrl",
+   "SiteRelativeUrl"
+  ],
+  "Remove-PnPFileFromSiteTemplate": [
+   "FilePath",
+   "Path",
+   "TemplateProviderExtensions"
+  ],
+  "Remove-PnPFileSharingLink": [
+   "FileUrl",
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPFileVersion": [
+   "All",
+   "Force",
+   "Identity",
+   "Recycle",
+   "Url"
+  ],
+  "Remove-PnPFlow": [
+   "AsAdmin",
+   "Environment",
+   "Force",
+   "Identity",
+   "ThrowExceptionIfPowerAutomateNotFound"
+  ],
+  "Remove-PnPFlowOwner": [
+   "AsAdmin",
+   "Environment",
+   "Force",
+   "Identity",
+   "User"
+  ],
+  "Remove-PnPFolder": [
+   "Folder",
+   "Force",
+   "Name",
+   "Recycle"
+  ],
+  "Remove-PnPFolderSharingLink": [
+   "Folder",
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPGeoAdministrator": [
+   "GroupAlias",
+   "ObjectId",
+   "UserPrincipalName"
+  ],
+  "Remove-PnPGraphSubscription": [
+   "Identity"
+  ],
+  "Remove-PnPGroup": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPGroupMember": [
+   "Group",
+   "LoginName"
+  ],
+  "Remove-PnPHomeSite": [
+   "Force"
+  ],
+  "Remove-PnPHubSiteAssociation": [
+   "Site"
+  ],
+  "Remove-PnPHubToHubAssociation": [
+   "HubSiteId",
+   "HubSiteUrl"
+  ],
+  "Remove-PnPIndexedProperty": [
+   "Key",
+   "List"
+  ],
+  "Remove-PnPJavaScriptLink": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Remove-PnPKnowledgeHubSite": [],
+  "Remove-PnPLibraryFileVersionBatchDeleteJob": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPList": [
+   "Force",
+   "Identity",
+   "LargeList",
+   "Recycle"
+  ],
+  "Remove-PnPListDesign": [
+   "Force",
+   "Identity",
+   "WhatIf"
+  ],
+  "Remove-PnPListItem": [
+   "Batch",
+   "Force",
+   "Identity",
+   "List",
+   "Recycle"
+  ],
+  "Remove-PnPListItemAttachment": [
+   "All",
+   "FileName",
+   "Force",
+   "Identity",
+   "List",
+   "Recycle"
+  ],
+  "Remove-PnPListItemComment": [
+   "All",
+   "Force",
+   "Identity",
+   "List",
+   "Text"
+  ],
+  "Remove-PnPListItemVersion": [
+   "Force",
+   "Identity",
+   "List",
+   "Version"
+  ],
+  "Remove-PnPManagedAppId": [
+   "Force",
+   "Url"
+  ],
+  "Remove-PnPMicrosoft365Group": [
+   "Identity"
+  ],
+  "Remove-PnPMicrosoft365GroupMember": [
+   "Identity",
+   "Users"
+  ],
+  "Remove-PnPMicrosoft365GroupOwner": [
+   "Identity",
+   "Users"
+  ],
+  "Remove-PnPMicrosoft365GroupPhoto": [
+   "Identity"
+  ],
+  "Remove-PnPMicrosoft365GroupSettings": [
+   "Group",
+   "Identity"
+  ],
+  "Remove-PnPMultiGeoCompanyAllowedDataLocation": [
+   "Location"
+  ],
+  "Remove-PnPNavigationNode": [
+   "All",
+   "Force",
+   "Identity",
+   "Location"
+  ],
+  "Remove-PnPOrgAssetsLibrary": [
+   "CdnType",
+   "LibraryUrl",
+   "ShouldRemoveFromCdn"
+  ],
+  "Remove-PnPOrgNewsSite": [
+   "OrgNewsSiteUrl"
+  ],
+  "Remove-PnPPage": [
+   "Force",
+   "Identity",
+   "Recycle"
+  ],
+  "Remove-PnPPageComponent": [
+   "Force",
+   "InstanceId",
+   "Page"
+  ],
+  "Remove-PnPPlannerBucket": [
+   "BucketId",
+   "Group",
+   "Identity",
+   "Plan"
+  ],
+  "Remove-PnPPlannerPlan": [
+   "Group",
+   "Identity"
+  ],
+  "Remove-PnPPlannerRoster": [
+   "Identity"
+  ],
+  "Remove-PnPPlannerRosterMember": [
+   "Identity",
+   "User"
+  ],
+  "Remove-PnPPlannerTask": [
+   "Task"
+  ],
+  "Remove-PnPPowerAppPermission": [
+   "AsAdmin",
+   "Environment",
+   "Force",
+   "Group",
+   "Identity",
+   "Tenant",
+   "User"
+  ],
+  "Remove-PnPProfileCardProperty": [
+   "PropertyName"
+  ],
+  "Remove-PnPPropertyBagValue": [
+   "Folder",
+   "Force",
+   "Key"
+  ],
+  "Remove-PnPPublishingImageRendition": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPRoleDefinition": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPSdnProvider": [],
+  "Remove-PnPSearchConfiguration": [
+   "Configuration",
+   "Path",
+   "Scope"
+  ],
+  "Remove-PnPSearchExternalConnection": [
+   "Identity"
+  ],
+  "Remove-PnPSearchExternalItem": [
+   "ConnectionId",
+   "ItemId"
+  ],
+  "Remove-PnPSearchResultType": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Remove-PnPSearchVertical": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Remove-PnPSiteCollectionAdmin": [
+   "Owners"
+  ],
+  "Remove-PnPSiteCollectionAppCatalog": [
+   "Site"
+  ],
+  "Remove-PnPSiteCollectionTermStore": [],
+  "Remove-PnPSiteDesign": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPSiteDesignTask": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPSiteFileVersionBatchDeleteJob": [
+   "Force"
+  ],
+  "Remove-PnPSiteGroup": [
+   "Force",
+   "Identity",
+   "Site"
+  ],
+  "Remove-PnPSiteScript": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPSiteSensitivityLabel": [],
+  "Remove-PnPSiteUserInvitations": [
+   "CountOnly",
+   "EmailAddress",
+   "Site"
+  ],
+  "Remove-PnPStorageEntity": [
+   "Key",
+   "Scope"
+  ],
+  "Remove-PnPStoredCredential": [
+   "Force",
+   "Name"
+  ],
+  "Remove-PnPTaxonomyItem": [
+   "Force",
+   "TermPath"
+  ],
+  "Remove-PnPTeamsApp": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPTeamsChannel": [
+   "Force",
+   "Identity",
+   "Team"
+  ],
+  "Remove-PnPTeamsChannelUser": [
+   "Channel",
+   "Force",
+   "Identity",
+   "Team"
+  ],
+  "Remove-PnPTeamsTab": [
+   "Channel",
+   "Force",
+   "Identity",
+   "Team"
+  ],
+  "Remove-PnPTeamsTag": [
+   "Force",
+   "Identity",
+   "Team"
+  ],
+  "Remove-PnPTeamsTeam": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPTeamsUser": [
+   "Force",
+   "Role",
+   "Team",
+   "User",
+   "Users"
+  ],
+  "Remove-PnPTenantCdnOrigin": [
+   "CdnType",
+   "OriginUrl"
+  ],
+  "Remove-PnPTenantDeletedSite": [
+   "Force",
+   "Identity",
+   "NoWait"
+  ],
+  "Remove-PnPTenantRestrictedSearchAllowedList": [
+   "ContainsHeader",
+   "SitesList",
+   "SitesListFileUrl"
+  ],
+  "Remove-PnPTenantSite": [
+   "Force",
+   "FromRecycleBin",
+   "SkipRecycleBin",
+   "Url"
+  ],
+  "Remove-PnPTenantSyncClientRestriction": [],
+  "Remove-PnPTenantTheme": [
+   "Identity"
+  ],
+  "Remove-PnPTerm": [
+   "Force",
+   "Identity",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "Remove-PnPTermGroup": [
+   "Force",
+   "Identity",
+   "TermStore"
+  ],
+  "Remove-PnPTermLabel": [
+   "Force",
+   "Label",
+   "Lcid",
+   "Term",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "Remove-PnPTodoList": [
+   "Identity",
+   "User"
+  ],
+  "Remove-PnPTodoTask": [
+   "Identity",
+   "List",
+   "User"
+  ],
+  "Remove-PnPTodoTaskChecklistItem": [
+   "Identity",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Remove-PnPTodoTaskFileAttachment": [
+   "Identity",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Remove-PnPTodoTaskLinkedResource": [
+   "Identity",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Remove-PnPUser": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPUserInfo": [
+   "LoginName",
+   "RedactName",
+   "Site"
+  ],
+  "Remove-PnPUserProfile": [
+   "LoginName",
+   "UserId"
+  ],
+  "Remove-PnPUserProfilePhoto": [
+   "Identity"
+  ],
+  "Remove-PnPView": [
+   "Force",
+   "Identity",
+   "List"
+  ],
+  "Remove-PnPVivaConnectionsDashboardACE": [
+   "Identity"
+  ],
+  "Remove-PnPVivaEngageCommunity": [
+   "Identity"
+  ],
+  "Remove-PnPWeb": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPWebAlert": [
+   "Force",
+   "Identity"
+  ],
+  "Remove-PnPWebPart": [
+   "Identity",
+   "ServerRelativePageUrl",
+   "Title"
+  ],
+  "Remove-PnPWebhookSubscription": [
+   "Force",
+   "Identity",
+   "List"
+  ],
+  "Remove-PnPWikiPage": [
+   "ServerRelativePageUrl",
+   "SiteRelativePageUrl"
+  ],
+  "Rename-PnPFile": [
+   "Force",
+   "OverwriteIfAlreadyExists",
+   "ServerRelativeUrl",
+   "SiteRelativeUrl",
+   "TargetFileName"
+  ],
+  "Rename-PnPFolder": [
+   "Folder",
+   "TargetFolderName"
+  ],
+  "Rename-PnPTenantSite": [
+   "Identity",
+   "NewSiteTitle",
+   "NewSiteUrl",
+   "SuppressBcsCheck",
+   "SuppressMarketplaceAppCheck",
+   "SuppressWorkflow2013Check",
+   "Wait"
+  ],
+  "Repair-PnPSite": [
+   "Identity",
+   "RuleId",
+   "RunAlways"
+  ],
+  "Request-PnPPersonalSite": [
+   "NoWait",
+   "UserEmails"
+  ],
+  "Request-PnPReIndexList": [
+   "Identity"
+  ],
+  "Request-PnPReIndexWeb": [],
+  "Request-PnPSyntexClassifyAndExtract": [
+   "Batch",
+   "FileUrl",
+   "Folder",
+   "Force",
+   "List",
+   "OffPeak"
+  ],
+  "Reset-PnPDocumentId": [
+   "ContentType",
+   "File",
+   "Library"
+  ],
+  "Reset-PnPFileVersion": [
+   "CheckInComment",
+   "CheckinType",
+   "ServerRelativeUrl"
+  ],
+  "Reset-PnPMicrosoft365GroupExpiration": [
+   "Identity"
+  ],
+  "Reset-PnPRetentionLabel": [
+   "BatchSize",
+   "ItemIds",
+   "List",
+   "SyncToItems"
+  ],
+  "Reset-PnPUserOneDriveQuotaToDefault": [
+   "Account"
+  ],
+  "Resolve-PnPFolder": [
+   "SiteRelativePath"
+  ],
+  "Restart-PnPFlowRun": [
+   "Environment",
+   "Flow",
+   "Force",
+   "Identity"
+  ],
+  "Restore-PnPDeletedContainer": [
+   "Force",
+   "Identity"
+  ],
+  "Restore-PnPDeletedMicrosoft365Group": [
+   "Identity"
+  ],
+  "Restore-PnPFileVersion": [
+   "Force",
+   "Identity",
+   "Url"
+  ],
+  "Restore-PnPFlow": [
+   "Environment",
+   "Identity"
+  ],
+  "Restore-PnPListItemVersion": [
+   "Force",
+   "Identity",
+   "List",
+   "Version"
+  ],
+  "Restore-PnPRecycleBinItem": [
+   "Force",
+   "IdList",
+   "Identity",
+   "RowLimit"
+  ],
+  "Restore-PnPTenantRecycleBinItem": [
+   "Force",
+   "Url",
+   "Wait"
+  ],
+  "Restore-PnPTenantSite": [
+   "Force",
+   "Identity",
+   "NoWait"
+  ],
+  "Revoke-PnPEntraIDAppFilePermission": [
+   "FileId",
+   "Force",
+   "List",
+   "Path",
+   "PermissionId",
+   "Site"
+  ],
+  "Revoke-PnPEntraIDAppListItemPermission": [
+   "Force",
+   "List",
+   "ListItem",
+   "PermissionId",
+   "Site"
+  ],
+  "Revoke-PnPEntraIDAppListPermission": [
+   "Force",
+   "List",
+   "PermissionId",
+   "Site"
+  ],
+  "Revoke-PnPEntraIDAppSitePermission": [
+   "Force",
+   "PermissionId",
+   "Site"
+  ],
+  "Revoke-PnPHubSiteRights": [
+   "Identity",
+   "Principals"
+  ],
+  "Revoke-PnPSiteDesignRights": [
+   "Identity",
+   "Principals"
+  ],
+  "Revoke-PnPTenantServicePrincipalPermission": [
+   "Force",
+   "Resource",
+   "Scope"
+  ],
+  "Revoke-PnPUserSession": [
+   "User"
+  ],
+  "Save-PnPPageConversionLog": [],
+  "Save-PnPSiteTemplate": [
+   "Force",
+   "Out",
+   "Schema",
+   "Template",
+   "TemplateProviderExtensions"
+  ],
+  "Save-PnPTenantTemplate": [
+   "Force",
+   "Out",
+   "Schema",
+   "Template"
+  ],
+  "Send-PnPMail": [
+   "Attachments",
+   "Bcc",
+   "Body",
+   "BodyContentType",
+   "Cc",
+   "Files",
+   "From",
+   "Importance",
+   "ReplyTo",
+   "SaveToSentItems",
+   "Subject",
+   "To"
+  ],
+  "Set-PnPAdaptiveScopeProperty": [
+   "Key",
+   "Value"
+  ],
+  "Set-PnPAppSideLoading": [
+   "Off",
+   "On"
+  ],
+  "Set-PnPApplicationCustomizer": [
+   "ClientSideComponentId",
+   "ClientSideComponentProperties",
+   "ClientSideHostProperties",
+   "Description",
+   "Identity",
+   "Scope",
+   "Sequence",
+   "Title"
+  ],
+  "Set-PnPAuditing": [
+   "CheckOutCheckInItems",
+   "DeleteRestoreItems",
+   "DisableAll",
+   "EditContentTypesColumns",
+   "EditItems",
+   "EditUsersPermissions",
+   "EnableAll",
+   "MoveCopyItems",
+   "RetentionTime",
+   "SearchContent",
+   "TrimAuditLog"
+  ],
+  "Set-PnPAvailablePageLayouts": [
+   "AllowAllPageLayouts",
+   "InheritPageLayouts",
+   "PageLayouts"
+  ],
+  "Set-PnPBrowserIdleSignout": [
+   "Enabled",
+   "SignoutAfter",
+   "WarnAfter"
+  ],
+  "Set-PnPBuiltInDesignPackageVisibility": [
+   "DesignPackage",
+   "IsVisible"
+  ],
+  "Set-PnPBuiltInSiteTemplateSettings": [
+   "Identity",
+   "IsHidden",
+   "Template",
+   "WhatIf"
+  ],
+  "Set-PnPContentType": [
+   "Description",
+   "DisplayFormClientSideComponentId",
+   "DisplayFormClientSideComponentProperties",
+   "EditFormClientSideComponentId",
+   "EditFormClientSideComponentProperties",
+   "FormClientSideComponentId",
+   "FormClientSideComponentProperties",
+   "Group",
+   "Hidden",
+   "Identity",
+   "InSiteHierarchy",
+   "List",
+   "Name",
+   "NewFormClientSideComponentId",
+   "NewFormClientSideComponentProperties",
+   "ReadOnly",
+   "Sealed",
+   "UpdateChildren"
+  ],
+  "Set-PnPContext": [
+   "Context"
+  ],
+  "Set-PnPCopilotAdminLimitedMode": [
+   "GroupId",
+   "IsEnabledForGroup"
+  ],
+  "Set-PnPDefaultColumnValues": [
+   "Field",
+   "Folder",
+   "List",
+   "Value"
+  ],
+  "Set-PnPDefaultContentTypeToList": [
+   "ContentType",
+   "List"
+  ],
+  "Set-PnPDefaultPageLayout": [
+   "InheritFromParentSite",
+   "Title"
+  ],
+  "Set-PnPDisableSpacesActivation": [
+   "Disable",
+   "Identity",
+   "Scope"
+  ],
+  "Set-PnPDocumentSetField": [
+   "DocumentSet",
+   "Field",
+   "RemoveSharedField",
+   "RemoveWelcomePageField",
+   "SetSharedField",
+   "SetWelcomePageField"
+  ],
+  "Set-PnPEntraIDAppFilePermission": [
+   "FileId",
+   "List",
+   "Path",
+   "PermissionId",
+   "Permissions",
+   "Site"
+  ],
+  "Set-PnPEntraIDAppListItemPermission": [
+   "List",
+   "ListItem",
+   "PermissionId",
+   "Permissions",
+   "Site"
+  ],
+  "Set-PnPEntraIDAppListPermission": [
+   "List",
+   "PermissionId",
+   "Permissions",
+   "Site"
+  ],
+  "Set-PnPEntraIDAppSitePermission": [
+   "PermissionId",
+   "Permissions",
+   "Site"
+  ],
+  "Set-PnPEntraIDGroup": [
+   "Description",
+   "DisplayName",
+   "HideFromAddressLists",
+   "HideFromOutlookClients",
+   "Identity",
+   "MailEnabled",
+   "Members",
+   "Owners",
+   "SecurityEnabled"
+  ],
+  "Set-PnPField": [
+   "Identity",
+   "List",
+   "ShowInFiltersPane",
+   "UpdateExistingLists",
+   "Values"
+  ],
+  "Set-PnPFileArchiveState": [
+   "ArchiveState",
+   "Force",
+   "Identity"
+  ],
+  "Set-PnPFileCheckedIn": [
+   "Approve",
+   "CheckinType",
+   "Comment",
+   "Url"
+  ],
+  "Set-PnPFileCheckedOut": [
+   "Url"
+  ],
+  "Set-PnPFileRetentionLabel": [
+   "Identity",
+   "RecordLocked",
+   "RetentionLabel"
+  ],
+  "Set-PnPFileVersion": [
+   "ExpirationDate",
+   "Identity",
+   "List",
+   "Version"
+  ],
+  "Set-PnPFolderArchiveState": [
+   "ArchiveState",
+   "Force",
+   "Identity"
+  ],
+  "Set-PnPFolderPermission": [
+   "AddRole",
+   "ClearExisting",
+   "ClearSubscopes",
+   "Group",
+   "Identity",
+   "InheritPermissions",
+   "List",
+   "RemoveRole",
+   "SystemUpdate",
+   "User"
+  ],
+  "Set-PnPFooter": [
+   "BackgroundTheme",
+   "Enabled",
+   "Layout",
+   "LogoUrl",
+   "Title"
+  ],
+  "Set-PnPGeoStorageQuota": [
+   "GeoLocation",
+   "StorageQuotaMB"
+  ],
+  "Set-PnPGraphSubscription": [
+   "ExpirationDate",
+   "Identity"
+  ],
+  "Set-PnPGroup": [
+   "AddRole",
+   "AllowMembersEditMembership",
+   "AllowRequestToJoinLeave",
+   "AutoAcceptRequestToJoinLeave",
+   "Description",
+   "Identity",
+   "OnlyAllowMembersViewMembership",
+   "Owner",
+   "RemoveRole",
+   "RequestToJoinEmail",
+   "SetAssociatedGroup",
+   "Title"
+  ],
+  "Set-PnPGroupPermissions": [
+   "AddRole",
+   "Identity",
+   "List",
+   "RemoveRole"
+  ],
+  "Set-PnPHideDefaultThemes": [
+   "HideDefaultThemes"
+  ],
+  "Set-PnPHomePage": [
+   "RootFolderRelativeUrl"
+  ],
+  "Set-PnPHomeSite": [
+   "DraftMode",
+   "Force",
+   "HomeSiteUrl",
+   "VivaConnectionsDefaultStart"
+  ],
+  "Set-PnPHubSite": [
+   "Description",
+   "EnablePermissionsSync",
+   "HideNameInNavigation",
+   "Identity",
+   "LogoUrl",
+   "ParentHubSiteId",
+   "RequiresJoinApproval",
+   "SiteDesignId",
+   "Title"
+  ],
+  "Set-PnPImageListItemColumn": [
+   "Field",
+   "Identity",
+   "List",
+   "Path",
+   "ServerRelativePath",
+   "UpdateType"
+  ],
+  "Set-PnPInPlaceRecordsManagement": [
+   "Enabled"
+  ],
+  "Set-PnPIndexedProperties": [
+   "Keys"
+  ],
+  "Set-PnPKnowledgeHubSite": [
+   "KnowledgeHubSiteUrl"
+  ],
+  "Set-PnPList": [
+   "AllowDeletion",
+   "BreakRoleInheritance",
+   "ClearSubscopes",
+   "Color",
+   "CopyRoleAssignments",
+   "DefaultSensitivityLabelForLibrary",
+   "Description",
+   "DisableCommenting",
+   "DisableGridEditing",
+   "DraftVersionVisibility",
+   "EnableAttachments",
+   "EnableAutoExpirationVersionTrim",
+   "EnableClassicAudienceTargeting",
+   "EnableContentTypes",
+   "EnableFolderCreation",
+   "EnableMinorVersions",
+   "EnableModeration",
+   "EnableModernAudienceTargeting",
+   "EnableVersioning",
+   "ExemptFromBlockDownloadOfNonViewableFiles",
+   "ExpireVersionsAfterDays",
+   "ForceCheckout",
+   "Hidden",
+   "Icon",
+   "Identity",
+   "ListExperience",
+   "MajorVersions",
+   "MinorVersions",
+   "NoCrawl",
+   "OpenDocumentsMode",
+   "ParserDisabled",
+   "Path",
+   "ReadSecurity",
+   "ResetRoleInheritance",
+   "Title",
+   "WriteSecurity"
+  ],
+  "Set-PnPListInformationRightsManagement": [
+   "AllowPrint",
+   "AllowScript",
+   "AllowWriteCopy",
+   "DisableDocumentBrowserView",
+   "DocumentAccessExpireDays",
+   "DocumentLibraryProtectionExpireDate",
+   "Enable",
+   "EnableDocumentAccessExpire",
+   "EnableDocumentBrowserPublishingView",
+   "EnableExpiration",
+   "EnableGroupProtection",
+   "EnableLicenseCacheExpire",
+   "EnableRejection",
+   "GroupName",
+   "LicenseCacheExpireDays",
+   "List",
+   "PolicyDescription",
+   "PolicyTitle",
+   "TemplateId"
+  ],
+  "Set-PnPListItem": [
+   "Batch",
+   "ClearLabel",
+   "ContentType",
+   "Force",
+   "Identity",
+   "Label",
+   "List",
+   "UpdateType",
+   "Values"
+  ],
+  "Set-PnPListItemAsRecord": [
+   "DeclarationDate",
+   "Identity",
+   "List"
+  ],
+  "Set-PnPListItemPermission": [
+   "AddRole",
+   "ClearExisting",
+   "ClearSubscopes",
+   "Group",
+   "Identity",
+   "InheritPermissions",
+   "List",
+   "RemoveRole",
+   "SystemUpdate",
+   "User"
+  ],
+  "Set-PnPListPermission": [
+   "AddRole",
+   "Group",
+   "Identity",
+   "RemoveRole",
+   "User"
+  ],
+  "Set-PnPListRecordDeclaration": [
+   "AutoRecordDeclaration",
+   "List",
+   "ManualRecordDeclaration"
+  ],
+  "Set-PnPListVersionPolicy": [
+   "EnableAutoExpirationVersionTrim",
+   "ExcludeDefaultPolicy",
+   "ExpireVersionsAfterDays",
+   "FileTypes",
+   "MajorVersionLimit",
+   "MajorWithMinorVersionsLimit",
+   "NoWait",
+   "RemoveVersionExpirationFileTypeOverride",
+   "Sync"
+  ],
+  "Set-PnPManagedAppId": [
+   "AppId",
+   "Overwrite",
+   "Url"
+  ],
+  "Set-PnPMasterPage": [
+   "CustomMasterPageServerRelativeUrl",
+   "CustomMasterPageSiteRelativeUrl",
+   "MasterPageServerRelativeUrl",
+   "MasterPageSiteRelativeUrl"
+  ],
+  "Set-PnPMessageCenterAnnouncementAsArchived": [
+   "Identity"
+  ],
+  "Set-PnPMessageCenterAnnouncementAsFavorite": [
+   "Identity"
+  ],
+  "Set-PnPMessageCenterAnnouncementAsNotArchived": [
+   "Identity"
+  ],
+  "Set-PnPMessageCenterAnnouncementAsNotFavorite": [
+   "Identity"
+  ],
+  "Set-PnPMessageCenterAnnouncementAsRead": [
+   "Identity"
+  ],
+  "Set-PnPMessageCenterAnnouncementAsUnread": [
+   "Identity"
+  ],
+  "Set-PnPMicrosoft365Group": [
+   "AutoSubscribeNewMembers",
+   "CreateTeam",
+   "Description",
+   "DisplayName",
+   "HideFromAddressLists",
+   "HideFromOutlookClients",
+   "Identity",
+   "IsPrivate",
+   "LogoPath",
+   "MailNickname",
+   "Members",
+   "Owners",
+   "PreferredDataLocation",
+   "SensitivityLabels"
+  ],
+  "Set-PnPMicrosoft365GroupSettings": [
+   "Group",
+   "Identity",
+   "Values"
+  ],
+  "Set-PnPMultiGeoCompanyAllowedDataLocation": [
+   "InitialDomain",
+   "Location"
+  ],
+  "Set-PnPMultiGeoExperience": [
+   "AllInstances"
+  ],
+  "Set-PnPOrgAssetsLibrary": [
+   "IsCopilotSearchable",
+   "LibraryUrl",
+   "OrgAssetType",
+   "ThumbnailUrl"
+  ],
+  "Set-PnPPage": [
+   "CommentsEnabled",
+   "ContentType",
+   "DemoteNewsArticle",
+   "HeaderLayoutType",
+   "HeaderType",
+   "Identity",
+   "LayoutType",
+   "Like",
+   "Name",
+   "PromoteAs",
+   "Publish",
+   "RemoveScheduledPublish",
+   "ScheduledPublishDate",
+   "ServerRelativeImageUrl",
+   "ShowPublishDate",
+   "ThumbnailUrl",
+   "Title",
+   "Translate",
+   "TranslateX",
+   "TranslateY",
+   "TranslationLanguageCodes"
+  ],
+  "Set-PnPPageTextPart": [
+   "InstanceId",
+   "Page",
+   "Text"
+  ],
+  "Set-PnPPageWebPart": [
+   "Identity",
+   "Page",
+   "PropertiesJson",
+   "Title"
+  ],
+  "Set-PnPPlannerBucket": [
+   "Bucket",
+   "Group",
+   "Name",
+   "Plan",
+   "PlanId"
+  ],
+  "Set-PnPPlannerConfiguration": [
+   "AllowCalendarSharing",
+   "AllowPlannerMobilePushNotifications",
+   "AllowRosterCreation",
+   "AllowTenantMoveWithDataLoss",
+   "AllowTenantMoveWithDataMigration",
+   "IsPlannerAllowed"
+  ],
+  "Set-PnPPlannerPlan": [
+   "Group",
+   "Plan",
+   "PlanId",
+   "Title"
+  ],
+  "Set-PnPPlannerTask": [
+   "AppliedCategories",
+   "AssignedTo",
+   "Bucket",
+   "Description",
+   "DueDateTime",
+   "PercentComplete",
+   "Priority",
+   "StartDateTime",
+   "TaskId",
+   "Title"
+  ],
+  "Set-PnPPlannerUserPolicy": [
+   "BlockDeleteTasksNotCreatedBySelf",
+   "Identity"
+  ],
+  "Set-PnPPowerAppByPassConsent": [
+   "Enabled",
+   "Environment",
+   "Identity"
+  ],
+  "Set-PnPPropertyBagValue": [
+   "Folder",
+   "Force",
+   "Indexed",
+   "Key",
+   "Value"
+  ],
+  "Set-PnPRequestAccessEmails": [
+   "Disabled",
+   "Emails"
+  ],
+  "Set-PnPRetentionLabel": [
+   "BatchSize",
+   "ItemIds",
+   "Label",
+   "List",
+   "SyncToItems"
+  ],
+  "Set-PnPRoleDefinition": [
+   "Clear",
+   "ClearAll",
+   "Description",
+   "Identity",
+   "NewRoleName",
+   "Order",
+   "Select",
+   "SelectAll"
+  ],
+  "Set-PnPSearchConfiguration": [
+   "Configuration",
+   "Path",
+   "Scope"
+  ],
+  "Set-PnPSearchExternalConnection": [
+   "AuthorizedAppIds",
+   "Description",
+   "Identity",
+   "Name"
+  ],
+  "Set-PnPSearchExternalItem": [
+   "ConnectionId",
+   "ContentType",
+   "ContentValue",
+   "DenyExternalGroups",
+   "DenyGroups",
+   "DenyUsers",
+   "GrantEveryone",
+   "GrantExternalGroups",
+   "GrantGroups",
+   "GrantUsers",
+   "ItemId",
+   "Properties"
+  ],
+  "Set-PnPSearchExternalSchema": [
+   "ConnectionId",
+   "OperationStatusPollingInterval",
+   "Schema",
+   "SchemaAsText",
+   "Wait"
+  ],
+  "Set-PnPSearchResultType": [
+   "Identity",
+   "Name",
+   "Payload",
+   "Priority",
+   "Scope",
+   "Validate"
+  ],
+  "Set-PnPSearchSettings": [
+   "Force",
+   "Scope",
+   "SearchBoxInNavBar",
+   "SearchBoxPlaceholderText",
+   "SearchPageUrl",
+   "SearchScope"
+  ],
+  "Set-PnPSearchVertical": [
+   "DisplayName",
+   "Enabled",
+   "Identity",
+   "IncludeConnectorResults",
+   "Payload",
+   "QueryTemplate",
+   "Scope"
+  ],
+  "Set-PnPSearchVerticalOrder": [
+   "Identity",
+   "Scope"
+  ],
+  "Set-PnPSite": [
+   "AllowSelfServiceUpgrade",
+   "AllowWebPropertyBagUpdateWhenDenyAddAndCustomizePagesIsEnabled",
+   "AnonymousLinkExpirationInDays",
+   "ApplyToExistingDocumentLibraries",
+   "ApplyToNewDocumentLibraries",
+   "BlockDownloadPolicy",
+   "CanSyncHubSitePermissions",
+   "Classification",
+   "ClearGroupId",
+   "CommentsOnSitePagesDisabled",
+   "DefaultLinkPermission",
+   "DefaultLinkToExistingAccess",
+   "DefaultLinkToExistingAccessReset",
+   "DefaultSharingLinkType",
+   "DisableAppViews",
+   "DisableClassicPageBaselineSecurityMode",
+   "DisableCompanyWideSharingLinks",
+   "DisableFlows",
+   "DisableSharingForNonOwners",
+   "DisableSiteBranding",
+   "EnableAutoExpirationVersionTrim",
+   "ExcludeBlockDownloadPolicySiteOwners",
+   "ExcludeBlockDownloadSharePointGroups",
+   "ExcludedBlockDownloadGroupIds",
+   "ExpireVersionsAfterDays",
+   "FileTypesForVersionExpiration",
+   "Force",
+   "HidePeoplePreviewingFiles",
+   "HidePeopleWhoHaveListsOpen",
+   "Identity",
+   "InheritVersionPolicyFromTenant",
+   "IsAuthoritative",
+   "ListsShowHeaderAndNavigation",
+   "LocaleId",
+   "LockState",
+   "LogoFilePath",
+   "MajorVersionLimit",
+   "MajorWithMinorVersionsLimit",
+   "MediaTranscription",
+   "NoScriptSite",
+   "OrganizationSharingLinkMaxExpirationInDays",
+   "OrganizationSharingLinkRecommendedExpirationInDays",
+   "OverrideTenantAnonymousLinkExpirationPolicy",
+   "OverrideTenantOrganizationSharingLinkExpirationPolicy",
+   "Owners",
+   "ReadOnlyForBlockDownloadPolicy",
+   "RemoveVersionExpirationFileTypeOverride",
+   "RequestFilesLinkEnabled",
+   "RequestFilesLinkExpirationInDays",
+   "RestrictContentOrgWideSearch",
+   "RestrictedAccessControl",
+   "RestrictedContentDiscoveryForCopilotAndAgents",
+   "RestrictedToGeo",
+   "ScriptSafeDomainName",
+   "SensitivityLabel",
+   "SharingCapability",
+   "SocialBarOnSitePagesDisabled",
+   "StorageMaximumLevel",
+   "StorageWarningLevel",
+   "Wait"
+  ],
+  "Set-PnPSiteArchiveState": [
+   "ArchiveState",
+   "Force",
+   "Identity",
+   "NoWait"
+  ],
+  "Set-PnPSiteClassification": [
+   "Identity"
+  ],
+  "Set-PnPSiteClosure": [
+   "State"
+  ],
+  "Set-PnPSiteDesign": [
+   "Description",
+   "DesignPackageId",
+   "Identity",
+   "IsDefault",
+   "PreviewImageAltText",
+   "PreviewImageUrl",
+   "SiteScriptIds",
+   "ThumbnailUrl",
+   "Title",
+   "Version",
+   "WebTemplate"
+  ],
+  "Set-PnPSiteDocumentIdPrefix": [
+   "DocumentIdPrefix",
+   "OverwriteExistingIds",
+   "ScheduleAssignment"
+  ],
+  "Set-PnPSiteGroup": [
+   "Identity",
+   "Name",
+   "Owner",
+   "PermissionLevelsToAdd",
+   "PermissionLevelsToRemove",
+   "Site"
+  ],
+  "Set-PnPSitePolicy": [
+   "Name"
+  ],
+  "Set-PnPSiteScript": [
+   "Content",
+   "Description",
+   "Identity",
+   "Title",
+   "Version"
+  ],
+  "Set-PnPSiteScriptPackage": [
+   "ContentPath",
+   "Description",
+   "Identity",
+   "Title",
+   "Version"
+  ],
+  "Set-PnPSiteSensitivityLabel": [
+   "Identity"
+  ],
+  "Set-PnPSiteTemplateMetadata": [
+   "Path",
+   "TemplateDisplayName",
+   "TemplateImagePreviewUrl",
+   "TemplateProperties",
+   "TemplateProviderExtensions"
+  ],
+  "Set-PnPSiteVersionPolicy": [
+   "ApplyToExistingDocumentLibraries",
+   "ApplyToNewDocumentLibraries",
+   "CancelForExistingDocumentLibraries",
+   "EnableAutoExpirationVersionTrim",
+   "ExpireVersionsAfterDays",
+   "InheritFromTenant",
+   "MajorVersions",
+   "MajorWithMinorVersions"
+  ],
+  "Set-PnPStorageEntity": [
+   "Comment",
+   "Description",
+   "Key",
+   "Scope",
+   "Value"
+  ],
+  "Set-PnPStructuralNavigationCacheSiteState": [
+   "IsEnabled",
+   "SiteUrl"
+  ],
+  "Set-PnPStructuralNavigationCacheWebState": [
+   "IsEnabled",
+   "WebUrl"
+  ],
+  "Set-PnPTaxonomyFieldValue": [
+   "InternalFieldName",
+   "Label",
+   "ListItem",
+   "TermId",
+   "TermPath",
+   "Terms"
+  ],
+  "Set-PnPTeamifyPromptHidden": [],
+  "Set-PnPTeamsChannel": [
+   "AllowNewMessageFromBots",
+   "AllowNewMessageFromConnectors",
+   "Description",
+   "DisplayName",
+   "Identity",
+   "IsFavoriteByDefault",
+   "ReplyRestriction",
+   "Team",
+   "UserNewMessageRestriction"
+  ],
+  "Set-PnPTeamsChannelUser": [
+   "Channel",
+   "Identity",
+   "Role",
+   "Team"
+  ],
+  "Set-PnPTeamsTab": [
+   "Channel",
+   "DisplayName",
+   "Identity",
+   "Team"
+  ],
+  "Set-PnPTeamsTag": [
+   "DisplayName",
+   "Identity",
+   "Team"
+  ],
+  "Set-PnPTeamsTeam": [
+   "AllowAddRemoveApps",
+   "AllowChannelMentions",
+   "AllowCreatePrivateChannels",
+   "AllowCreateUpdateChannels",
+   "AllowCreateUpdateRemoveConnectors",
+   "AllowCreateUpdateRemoveTabs",
+   "AllowCustomMemes",
+   "AllowDeleteChannels",
+   "AllowGiphy",
+   "AllowGuestCreateUpdateChannels",
+   "AllowGuestDeleteChannels",
+   "AllowOwnerDeleteMessages",
+   "AllowStickersAndMemes",
+   "AllowTeamMentions",
+   "AllowUserDeleteMessages",
+   "AllowUserEditMessages",
+   "Classification",
+   "Description",
+   "DisplayName",
+   "GiphyContentRating",
+   "Identity",
+   "ShowInTeamsSearchAndSuggestions",
+   "Visibility"
+  ],
+  "Set-PnPTeamsTeamArchivedState": [
+   "Archived",
+   "Identity",
+   "SetSiteReadOnlyForMembers"
+  ],
+  "Set-PnPTeamsTeamPicture": [
+   "Path",
+   "Team"
+  ],
+  "Set-PnPTemporarilyDisableAppBar": [
+   "Enabled"
+  ],
+  "Set-PnPTenant": [
+   "AIBuilderEnabled",
+   "AllOrganizationSecurityGroupId",
+   "AllowAnonymousMeetingParticipantsToAccessWhiteboards",
+   "AllowAppsBypassOfUnmanagedDevicePolicy",
+   "AllowClassicPublishingSiteCreation",
+   "AllowCommentsTextOnEmailEnabled",
+   "AllowDownloadingNonWebViewableFiles",
+   "AllowEditing",
+   "AllowEveryoneExceptExternalUsersClaimInPrivateSite",
+   "AllowFileArchive",
+   "AllowFileArchiveOnNewSitesByDefault",
+   "AllowFilesWithKeepLabelToBeDeletedODB",
+   "AllowFilesWithKeepLabelToBeDeletedSPO",
+   "AllowGuestUserShareToUsersNotInSiteCollection",
+   "AllowOverrideForBlockUserInfoVisibility",
+   "AllowSensitivityLabelOnRecords",
+   "AllowSharingOutsideRestrictedAccessControlGroups",
+   "AllowWebPropertyBagUpdateWhenDenyAddAndCustomizePagesIsEnabled",
+   "AnyoneLinkTrackUsers",
+   "AppBypassInformationBarriers",
+   "ApplyAppEnforcedRestrictionsToAdHocRecipients",
+   "ArchiveRedirectUrl",
+   "AuthContextResilienceMode",
+   "BccExternalSharingInvitations",
+   "BccExternalSharingInvitationsList",
+   "BlockDownloadFileTypeIds",
+   "BlockDownloadFileTypePolicy",
+   "BlockSendLabelMismatchEmail",
+   "BlockUserInfoVisibilityInOneDrive",
+   "BlockUserInfoVisibilityInSharePoint",
+   "BusinessConnectivityServiceDisabled",
+   "CommentsOnFilesDisabled",
+   "CommentsOnListItemsDisabled",
+   "CommentsOnSitePagesDisabled",
+   "ConditionalAccessPolicy",
+   "ConditionalAccessPolicyErrorHelpLink",
+   "ContentSecurityPolicyEnforcement",
+   "ContentTypeSyncSiteTemplatesList",
+   "CoreBlockGuestsAsSiteAdmin",
+   "CoreDefaultLinkToExistingAccess",
+   "CoreDefaultShareLinkRole",
+   "CoreDefaultShareLinkScope",
+   "CoreLoopDefaultSharingLinkRole",
+   "CoreLoopDefaultSharingLinkScope",
+   "CoreLoopSharingCapability",
+   "CoreOrganizationSharingLinkMaxExpirationInDays",
+   "CoreOrganizationSharingLinkRecommendedExpirationInDays",
+   "CoreRequestFilesLinkEnabled",
+   "CoreRequestFilesLinkExpirationInDays",
+   "CoreSharingCapability",
+   "CustomizedExternalSharingServiceUrl",
+   "DefaultLinkPermission",
+   "DefaultOneDriveInformationBarrierMode",
+   "DefaultSharingLinkType",
+   "DelayContentSecurityPolicyEnforcement",
+   "DelayDenyAddAndCustomizePagesEnforcementOnClassicPublishingSites",
+   "DisableAddToOneDrive",
+   "DisableBackToClassic",
+   "DisableCustomAppAuthentication",
+   "DisableDocumentLibraryDefaultLabeling",
+   "DisablePersonalListCreation",
+   "DisableSpacesActivation",
+   "DisableVivaConnectionsAnalytics",
+   "DisabledAdaptiveCardExtensionIds",
+   "DisabledModernListTemplateIds",
+   "DisabledWebPartIds",
+   "DisallowInfectedFileDownload",
+   "DisplayNamesOfFileViewers",
+   "DisplayNamesOfFileViewersInSpo",
+   "DisplayStartASiteOption",
+   "ESignatureEnabled",
+   "EmailAttestationReAuthDays",
+   "EmailAttestationRequired",
+   "EnableAIPIntegration",
+   "EnableAutoExpirationVersionTrim",
+   "EnableAutoNewsDigest",
+   "EnableAzureADB2BIntegration",
+   "EnableDiscoverableByOrganizationForVideos",
+   "EnableGuestSignInAcceleration",
+   "EnableMediaReactions",
+   "EnableModernListTemplateIds",
+   "EnableNotificationsSubscriptions",
+   "EnableRestrictedAccessControl",
+   "EnableSensitivityLabelForOneNote",
+   "EnableSensitivityLabelForPDF",
+   "EnableSensitivityLabelForVideoFiles",
+   "EnableSiteArchive",
+   "EnforceRequestDigest",
+   "ExcludedBlockDownloadGroupIds",
+   "ExpireVersionsAfterDays",
+   "ExtendPermissionsToUnprotectedFiles",
+   "ExternalServicesEnabled",
+   "ExternalUserExpirationRequired",
+   "ExternalUserExpireInDays",
+   "FileAnonymousLinkType",
+   "FilePickerExternalImageSearchEnabled",
+   "FileTypesForVersionExpiration",
+   "FolderAnonymousLinkType",
+   "Force",
+   "GuestSharingGroupAllowListInTenantByPrincipalIdentity",
+   "HideDefaultThemes",
+   "HideSyncButtonOnDocLib",
+   "HideSyncButtonOnODB",
+   "HideSyncButtonOnTeamSite",
+   "IBImplicitGroupBased",
+   "IPAddressAllowList",
+   "IPAddressEnforcement",
+   "IPAddressWACTokenLifetime",
+   "IncludeAtAGlanceInShareEmails",
+   "InformationBarriersSuspension",
+   "IsCollabMeetingNotesFluidEnabled",
+   "IsDataAccessInCardDesignerEnabled",
+   "IsEnableAppAuthPopUpEnabled",
+   "IsFluidEnabled",
+   "IsLoopEnabled",
+   "IsSharePointAddInsDisabled",
+   "IsWBFluidEnabled",
+   "KnowledgeAgentEnabled",
+   "KnowledgeAgentScope",
+   "KnowledgeAgentSelectedSitesList",
+   "LabelMismatchEmailHelpLink",
+   "LegacyAuthProtocolsEnabled",
+   "LegacyBrowserAuthProtocolsEnabled",
+   "MajorVersionLimit",
+   "MarkNewFilesSensitiveByDefault",
+   "MassDeleteNotificationDisabled",
+   "MaxCompatibilityLevel",
+   "MediaTranscription",
+   "MediaTranscriptionAutomaticFeatures",
+   "MinCompatibilityLevel",
+   "NoAccessRedirectUrl",
+   "NotificationsInOneDriveForBusinessEnabled",
+   "NotificationsInSharePointEnabled",
+   "NotifyOwnersWhenInvitationsAccepted",
+   "NotifyOwnersWhenItemsReshared",
+   "ODBAccessRequests",
+   "ODBMembersCanShare",
+   "OfficeClientADALDisabled",
+   "OneDriveBlockGuestsAsSiteAdmin",
+   "OneDriveDefaultLinkToExistingAccess",
+   "OneDriveDefaultShareLinkRole",
+   "OneDriveDefaultShareLinkScope",
+   "OneDriveForGuestsEnabled",
+   "OneDriveLoopDefaultSharingLinkRole",
+   "OneDriveLoopDefaultSharingLinkScope",
+   "OneDriveLoopSharingCapability",
+   "OneDriveOrganizationSharingLinkMaxExpirationInDays",
+   "OneDriveOrganizationSharingLinkRecommendedExpirationInDays",
+   "OneDriveRequestFilesLinkEnabled",
+   "OneDriveRequestFilesLinkExpirationInDays",
+   "OneDriveSharingCapability",
+   "OneDriveStorageQuota",
+   "OrphanedPersonalSitesRetentionPeriod",
+   "OwnerAnonymousNotification",
+   "PreventExternalUsersFromResharing",
+   "ProvisionSharedWithEveryoneFolder",
+   "PublicCdnAllowedFileTypes",
+   "PublicCdnEnabled",
+   "RecycleBinRetentionPeriod",
+   "ReduceTempTokenLifetimeEnabled",
+   "ReduceTempTokenLifetimeValue",
+   "RequireAcceptingAccountMatchInvitedAccount",
+   "RequireAnonymousLinksExpireInDays",
+   "RestrictExternalSharing",
+   "RestrictExternalSharingForAgents",
+   "RestrictResourceAccountAccess",
+   "RestrictedAccessControlforSitesErrorHelpLink",
+   "ResyncContentSecurityPolicyConfigurationEntries",
+   "SearchResolveExactEmailOrUPN",
+   "SelfServiceSiteCreationDisabled",
+   "SharingAllowedDomainList",
+   "SharingBlockedDomainList",
+   "SharingCapability",
+   "SharingDomainRestrictionMode",
+   "ShowAllUsersClaim",
+   "ShowEveryoneClaim",
+   "ShowEveryoneExceptExternalUsersClaim",
+   "ShowOpenInDesktopOptionForSyncedFiles",
+   "ShowPeoplePickerGroupSuggestionsForIB",
+   "ShowPeoplePickerSuggestionsForGuestUsers",
+   "SignInAccelerationDomain",
+   "SiteOwnerManageLegacyServicePrincipalEnabled",
+   "SocialBarOnSitePagesDisabled",
+   "SpecialCharactersStateInFileFolderNames",
+   "StartASiteFormUrl",
+   "StopNew2013Workflows",
+   "StreamLaunchConfig",
+   "SyncAadB2BManagementPolicy",
+   "TlsTokenBindingPolicyValue",
+   "UseFindPeopleInPeoplePicker",
+   "UsePersistentCookiesForExplorerView",
+   "ViewInFileExplorerEnabled",
+   "ViewersCanCommentOnMediaDisabled",
+   "WhoCanShareAllowListInTenant",
+   "WhoCanShareAllowListInTenantByPrincipalIdentity",
+   "Workflow2010Disabled"
+  ],
+  "Set-PnPTenantAppCatalogUrl": [
+   "Url"
+  ],
+  "Set-PnPTenantCdnEnabled": [
+   "CdnType",
+   "Enable",
+   "NoDefaultOrigins"
+  ],
+  "Set-PnPTenantCdnPolicy": [
+   "CdnType",
+   "PolicyType",
+   "PolicyValue"
+  ],
+  "Set-PnPTenantPronounsSetting": [
+   "IsEnabledInOrganization"
+  ],
+  "Set-PnPTenantRestrictedSearchMode": [
+   "mode"
+  ],
+  "Set-PnPTenantSite": [
+   "AddInformationSegment",
+   "AddRestrictedAccessControlGroups",
+   "AllowDownloadingNonWebViewableFiles",
+   "AllowEditing",
+   "AllowFileArchive",
+   "AllowSelfServiceUpgrade",
+   "AllowWebPropertyBagUpdateWhenDenyAddAndCustomizePagesIsEnabled",
+   "AnonymousLinkExpirationInDays",
+   "ApplyToExistingDocumentLibraries",
+   "ApplyToNewDocumentLibraries",
+   "BlockDownloadLinksFileType",
+   "BlockDownloadPolicy",
+   "ClearGroupId",
+   "ClearRestrictedAccessControl",
+   "CommentsOnSitePagesDisabled",
+   "ConditionalAccessPolicy",
+   "DefaultLinkPermission",
+   "DefaultLinkToExistingAccess",
+   "DefaultLinkToExistingAccessReset",
+   "DefaultShareLinkRole",
+   "DefaultShareLinkScope",
+   "DefaultSharingLinkType",
+   "DenyAddAndCustomizePages",
+   "DisableAppViews",
+   "DisableClassicPageBaselineSecurityMode",
+   "DisableCompanyWideSharingLinks",
+   "DisableFlows",
+   "DisableSharingForNonOwners",
+   "DisableSiteBranding",
+   "EnableAutoExpirationVersionTrim",
+   "EnablePWA",
+   "ExcludeBlockDownloadPolicySiteOwners",
+   "ExcludeBlockDownloadSharePointGroups",
+   "ExcludedBlockDownloadGroupIds",
+   "ExpireVersionsAfterDays",
+   "ExternalUserExpirationInDays",
+   "FileTypesForVersionExpiration",
+   "Force",
+   "HubSiteId",
+   "Identity",
+   "InformationBarriersMode",
+   "InheritVersionPolicyFromTenant",
+   "IsAuthoritative",
+   "LimitedAccessFileType",
+   "ListsShowHeaderAndNavigation",
+   "LocaleId",
+   "LockState",
+   "LoopDefaultSharingLinkRole",
+   "LoopDefaultSharingLinkScope",
+   "MajorVersionLimit",
+   "MajorWithMinorVersionsLimit",
+   "MediaTranscription",
+   "OrganizationSharingLinkMaxExpirationInDays",
+   "OrganizationSharingLinkRecommendedExpirationInDays",
+   "OverrideBlockUserInfoVisibility",
+   "OverrideSharingCapability",
+   "OverrideTenantAnonymousLinkExpirationPolicy",
+   "OverrideTenantExternalUserExpirationPolicy",
+   "OverrideTenantOrganizationSharingLinkExpirationPolicy",
+   "Owners",
+   "PrimarySiteCollectionAdmin",
+   "ProtectionLevelName",
+   "ReadOnlyForBlockDownloadPolicy",
+   "ReadOnlyForUnmanagedDevices",
+   "RemoveInformationSegment",
+   "RemoveLabel",
+   "RemoveRestrictedAccessControlGroups",
+   "RemoveVersionExpirationFileTypeOverride",
+   "RequestFilesLinkEnabled",
+   "RequestFilesLinkExpirationInDays",
+   "ResourceQuota",
+   "ResourceQuotaWarningLevel",
+   "RestrictContentOrgWideSearch",
+   "RestrictedAccessControl",
+   "RestrictedAccessControlGroups",
+   "RestrictedContentDiscoveryForCopilotAndAgents",
+   "RestrictedToGeo",
+   "SensitivityLabel",
+   "SharingAllowedDomainList",
+   "SharingBlockedDomainList",
+   "SharingCapability",
+   "SharingDomainRestrictionMode",
+   "ShowPeoplePickerSuggestionsForGuestUsers",
+   "StorageQuota",
+   "StorageQuotaReset",
+   "StorageQuotaWarningLevel",
+   "Title",
+   "Wait"
+  ],
+  "Set-PnPTenantSyncClientRestriction": [
+   "BlockMacSync",
+   "DisableReportProblemDialog",
+   "DomainGuids",
+   "Enable",
+   "ExcludedFileExtensions",
+   "GrooveBlockOption"
+  ],
+  "Set-PnPTerm": [
+   "AvailableForTagging",
+   "CustomProperties",
+   "DeleteAllCustomProperties",
+   "DeleteAllLocalCustomProperties",
+   "Deprecated",
+   "Description",
+   "Identity",
+   "Lcid",
+   "LocalCustomProperties",
+   "Name",
+   "TermGroup",
+   "TermSet",
+   "TermStore"
+  ],
+  "Set-PnPTermGroup": [
+   "Contributors",
+   "Description",
+   "Identity",
+   "Managers",
+   "Name",
+   "TermStore"
+  ],
+  "Set-PnPTermSet": [
+   "Contact",
+   "CustomProperties",
+   "Description",
+   "Identity",
+   "IsAvailableForTagging",
+   "IsOpenForTermCreation",
+   "Name",
+   "Owner",
+   "RemoveCatalogItemPageForCategories",
+   "RemoveTargetPageforTerms",
+   "SetCatalogItemPageForCategories",
+   "SetTargetPageForTerms",
+   "StakeholderToAdd",
+   "StakeholderToDelete",
+   "TermGroup",
+   "TermStore",
+   "UseForFacetedNavigation",
+   "UseForSiteNavigation"
+  ],
+  "Set-PnPTheme": [
+   "BackgroundImageUrl",
+   "ColorPaletteUrl",
+   "FontSchemeUrl",
+   "ResetSubwebsToInherit",
+   "UpdateRootWebOnly"
+  ],
+  "Set-PnPUserOneDriveQuota": [
+   "Account",
+   "Quota",
+   "QuotaWarning"
+  ],
+  "Set-PnPUserProfilePhoto": [
+   "Identity",
+   "Path"
+  ],
+  "Set-PnPUserProfileProperty": [
+   "Account",
+   "PropertyName",
+   "Value",
+   "Values"
+  ],
+  "Set-PnPView": [
+   "Aggregations",
+   "Fields",
+   "Identity",
+   "List",
+   "Values"
+  ],
+  "Set-PnPVivaConnectionsDashboardACE": [
+   "CardSize",
+   "Description",
+   "IconProperty",
+   "Identity",
+   "Order",
+   "Properties",
+   "PropertiesJSON",
+   "Title"
+  ],
+  "Set-PnPVivaEngageCommunity": [
+   "Description",
+   "DisplayName",
+   "Identity",
+   "Privacy"
+  ],
+  "Set-PnPWeb": [
+   "AlternateCssUrl",
+   "CommentsOnSitePagesDisabled",
+   "CustomMasterUrl",
+   "Description",
+   "DisablePowerAutomate",
+   "HeaderEmphasis",
+   "HeaderLayout",
+   "HideTitleInHeader",
+   "HorizontalQuickLaunch",
+   "MasterUrl",
+   "MegaMenuEnabled",
+   "MembersCanShare",
+   "NavAudienceTargetingEnabled",
+   "NoCrawl",
+   "QuickLaunchEnabled",
+   "SiteLogoUrl",
+   "Title"
+  ],
+  "Set-PnPWebHeader": [
+   "HeaderBackgroundImageFocalX",
+   "HeaderBackgroundImageFocalY",
+   "HeaderBackgroundImageUrl",
+   "HeaderEmphasis",
+   "HeaderLayout",
+   "HideTitleInHeader",
+   "LogoAlignment",
+   "SiteLogoUrl",
+   "SiteThumbnailUrl"
+  ],
+  "Set-PnPWebPartProperty": [
+   "Identity",
+   "Key",
+   "ServerRelativePageUrl",
+   "Value"
+  ],
+  "Set-PnPWebPermission": [
+   "AddRole",
+   "Group",
+   "Identity",
+   "RemoveRole",
+   "User"
+  ],
+  "Set-PnPWebTheme": [
+   "Theme",
+   "WebUrl"
+  ],
+  "Set-PnPWebhookSubscription": [
+   "ExpirationDate",
+   "List",
+   "NotificationUrl",
+   "Subscription"
+  ],
+  "Set-PnPWikiPageContent": [
+   "Content",
+   "Path",
+   "ServerRelativePageUrl"
+  ],
+  "Start-PnPEnterpriseAppInsightsReport": [
+   "ReportPeriodInDays"
+  ],
+  "Start-PnPSiteContentMove": [
+   "DestinationDataLocation",
+   "DestinationUrl",
+   "Force",
+   "PreferredMoveBeginDate",
+   "PreferredMoveEndDate",
+   "Reserved",
+   "SourceSiteUrl",
+   "SuppressAllWarnings",
+   "SuppressBcsCheck",
+   "SuppressMarketplaceAppCheck",
+   "SuppressWorkflow2013Check",
+   "ValidationOnly"
+  ],
+  "Start-PnPTenantRename": [
+   "DomainName",
+   "ScheduledDateTime"
+  ],
+  "Start-PnPTraceLog": [
+   "AutoFlush",
+   "Level",
+   "Path",
+   "WriteToConsole",
+   "WriteToLogStream"
+  ],
+  "Start-PnPUnifiedGroupMove": [
+   "DestinationDataLocation",
+   "Force",
+   "GroupAlias",
+   "PreferredMoveBeginDate",
+   "PreferredMoveEndDate",
+   "Reserved",
+   "SuppressAllWarnings",
+   "SuppressBcsCheck",
+   "SuppressMarketplaceAppCheck",
+   "SuppressWorkflow2013Check",
+   "ValidationOnly"
+  ],
+  "Start-PnPUserAndContentMove": [
+   "DestinationDataLocation",
+   "Notify",
+   "PreferredMoveBeginDate",
+   "PreferredMoveEndDate",
+   "Reserved",
+   "UserPrincipalName",
+   "ValidationOnly"
+  ],
+  "Stop-PnPFlowRun": [
+   "Environment",
+   "Flow",
+   "Force",
+   "Identity"
+  ],
+  "Stop-PnPSiteContentMove": [
+   "SourceSiteUrl"
+  ],
+  "Stop-PnPTraceLog": [
+   "StopConsoleLogging",
+   "StopFileLogging",
+   "StopLogStreamLogging"
+  ],
+  "Stop-PnPUserAndContentMove": [
+   "UserPrincipalName"
+  ],
+  "Submit-PnPSearchQuery": [
+   "All",
+   "ClientType",
+   "CollapseSpecification",
+   "Culture",
+   "EnablePhonetic",
+   "EnableQueryRules",
+   "EnableStemming",
+   "HiddenConstraints",
+   "MaxResults",
+   "ProcessBestBets",
+   "ProcessPersonalFavorites",
+   "Properties",
+   "Query",
+   "QueryTemplate",
+   "RankingModelId",
+   "RefinementFilters",
+   "Refiners",
+   "RelevantResults",
+   "RetryCount",
+   "SelectProperties",
+   "SortList",
+   "SourceId",
+   "StartRow",
+   "TimeZoneId",
+   "TrimDuplicates"
+  ],
+  "Submit-PnPTeamsChannelMessage": [
+   "Channel",
+   "ContentType",
+   "Important",
+   "Message",
+   "Team"
+  ],
+  "Sync-PnPAppToTeams": [
+   "Identity"
+  ],
+  "Sync-PnPSharePointUserProfilesFromAzureActiveDirectory": [
+   "Folder",
+   "IdType",
+   "UserProfilePropertyMapping",
+   "Users",
+   "Wait",
+   "WhatIf"
+  ],
+  "Test-PnPConnectionPermission": [
+   "CommandName"
+  ],
+  "Test-PnPListItemIsRecord": [
+   "Identity",
+   "List"
+  ],
+  "Test-PnPMicrosoft365GroupAliasIsUsed": [
+   "Alias"
+  ],
+  "Test-PnPSite": [
+   "Identity",
+   "RuleId",
+   "RunAlways"
+  ],
+  "Test-PnPSiteTemplate": [
+   "Path",
+   "Stream",
+   "Template",
+   "TemplateId",
+   "TemplateProviderExtensions",
+   "Xml"
+  ],
+  "Test-PnPTenantTemplate": [
+   "Template"
+  ],
+  "Undo-PnPFileCheckedOut": [
+   "Url"
+  ],
+  "Uninstall-PnPApp": [
+   "Identity",
+   "Scope"
+  ],
+  "Unlock-PnPSensitivityLabelEncryptedFile": [
+   "JustificationText",
+   "Url"
+  ],
+  "Unpublish-PnPApp": [
+   "Force",
+   "Identity",
+   "Scope"
+  ],
+  "Unpublish-PnPContentType": [
+   "ContentType"
+  ],
+  "Unpublish-PnPSyntexModel": [
+   "Batch",
+   "List",
+   "ListWebUrl",
+   "Model",
+   "TargetLibraryServerRelativeUrl",
+   "TargetSiteUrl",
+   "TargetWebServerRelativeUrl"
+  ],
+  "Unregister-PnPHubSite": [
+   "Site"
+  ],
+  "Update-PnPApp": [
+   "Identity",
+   "Scope"
+  ],
+  "Update-PnPAvailableSiteClassification": [
+   "Classifications",
+   "DefaultClassification",
+   "Settings",
+   "UsageGuidelinesUrl"
+  ],
+  "Update-PnPSiteDesignFromWeb": [
+   "Identity",
+   "IncludeAll",
+   "IncludeBranding",
+   "IncludeLinksToExportedItems",
+   "IncludeRegionalSettings",
+   "IncludeSiteExternalSharingCapability",
+   "IncludeTheme",
+   "Lists",
+   "Url"
+  ],
+  "Update-PnPTeamsApp": [
+   "Identity",
+   "Path"
+  ],
+  "Update-PnPTeamsUser": [
+   "Force",
+   "Team",
+   "User"
+  ],
+  "Update-PnPTodoList": [
+   "DisplayName",
+   "Identity",
+   "User"
+  ],
+  "Update-PnPTodoTask": [
+   "Body",
+   "BodyContentType",
+   "Categories",
+   "DueDateTime",
+   "Identity",
+   "Importance",
+   "IsReminderOn",
+   "List",
+   "ReminderDateTime",
+   "StartDateTime",
+   "Status",
+   "TimeZone",
+   "Title",
+   "User"
+  ],
+  "Update-PnPTodoTaskChecklistItem": [
+   "DisplayName",
+   "Identity",
+   "IsChecked",
+   "List",
+   "Task",
+   "User"
+  ],
+  "Update-PnPUserType": [
+   "LoginName"
+  ],
+  "Use-PnPBrandCenterFontPackage": [
+   "Identity",
+   "Store"
+  ],
+  "Write-PnPTraceLog": [
+   "EllapsedMilliseconds",
+   "Level",
+   "Message",
+   "Source"
+  ]
+ }
+}

@@ -1,0 +1,20 @@
+{
+  "$comment": "Power Platform deployment settings for the prod environment. PRD ADM-005: no site URL, list id or group id is hard-coded in the solution. Deploy-DmsPowerPlatform.ps1 blocks import while any value is unresolved.",
+  "EnvironmentVariables": [
+    { "SchemaName": "dms_SiteUrl", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_ControlledDocumentsListId", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_ApprovalEvidenceListId", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_ExceptionListId", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_DocumentRegisterListId", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_RoutingRulesListId", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_WorkflowConfigListId", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_NotificationSender", "Value": "REQUIRES_TENANT_DISCOVERY" },
+    { "SchemaName": "dms_DocumentControlGroup", "Value": "REQUIRES_TENANT_DISCOVERY" }
+  ],
+  "ConnectionReferences": [
+    { "LogicalName": "dms_sharepoint", "ConnectionId": "REQUIRES_TENANT_DISCOVERY", "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline" },
+    { "LogicalName": "dms_office365users", "ConnectionId": "REQUIRES_TENANT_DISCOVERY", "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_office365users" },
+    { "LogicalName": "dms_office365outlook", "ConnectionId": "REQUIRES_TENANT_DISCOVERY", "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_office365" },
+    { "LogicalName": "dms_approvals", "ConnectionId": "REQUIRES_TENANT_DISCOVERY", "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_approvals" }
+  ]
+}

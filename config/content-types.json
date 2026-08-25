@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Content types published from the Content Type Hub. PRD F-001. Content type IDs are stable contracts and must never be regenerated once published.",
+  "publishFrom": "contentTypeHubUrl",
+  "group": "DMS Controlled Content Types",
+  "idConvention": "Child of Document (0x0101) as 0x010100 + GUID; sub-types append two hex digits to the parent id.",
+  "contentTypes": [
+    {
+      "name": "Controlled Document", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D", "parentId": "0x0101",
+      "description": "Abstract base for all governed controlled documents. Not used directly in libraries; sub-types are.",
+      "abstract": true, "documentTemplate": null,
+      "requiredFields": ["DmsDocumentId", "DmsDocumentType", "DmsBusinessFunction", "DmsBusinessProcess", "DmsDocumentOwner", "DmsLifecycleStatus", "DmsBusinessRevision", "DmsReviewFrequencyMonths", "DmsSensitivityClassification", "DmsApplicability", "DmsRetentionClass", "DmsChangeSummary"],
+      "optionalFields": ["DmsAuthor", "DmsReviewer", "DmsApprover", "DmsSharePointVersionRef", "DmsEffectiveDate", "DmsNextReviewDate", "DmsSiteRegion", "DmsTrainingRequired", "DmsSupersedes", "DmsSupersededBy", "DmsApprovalCorrelationId", "DmsCurrentEffective", "DmsSubmittedVersion", "DmsSubmittedETag", "DmsApprovedETag", "DmsSourceProvenance", "DmsMigrationBatchId"],
+      "requirements": ["F-001", "DATA-001"]
+    },
+    { "name": "Policy", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D01", "parentId": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D", "description": "Organisational policy. Highest approval authority.", "abstract": false, "documentTemplate": "templates/Policy/Policy-Template.md", "documentTypeValue": "Policy", "requirements": ["F-003"] },
+    { "name": "SOP", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D02", "parentId": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D", "description": "Standard Operating Procedure. The MVP pilot document class.", "abstract": false, "documentTemplate": "templates/SOP/SOP-Template.md", "documentTypeValue": "SOP", "requirements": ["F-003", "PRD-12.1"] },
+    { "name": "Work Instruction", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D03", "parentId": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D", "description": "Task-level instruction subordinate to an SOP.", "abstract": false, "documentTemplate": "templates/Work-Instruction/Work-Instruction-Template.md", "documentTypeValue": "Work Instruction", "requirements": ["F-003"] },
+    { "name": "Standard", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D04", "parentId": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D", "description": "Internal technical or process standard.", "abstract": false, "documentTemplate": null, "documentTypeValue": "Standard", "requirements": ["F-003"] },
+    {
+      "name": "Controlled Form or Template", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D05", "parentId": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D",
+      "description": "A BLANK controlled form or template. Completing it produces an Operational Record, which is a different entity with a different lifecycle and retention treatment.",
+      "abstract": false, "documentTemplate": "templates/Controlled-Form/Controlled-Form-Template.md", "documentTypeValue": "Controlled Form or Template",
+      "criticalRule": "A completed form MUST NOT overwrite the blank template. PRD F-003, DATA-001 versus DATA-006.",
+      "requirements": ["F-003", "DATA-001", "DATA-006"]
+    },
+    { "name": "Business Operations Document", "id": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D06", "parentId": "0x010100A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4D", "description": "Governed operational document that is not a policy, SOP, work instruction or standard.", "abstract": false, "documentTemplate": null, "documentTypeValue": "Business Operations Document", "requirements": ["F-003"] },
+    {
+      "name": "Operational Record", "id": "0x010100B4E9D2C6F1A84B379E5C0D8A6F2B1E37", "parentId": "0x0101",
+      "description": "Evidence that a business activity occurred. Captured, not authored. Governed by the approved retention class, not by the document approval lifecycle.",
+      "abstract": false, "documentTemplate": null,
+      "requiredFields": ["DmsRecordClass", "DmsEventDate", "DmsBusinessProcess", "DmsSensitivityClassification"],
+      "optionalFields": ["DmsRelatedDocumentId", "DmsDocumentOwner", "DmsSiteRegion", "DmsSourceProvenance", "DmsMigrationBatchId"],
+      "criticalRule": "Operational Records do not use DmsLifecycleStatus. They are governed by WF-05 capture and disposition.",
+      "requirements": ["F-003", "F-018", "DATA-006"]
+    },
+    {
+      "name": "External Document", "id": "0x010100C8D5F0A29E634C1BA7F2D3E6B0C4A519", "parentId": "0x0101",
+      "description": "Supplier, customer, legal or standards document held for reference. Not authored or approved internally; controlled for currency and applicability only.",
+      "abstract": false, "documentTemplate": null,
+      "requiredFields": ["DmsDocumentId", "DmsBusinessFunction", "DmsDocumentOwner", "DmsSensitivityClassification"],
+      "optionalFields": ["DmsNextReviewDate", "DmsReviewFrequencyMonths", "DmsApplicability", "DmsRetentionClass", "DmsSourceProvenance"],
+      "mvpTreatment": "P1 unless the pilot requires it. PRD section 10.2.",
+      "requirements": ["F-001"]
+    },
+    {
+      "name": "Controlled Case File", "id": "0x0120D52000A7F3C81B9B4D4E2A8C5F6D0E1B2A3C4E", "parentId": "0x0120D520",
+      "description": "Document Set for approved case-file or multi-document work products.",
+      "abstract": false, "documentTemplate": null,
+      "status": "Deferred", "mvpTreatment": "P1. Not provisioned unless ADR approves it. PRD F-030.",
+      "requirements": ["F-030"]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dms.local/schemas/site-columns.schema.json",
+  "title": "DMS site columns",
+  "type": "object",
+  "required": ["schemaVersion","fieldGroup","columns"],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "description": { "type": "string" },
+    "fieldGroup": { "type": "string", "minLength": 1 },
+    "namingRule": { "type": "string" },
+    "indexingBudget": {
+      "type": "object",
+      "required": ["maxIndexedColumnsPerList"],
+      "properties": { "note": { "type": "string" }, "maxIndexedColumnsPerList": { "type": "integer", "minimum": 1, "maximum": 20 } }
+    },
+    "columns": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["internalName","displayName","type","required","dataOwner","validation","lifecycleMutability","requirements"],
+        "properties": {
+          "internalName": { "type": "string", "pattern": "^Dms[A-Za-z0-9]+$" },
+          "displayName": { "type": "string", "minLength": 1 },
+          "type": { "enum": ["Text","Note","Number","Boolean","DateTime","Choice","MultiChoice","User","UserMulti","Lookup","URL","TaxonomyFieldType","TaxonomyFieldTypeMulti","Calculated"] },
+          "required": { "type": "boolean" },
+          "indexed": { "type": "boolean" },
+          "dataOwner": { "type": "string", "minLength": 1 },
+          "sensitivity": { "enum": ["Public","Internal","Confidential","Highly Confidential","Personal"] },
+          "validation": { "type": "object", "required": ["rule"], "properties": { "rule": { "type": "string", "minLength": 1 } } },
+          "lifecycleMutability": {
+            "type": "object",
+            "required": ["editableInStates","setBy"],
+            "properties": {
+              "editableInStates": { "type": "array", "items": { "type": "string" } },
+              "setBy": { "enum": ["SystemAutomation","DocumentController","Author","DocumentOwner","RecordsManager","BusinessUser"] },
+              "note": { "type": "string" }
+            }
+          },
+          "requirements": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

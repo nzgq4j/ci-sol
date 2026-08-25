@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "description": "View baseline. PRD F-014 and F-026 require default reader views to exclude drafts, superseded, withdrawn and obsolete content. All filters use indexed columns per NFR-004.",
+  "views": [
+    {
+      "key": "CurrentEffective", "title": "Current Documents", "targetLists": ["ControlledDocuments", "Templates", "PublishedRevisions"],
+      "isDefault": true, "audience": "All readers", "rowLimit": 50, "paged": true,
+      "viewFields": ["DmsDocumentId", "LinkFilename", "DmsBusinessRevision", "DmsLifecycleStatus", "DmsEffectiveDate", "DmsDocumentOwner", "DmsDocumentType", "DmsBusinessProcess", "DmsApplicability"],
+      "viewFieldsRationale": "PRD UX-003 and section 9 require ID, title, revision, status, effective date, owner, type, process and applicability in results.",
+      "camlQuery": "<Where><Eq><FieldRef Name='DmsCurrentEffective'/><Value Type='Boolean'>1</Value></Eq></Where><OrderBy><FieldRef Name='DmsDocumentId' Ascending='TRUE'/></OrderBy>",
+      "filterUsesIndexedColumn": "DmsCurrentEffective",
+      "requirements": ["F-013", "F-014", "F-026", "UX-002", "UX-003"]
+    },
+    {
+      "key": "DueForReview", "title": "Documents Due for Review", "targetLists": ["ControlledDocuments", "DocumentRegister"],
+      "isDefault": false, "audience": "Document owners, managers, Document Control", "rowLimit": 100, "paged": true,
+      "viewFields": ["DmsDocumentId", "LinkFilename", "DmsDocumentOwner", "DmsNextReviewDate", "DmsBusinessRevision", "DmsLifecycleStatus"],
+      "camlQuery": "<Where><And><Eq><FieldRef Name='DmsCurrentEffective'/><Value Type='Boolean'>1</Value></Eq><Leq><FieldRef Name='DmsNextReviewDate'/><Value Type='DateTime'><Today OffsetDays='90'/></Value></Leq></And></Where><OrderBy><FieldRef Name='DmsNextReviewDate' Ascending='TRUE'/></OrderBy>",
+      "filterUsesIndexedColumn": "DmsNextReviewDate",
+      "requirements": ["F-015", "MET-004"]
+    },
+    {
+      "key": "Overdue", "title": "Overdue Reviews", "targetLists": ["DocumentRegister"],
+      "isDefault": false, "audience": "Document Control, managers, Quality", "rowLimit": 100, "paged": true,
+      "viewFields": ["DmsDocumentId", "Title", "DmsDocumentOwner", "DmsNextReviewDate", "DmsLifecycleStatus"],
+      "camlQuery": "<Where><And><Eq><FieldRef Name='DmsCurrentEffective'/><Value Type='Boolean'>1</Value></Eq><Lt><FieldRef Name='DmsNextReviewDate'/><Value Type='DateTime'><Today/></Value></Lt></And></Where><OrderBy><FieldRef Name='DmsNextReviewDate' Ascending='TRUE'/></OrderBy>",
+      "filterUsesIndexedColumn": "DmsNextReviewDate",
+      "requirements": ["F-015", "MET-004"]
+    },
+    {
+      "key": "DocumentControlQueue", "title": "Document Control Work Queue", "targetLists": ["ControlledDocuments"],
+      "isDefault": false, "audience": "Document Controllers", "rowLimit": 100, "paged": true,
+      "viewFields": ["DmsDocumentId", "LinkFilename", "DmsLifecycleStatus", "DmsDocumentOwner", "DmsEffectiveDate", "DmsApprovalCorrelationId", "Modified"],
+      "camlQuery": "<Where><In><FieldRef Name='DmsLifecycleStatus'/><Values><Value Type='Text'>Requested</Value><Value Type='Text'>Triaged</Value><Value Type='Text'>In Review</Value><Value Type='Text'>Rework</Value><Value Type='Text'>Approved Pending Effective</Value></Values></In></Where><OrderBy><FieldRef Name='Modified' Ascending='TRUE'/></OrderBy>",
+      "filterUsesIndexedColumn": "DmsLifecycleStatus",
+      "requirements": ["F-027", "UX-001", "WF-06"]
+    },
+    {
+      "key": "AuthorisedHistory", "title": "All Revisions (History)", "targetLists": ["ControlledDocuments", "PublishedRevisions"],
+      "isDefault": false, "audience": "Auditors, Document Control, Records Management", "rowLimit": 100, "paged": true,
+      "viewFields": ["DmsDocumentId", "LinkFilename", "DmsBusinessRevision", "DmsLifecycleStatus", "DmsEffectiveDate", "DmsSupersedes", "DmsSupersededBy", "DmsSharePointVersionRef"],
+      "camlQuery": "<OrderBy><FieldRef Name='DmsDocumentId' Ascending='TRUE'/><FieldRef Name='DmsBusinessRevision' Ascending='FALSE'/></OrderBy>",
+      "permissionNote": "Exposed through navigation only to roles that may see non-effective content. It is not the default view. PRD F-014.",
+      "requirements": ["F-014", "F-026", "NFR-012"]
+    },
+    {
+      "key": "PendingApproval", "title": "Pending Review and Approval", "targetLists": ["ControlledDocuments"],
+      "isDefault": false, "audience": "Reviewers, approvers, Document Control", "rowLimit": 100, "paged": true,
+      "viewFields": ["DmsDocumentId", "LinkFilename", "DmsBusinessRevision", "DmsReviewer", "DmsApprover", "DmsChangeSummary", "Modified"],
+      "camlQuery": "<Where><Eq><FieldRef Name='DmsLifecycleStatus'/><Value Type='Text'>In Review</Value></Eq></Where><OrderBy><FieldRef Name='Modified' Ascending='TRUE'/></OrderBy>",
+      "filterUsesIndexedColumn": "DmsLifecycleStatus",
+      "requirements": ["F-009", "F-027"]
+    },
+    {
+      "key": "RecordsByClass", "title": "Records by Class", "targetLists": ["OperationalRecords"],
+      "isDefault": true, "audience": "Business users, Records Management", "rowLimit": 100, "paged": true,
+      "viewFields": ["LinkFilename", "DmsRecordClass", "DmsEventDate", "DmsRelatedDocumentId", "DmsBusinessProcess", "Created"],
+      "camlQuery": "<OrderBy><FieldRef Name='DmsEventDate' Ascending='FALSE'/></OrderBy>",
+      "groupBy": ["DmsRecordClass"],
+      "requirements": ["F-018", "DATA-006"]
+    },
+    {
+      "key": "AllExternal", "title": "External References", "targetLists": ["ExternalReferences"],
+      "isDefault": true, "audience": "All readers", "rowLimit": 50, "paged": true,
+      "viewFields": ["DmsDocumentId", "LinkFilename", "DmsDocumentOwner", "DmsNextReviewDate", "DmsBusinessFunction"],
+      "camlQuery": "<OrderBy><FieldRef Name='DmsDocumentId' Ascending='TRUE'/></OrderBy>",
+      "requirements": ["F-001"]
+    },
+    {
+      "key": "OpenBlockingExceptions", "title": "Open Blocking Exceptions", "targetLists": ["Exceptions"],
+      "isDefault": true, "audience": "Document Control, platform support", "rowLimit": 100, "paged": true,
+      "viewFields": ["Title", "DmsExceptionType", "DmsSeverity", "DmsIsBlocking", "DmsExceptionOwner", "DmsDetectedUtc", "DmsRetryCount", "DmsExceptionStatus"],
+      "camlQuery": "<Where><And><Neq><FieldRef Name='DmsExceptionStatus'/><Value Type='Text'>Resolved</Value></Neq><Eq><FieldRef Name='DmsIsBlocking'/><Value Type='Boolean'>1</Value></Eq></And></Where><OrderBy><FieldRef Name='DmsDetectedUtc' Ascending='TRUE'/></OrderBy>",
+      "filterUsesIndexedColumn": "DmsExceptionStatus",
+      "requirements": ["F-022", "MET-007", "NFR-014"]
+    }
+  ]
+}

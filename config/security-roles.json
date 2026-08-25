@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Role-permission matrix. PRD F-024, SEC-002, SEC-003. Security boundaries are sites and libraries, never item-level unique permissions except by approved exception (PRD C-006).",
+  "principles": [
+    "Access is granted only through Entra groups. Direct user permissions are reported as exceptions (PRD F-024).",
+    "Editing a document never confers authority to publish or approve it.",
+    "Platform administration never confers content-approval authority (PRD SEC-003, persona objection).",
+    "Approval Evidence is written by the automation identity only; no interactive role has Contribute on it (PRD F-010).",
+    "External sharing is disabled on controlled sites by default (PRD F-025, SEC-005)."
+  ],
+  "customPermissionLevels": [
+    {
+      "name": "DMS Approve", "basedOn": "Contribute",
+      "addPermissions": ["ApproveItems"], "removePermissions": ["DeleteListItems", "DeleteVersions"],
+      "ration": "Lets approvers set native content approval and see minor versions without the ability to delete controlled content."
+    },
+    {
+      "name": "DMS Contribute No Delete", "basedOn": "Contribute",
+      "addPermissions": [], "removePermissions": ["DeleteListItems", "DeleteVersions"],
+      "rationale": "Authors and business users must not delete controlled documents or operational records. Removal is a lifecycle action, not a delete. PRD F-020 forbids a UI delete substituting for disposition."
+    },
+    {
+      "name": "DMS Records Control", "basedOn": "Contribute",
+      "addPermissions": ["ManageLists", "ApproveItems"], "removePermissions": [],
+      "rationale": "Records Managers administer retention and disposition without full site control."
+    },
+    {
+      "name": "DMS Read Evidence", "basedOn": "Read",
+      "addPermissions": ["ViewVersions"], "removePermissions": [],
+      "rationale": "Auditors need version history for lifecycle reconstruction. PRD NFR-012."
+    }
+  ],
+  "roles": [
+    {
+      "key": "Readers", "groupNameTemplate": "{prefix}-Readers", "entraGroupType": "Security",
+      "description": "All eligible employees and contractors who consume controlled information.",
+      "permissions": [
+        { "scope": "Site", "level": "Read" },
+        { "scope": "ControlledDocuments", "level": "Read", "note": "Draft visibility is set to Approver, so readers cannot see minor versions. PRD F-004, A-008." },
+        { "scope": "Templates", "level": "Read" },
+        { "scope": "OperationalRecords", "level": "None", "note": "Record access is granted to the business process audience, not to all readers." },
+        { "scope": "ApprovalEvidence", "level": "None" },
+        { "scope": "Exceptions", "level": "None" },
+        { "scope": "ChangeRequests", "level": "DMS Contribute No Delete", "note": "Anyone may raise a change request. PRD F-007." },
+        { "scope": "DocumentRegister", "level": "Read" }
+      ],
+      "mustNotBeAbleTo": ["See any minor version or draft", "See Superseded or Withdrawn content in a default view", "Publish or approve", "Delete controlled content", "Share externally"],
+      "requirements": ["F-024", "F-004", "A-008"]
+    },
+    {
+      "key": "Authors", "groupNameTemplate": "{prefix}-Authors", "entraGroupType": "Security",
+      "description": "Create and revise controlled documents.",
+      "permissions": [
+        { "scope": "Site", "level": "Read" },
+        { "scope": "ControlledDocuments", "level": "DMS Contribute No Delete" },
+        { "scope": "Templates", "level": "Read" },
+        { "scope": "ChangeRequests", "level": "DMS Contribute No Delete" },
+        { "scope": "DocumentRegister", "level": "Read" },
+        { "scope": "ApprovalEvidence", "level": "None" }
+      ],
+      "mustNotBeAbleTo": ["Set DmsLifecycleStatus directly", "Set DmsCurrentEffective", "Approve their own or any content", "Publish a major version", "Delete controlled content", "Write Approval Evidence"],
+      "requirements": ["F-024", "F-005", "SEC-003"]
+    },
+    {
+      "key": "Reviewers", "groupNameTemplate": "{prefix}-Reviewers", "entraGroupType": "Security",
+      "description": "Subject-matter reviewers who verify technical accuracy for an assigned revision.",
+      "permissions": [
+        { "scope": "Site", "level": "Read" },
+        { "scope": "ControlledDocuments", "level": "DMS Approve", "note": "Needed to see the minor version under review. Review decisions are recorded as Approval Evidence by automation, not by editing the document." },
+        { "scope": "DocumentRegister", "level": "Read" },
+        { "scope": "ApprovalEvidence", "level": "DMS Read Evidence" }
+      ],
+      "mustNotBeAbleTo": ["Edit an Effective revision", "Delete controlled content", "Write Approval Evidence directly", "Activate a revision"],
+      "requirements": ["F-009", "F-024"]
+    },
+    {
+      "key": "Approvers", "groupNameTemplate": "{prefix}-Approvers", "entraGroupType": "Security",
+      "description": "Accountable approvers who accept business, quality, legal or risk accountability.",
+      "permissions": [
+        { "scope": "Site", "level": "Read" },
+        { "scope": "ControlledDocuments", "level": "DMS Approve" },
+        { "scope": "DocumentRegister", "level": "Read" },
+        { "scope": "ApprovalEvidence", "level": "DMS Read Evidence" }
+      ],
+      "mustNotBeAbleTo": ["Administer the site", "Change retention labels", "Delete controlled content", "Activate a revision ahead of its effective date"],
+      "requirements": ["F-009", "F-012", "F-024", "SEC-003"]
+    },
+    {
+      "key": "DocumentControllers", "groupNameTemplate": "{prefix}-DocumentControllers", "entraGroupType": "Security",
+      "description": "Administer the document lifecycle day to day.",
+      "permissions": [
+        { "scope": "Site", "level": "Edit" },
+        { "scope": "ControlledDocuments", "level": "DMS Approve" },
+        { "scope": "Templates", "level": "DMS Contribute No Delete" },
+        { "scope": "ChangeRequests", "level": "DMS Contribute No Delete" },
+        { "scope": "DocumentRegister", "level": "DMS Contribute No Delete" },
+        { "scope": "RoutingRules", "level": "DMS Contribute No Delete" },
+        { "scope": "ReviewFrequencies", "level": "DMS Contribute No Delete" },
+        { "scope": "Exceptions", "level": "DMS Contribute No Delete" },
+        { "scope": "ApprovalEvidence", "level": "DMS Read Evidence" },
+        { "scope": "OperationalRecords", "level": "Read" }
+      ],
+      "mustNotBeAbleTo": ["Alter completed Approval Evidence", "Change retention labels or dispose records", "Administer the tenant", "Approve content where they are the sole author"],
+      "requirements": ["F-024", "SEC-003", "F-010"]
+    },
+    {
+      "key": "RecordsManagers", "groupNameTemplate": "{prefix}-RecordsManagers", "entraGroupType": "Security",
+      "description": "Govern the file plan, retention labels, record state and disposition.",
+      "permissions": [
+        { "scope": "Site", "level": "Read" },
+        { "scope": "OperationalRecords", "level": "DMS Records Control" },
+        { "scope": "ControlledDocuments", "level": "Read" },
+        { "scope": "ApprovalEvidence", "level": "DMS Read Evidence" },
+        { "scope": "Exceptions", "level": "DMS Contribute No Delete" }
+      ],
+      "purviewRoleGroups": ["Records Management", "Disposition Management"],
+      "purviewNote": "Purview role assignment is a separate compliance-portal action, not a SharePoint permission. See docs/PURVIEW_DESIGN.md.",
+      "mustNotBeAbleTo": ["Approve controlled document content", "Administer the tenant", "Apply a regulatory-record label without the separate authorisation gate"],
+      "requirements": ["F-018", "F-019", "F-020", "SEC-012"]
+    },
+    {
+      "key": "PlatformAdministrators", "groupNameTemplate": "{prefix}-PlatformAdministrators", "entraGroupType": "Security",
+      "description": "Maintain configuration, provisioning, solutions and monitoring.",
+      "permissions": [
+        { "scope": "Site", "level": "Full Control" },
+        { "scope": "WorkflowConfiguration", "level": "DMS Contribute No Delete" },
+        { "scope": "Exceptions", "level": "DMS Contribute No Delete" }
+      ],
+      "mustNotBeAbleTo": ["Be assigned as a content approver by default", "Alter completed Approval Evidence", "Dispose records"],
+      "separationNote": "Full Control is a technical necessity for provisioning. The compensating control is that platform administrators are NOT members of Approvers or RecordsManagers, approval routes never resolve to this group, and their administrative actions are audited. PRD SEC-003, SEC-011.",
+      "requirements": ["F-024", "SEC-003", "SEC-011", "ADM-006"]
+    },
+    {
+      "key": "Auditors", "groupNameTemplate": "{prefix}-Auditors", "entraGroupType": "Security",
+      "description": "Sample control operation and evidence. Read-only everywhere.",
+      "permissions": [
+        { "scope": "Site", "level": "Read" },
+        { "scope": "ControlledDocuments", "level": "DMS Read Evidence" },
+        { "scope": "ApprovalEvidence", "level": "DMS Read Evidence" },
+        { "scope": "Exceptions", "level": "Read" },
+        { "scope": "DocumentRegister", "level": "Read" },
+        { "scope": "OperationalRecords", "level": "Read" },
+        { "scope": "MigrationEvidence", "level": "Read" }
+      ],
+      "mustNotBeAbleTo": ["Write anything", "Approve", "Delete", "Change configuration"],
+      "requirements": ["F-024", "NFR-012"]
+    },
+    {
+      "key": "AutomationService", "groupNameTemplate": "{prefix}-AutomationService", "entraGroupType": "Security",
+      "description": "The identity that Power Automate connections and provisioning automation run as. Not a human group.",
+      "permissions": [
+        { "scope": "Site", "level": "Edit" },
+        { "scope": "ControlledDocuments", "level": "DMS Approve" },
+        { "scope": "ApprovalEvidence", "level": "DMS Contribute No Delete", "note": "The ONLY principal with write access to Approval Evidence." },
+        { "scope": "Exceptions", "level": "DMS Contribute No Delete" },
+        { "scope": "DocumentRegister", "level": "DMS Contribute No Delete" },
+        { "scope": "Acknowledgements", "level": "DMS Contribute No Delete" }
+      ],
+      "ownership": { "minimumCoOwners": 2, "requirement": "PRD SEC-004 and ADM-008 require at least two administrative co-owners and no sole personal owner." },
+      "mustNotBeAbleTo": ["Be used for interactive sign-in", "Hold credentials stored in the repository", "Have Full Control on the site"],
+      "requirements": ["SEC-004", "ADM-008", "F-010"]
+    },
+    {
+      "key": "ExternalPartners", "groupNameTemplate": "{prefix}-ExternalPartners", "entraGroupType": "Security",
+      "description": "Optional. Guest access to a defined subset of controlled content.",
+      "status": "Not provisioned in MVP. Requires an approved sharing exception. PRD F-025, SEC-005, OQ-08.",
+      "provisionWhen": "config.features.externalPartners === true",
+      "permissions": [],
+      "exceptionRequirements": ["Named sponsor", "Defined content scope", "Expiry date", "Security, Privacy and Legal approval", "Audit review cadence"],
+      "requirements": ["F-025", "SEC-005", "OQ-08"]
+    }
+  ],
+  "negativeTestMatrix": {
+    "description": "Drives tests/security. Each entry is an assertion that MUST fail for the named role. PRD 28.2.",
+    "assertions": [
+      { "role": "Readers", "action": "ReadMinorVersion", "expect": "Denied", "requirement": "F-004" },
+      { "role": "Readers", "action": "ViewSupersededInDefaultView", "expect": "NotReturned", "requirement": "F-014" },
+      { "role": "Readers", "action": "WriteApprovalEvidence", "expect": "Denied", "requirement": "F-010" },
+      { "role": "Authors", "action": "SetLifecycleStatusDirectly", "expect": "Denied", "requirement": "F-005" },
+      { "role": "Authors", "action": "PublishMajorVersion", "expect": "Denied", "requirement": "F-012" },
+      { "role": "Authors", "action": "DeleteControlledDocument", "expect": "Denied", "requirement": "F-020" },
+      { "role": "Reviewers", "action": "EditEffectiveRevision", "expect": "Denied", "requirement": "F-013" },
+      { "role": "Approvers", "action": "ChangeRetentionLabel", "expect": "Denied", "requirement": "F-019" },
+      { "role": "Approvers", "action": "AdministerSite", "expect": "Denied", "requirement": "SEC-003" },
+      { "role": "DocumentControllers", "action": "AlterCompletedApprovalEvidence", "expect": "Denied", "requirement": "F-010" },
+      { "role": "DocumentControllers", "action": "DisposeRecord", "expect": "Denied", "requirement": "F-020" },
+      { "role": "PlatformAdministrators", "action": "ResolveAsApprovalRouteAssignee", "expect": "NotResolved", "requirement": "SEC-003" },
+      { "role": "PlatformAdministrators", "action": "AlterCompletedApprovalEvidence", "expect": "Denied", "requirement": "F-010" },
+      { "role": "RecordsManagers", "action": "ApproveControlledDocument", "expect": "Denied", "requirement": "SEC-003" },
+      { "role": "RecordsManagers", "action": "ApplyRegulatoryRecordLabel", "expect": "Blocked", "requirement": "SEC-012" },
+      { "role": "Auditors", "action": "WriteAnything", "expect": "Denied", "requirement": "F-024" },
+      { "role": "Anonymous", "action": "AccessAnySiteResource", "expect": "Denied", "requirement": "SEC-005" },
+      { "role": "Guest", "action": "AccessControlledDocuments", "expect": "Denied", "requirement": "F-025" }
+    ]
+  }
+}

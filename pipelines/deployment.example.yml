@@ -1,0 +1,81 @@
+# DMS deployment pipeline.
+#
+# Production deployment is gated by the same seven conditions the deployment script enforces.
+# The pipeline cannot bypass them: Test-DmsProductionGuard runs inside Deploy-Dms.ps1.
+
+name: dms-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, test, prod]
+      mode:
+        description: Plan or Apply
+        required: true
+        default: Plan
+        type: choice
+        options: [Plan, Apply]
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate configuration
+        shell: pwsh
+        run: ./src/provisioning/Test-DmsConfiguration.ps1 -Environment ${{ inputs.environment }}
+
+      - name: Connect (certificate-based application authentication)
+        shell: pwsh
+        env:
+          DMS_TENANT_ID: ${{ secrets.DMS_TENANT_ID }}
+          DMS_CLIENT_ID: ${{ secrets.DMS_CLIENT_ID }}
+          DMS_CERT_BASE64: ${{ secrets.DMS_CERT_BASE64 }}
+        run: |
+          Install-Module PnP.PowerShell -MinimumVersion 2.12.0 -Force -Scope CurrentUser
+          # Certificate is supplied by the pipeline secret store and never committed (PRD SEC-004).
+          $conn = Connect-PnPOnline -Url $env:DMS_SITE_URL -ClientId $env:DMS_CLIENT_ID `
+                    -Tenant $env:DMS_TENANT_ID -CertificateBase64Encoded $env:DMS_CERT_BASE64 -ReturnConnection
+          "connected" | Out-File connected.txt
+
+      - name: Plan
+        shell: pwsh
+        run: ./src/provisioning/Deploy-Dms.ps1 -Environment ${{ inputs.environment }} -Mode Plan
+
+  apply:
+    needs: plan
+    if: inputs.mode == 'Apply'
+    runs-on: ubuntu-latest
+    # A protected GitHub environment adds required human reviewers for prod on top of the
+    # in-script production guard. Both must pass.
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply
+        shell: pwsh
+        run: |
+          $args = @{ Environment = '${{ inputs.environment }}'; Mode = 'Apply' }
+          if ('${{ inputs.environment }}' -eq 'prod') {
+            $args['ConfirmProductionChange']   = $true
+            $args['PriorSuccessfulDeployment'] = @('dev','test')
+            $args['RollbackPlanReference']     = 'docs/BACKUP_RECOVERY_PLAN.md#rollback'
+          }
+          ./src/provisioning/Deploy-Dms.ps1 @args
+
+      - name: Verify no drift after apply
+        shell: pwsh
+        run: ./src/provisioning/Export-DmsConfiguration.ps1 -Environment ${{ inputs.environment }} -CompareToBaseline
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-evidence-${{ inputs.environment }}
+          path: artifacts/discovery/

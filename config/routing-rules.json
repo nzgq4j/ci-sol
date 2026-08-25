@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Seed review and approval routes. PRD F-009 requires routes configurable by document type, process, risk and authority without editing flow logic. Assignees are placeholders until OQ-13 is answered.",
+  "status": "Provisional - assignee groups require confirmation (OQ-13). Resolution algorithm is not provisional.",
+  "resolution": {
+    "algorithm": "Match all active rules whose criteria match the submitted document. Each criterion is either an exact value or the wildcard '*'. Specificity = count of non-wildcard criteria. The highest-specificity matching rule set wins. A tie between two rule sets at equal specificity is a configuration error and raises a MissingRoute blocking exception rather than picking arbitrarily.",
+    "criteria": ["documentType", "businessFunction", "sensitivity"],
+    "noMatchBehaviour": "Raise a blocking MissingRoute exception, do not submit, and return an actionable message to the author. PRD F-009, F-022.",
+    "ambiguousMatchBehaviour": "Raise a blocking MissingRoute exception naming the competing rules. Never choose arbitrarily.",
+    "separationOfDuties": "A resolved assignee who is the sole author of the revision is removed from the stage and, if the stage would then be empty, a blocking exception is raised. PRD SEC-003."
+  },
+  "ruleSets": [
+    {
+      "name": "SOP - default", "documentType": "SOP", "businessFunction": "*", "sensitivity": "*", "active": true,
+      "stages": [
+        { "sequence": 1, "name": "Technical Review", "mode": "Parallel", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 5, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" },
+        { "sequence": 2, "name": "Process Owner Approval", "mode": "Serial", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 3, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" }
+      ]
+    },
+    {
+      "name": "Policy - default", "documentType": "Policy", "businessFunction": "*", "sensitivity": "*", "active": true,
+      "stages": [
+        { "sequence": 1, "name": "Legal and Compliance Review", "mode": "Parallel", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 10, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" },
+        { "sequence": 2, "name": "Executive Approval", "mode": "Serial", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 5, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" }
+      ]
+    },
+    {
+      "name": "Work Instruction - default", "documentType": "Work Instruction", "businessFunction": "*", "sensitivity": "*", "active": true,
+      "stages": [
+        { "sequence": 1, "name": "Supervisor Review", "mode": "Serial", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 3, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" }
+      ]
+    },
+    {
+      "name": "Confidential override - adds security review", "documentType": "*", "businessFunction": "*", "sensitivity": "Highly Confidential", "active": true,
+      "note": "Specificity 1. Demonstrates a risk-based override. Because SOP-default is also specificity 1, a Highly Confidential SOP produces an ambiguous match and a blocking exception until Document Control adds an explicit combined rule. This is deliberate: the system refuses to guess an approval route.",
+      "stages": [
+        { "sequence": 1, "name": "Security Review", "mode": "Serial", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 5, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" }
+      ]
+    },
+    {
+      "name": "Quality SOP - explicit combined rule", "documentType": "SOP", "businessFunction": "Quality", "sensitivity": "*", "active": true,
+      "stages": [
+        { "sequence": 1, "name": "Technical Review", "mode": "Parallel", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "Majority", "dueBusinessDays": 5, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" },
+        { "sequence": 2, "name": "Quality Manager Approval", "mode": "Serial", "assignees": ["REQUIRES_STAKEHOLDER_DECISION_OQ-13"], "quorum": "All", "dueBusinessDays": 3, "escalateTo": "REQUIRES_STAKEHOLDER_DECISION_OQ-13" }
+      ]
+    }
+  ],
+  "conformanceVectors": [
+    { "input": { "documentType": "SOP", "businessFunction": "Operations", "sensitivity": "Internal" }, "expect": "match", "expectedRule": "SOP - default", "expectedSpecificity": 1 },
+    { "input": { "documentType": "SOP", "businessFunction": "Quality", "sensitivity": "Internal" }, "expect": "match", "expectedRule": "Quality SOP - explicit combined rule", "expectedSpecificity": 2 },
+    { "input": { "documentType": "Policy", "businessFunction": "Legal and Compliance", "sensitivity": "Internal" }, "expect": "match", "expectedRule": "Policy - default", "expectedSpecificity": 1 },
+    { "input": { "documentType": "SOP", "businessFunction": "Operations", "sensitivity": "Highly Confidential" }, "expect": "ambiguous", "reason": "SOP - default and Confidential override both match at specificity 1." },
+    { "input": { "documentType": "Standard", "businessFunction": "Finance", "sensitivity": "Internal" }, "expect": "nomatch", "reason": "No rule covers Standard. Must raise a blocking MissingRoute exception." },
+    { "input": { "documentType": "SOP", "businessFunction": "Quality", "sensitivity": "Highly Confidential" }, "expect": "match", "expectedRule": "Quality SOP - explicit combined rule", "expectedSpecificity": 2, "reason": "Specificity 2 beats the specificity-1 confidential override." }
+  ],
+  "requirements": ["F-009", "F-028", "SEC-003", "OQ-13"]
+}

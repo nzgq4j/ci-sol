@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
+  "_comment": "Exception severity. Text plus icon plus colour (WCAG 2.2 AA 1.4.1).",
+  "elmType": "div",
+  "style": { "display": "flex", "align-items": "center", "gap": "6px" },
+  "attributes": {
+    "class": "=if(@currentField == 'Critical' || @currentField == 'High', 'sp-field-severity--severeWarning', if(@currentField == 'Medium', 'sp-field-severity--warning', 'sp-field-severity--good'))"
+  },
+  "children": [
+    { "elmType": "span", "attributes": { "iconName": "=if(@currentField == 'Critical' || @currentField == 'High', 'ErrorBadge', if(@currentField == 'Medium', 'Warning', 'Info'))", "title": "=@currentField + ' severity'" } },
+    { "elmType": "span", "txtContent": "@currentField" }
+  ]
+}

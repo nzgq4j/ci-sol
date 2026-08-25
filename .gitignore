@@ -1,0 +1,29 @@
+# Discovery and export output can contain tenant configuration detail. Never committed.
+artifacts/
+!artifacts/.gitkeep
+
+# Real environment configuration. Contains no secrets by design, but is environment-specific.
+# config/environments.json IS committed for this engagement so the test bed is reproducible;
+# uncomment the next line if your policy requires it to stay local.
+# config/environments.json
+
+# Approved retention map replaces the example once Records Management signs off.
+config/retention-map.json
+
+# Secrets must never be committed. There is no .env in this repository by design.
+.env
+*.pfx
+*.cer
+*.key
+*.pem
+*credential*
+*secret*
+!**/README.md
+
+# Power Platform build artefacts
+src/power-platform/solution/*.zip
+
+# Tooling
+node_modules/
+*.log
+.DS_Store

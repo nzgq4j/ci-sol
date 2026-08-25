@@ -1,0 +1,52 @@
+{
+  "$schema": "schema.json",
+  "actions": [
+    {
+      "verb": "applyTheme",
+      "themeName": "REQUIRES_STAKEHOLDER_DECISION"
+    },
+    {
+      "verb": "setSiteExternalSharingCapability",
+      "capability": "Disabled"
+    },
+    {
+      "verb": "setRegionalSettings",
+      "timeZone": 2,
+      "locale": 2057,
+      "sortOrder": 25,
+      "hourFormat": "24"
+    },
+    {
+      "verb": "addNavLink",
+      "url": "/ControlledDocuments",
+      "displayName": "Find a Current Document",
+      "isWebRelative": true
+    },
+    {
+      "verb": "addNavLink",
+      "url": "/Lists/ChangeRequests",
+      "displayName": "Request a Document or Change",
+      "isWebRelative": true
+    },
+    {
+      "verb": "addNavLink",
+      "url": "/Lists/DocumentRegister",
+      "displayName": "Document Register",
+      "isWebRelative": true
+    },
+    {
+      "verb": "addNavLink",
+      "url": "/SitePages/Help.aspx",
+      "displayName": "Help and Glossary",
+      "isWebRelative": true
+    },
+    {
+      "verb": "triggerFlow",
+      "url": "REQUIRES_TENANT_DISCOVERY",
+      "name": "DMS site provisioning notification",
+      "parameters": {}
+    }
+  ],
+  "bindata": {},
+  "version": 1
+}

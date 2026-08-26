@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+.vite/
+*.log
+*.tsbuildinfo
+.spfx-node/
+sharepoint/sol-dms/temp/
+sharepoint/sol-dms/release/
+sharepoint/sol-dms/sharepoint/solution/*.sppkg

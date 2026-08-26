@@ -1,0 +1,32 @@
+{
+  "mode": "http",
+  "endpoints": {
+    "listSites": "",
+    "searchDocuments": "",
+    "getDocumentDetail": "",
+    "setFavourite": "",
+    "listContentTypes": "",
+    "validateMetadata": "",
+    "currentUser": "",
+    "searchPeople": "",
+    "userContext": "",
+    "groupHealth": "",
+    "authorize": "",
+    "listFlows": "",
+    "startControlScan": "",
+    "listRetentionMappings": "",
+    "recoveryStatus": "",
+    "listChangeRequests": "",
+    "listApprovals": "",
+    "recordApproval": "",
+    "listAcknowledgements": "",
+    "recordAcknowledgement": "",
+    "listAudit": "",
+    "listDeployments": "",
+    "platformSnapshot": "",
+    "listIntegrations": "",
+    "setIntegration": "",
+    "listExceptions": "",
+    "resolveException": ""
+  }
+}

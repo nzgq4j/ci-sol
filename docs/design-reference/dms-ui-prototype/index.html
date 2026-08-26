@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Role-based user interface prototype for a Microsoft 365 document management system."
+    />
+    <title>SOL Document Control</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <div class="app-shell" id="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <p class="brand-org">SOL Operations</p>
+            <p class="brand-product">Document Control</p>
+          </div>
+        </div>
+
+        <div class="role-context">
+          <span class="role-context__label">Working as</span>
+          <button
+            class="role-context__button"
+            id="role-menu-button"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+          >
+            <span class="role-glyph" id="role-glyph" aria-hidden="true"></span>
+            <span>
+              <strong id="role-label">End user</strong>
+              <small id="role-caption">Find and follow current guidance</small>
+            </span>
+            <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m7 10 5 5 5-5" />
+            </svg>
+          </button>
+          <div class="role-menu" id="role-menu" role="listbox" aria-label="Select working role"></div>
+        </div>
+
+        <nav class="nav-list" id="nav-list"></nav>
+
+        <div class="sidebar-foot">
+          <div class="assurance-pulse">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <div>
+              <strong>Control checks current</strong>
+              <span>Verified 7 minutes ago</span>
+            </div>
+          </div>
+          <button class="text-button" type="button" data-action="open-help">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.7 9a2.5 2.5 0 1 1 3.8 2.1c-.9.5-1.5 1-1.5 2.1" />
+              <path d="M12 17h.01" />
+            </svg>
+            Help and glossary
+          </button>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <button
+            class="icon-button mobile-menu-button"
+            id="mobile-menu-button"
+            type="button"
+            aria-label="Open navigation"
+            aria-controls="sidebar"
+            aria-expanded="false"
+          >
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+
+          <div class="global-search" role="search">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            <label class="sr-only" for="global-search-input">Search controlled documents</label>
+            <input
+              id="global-search-input"
+              type="search"
+              placeholder="Search by title, document ID, process or owner"
+              autocomplete="off"
+            />
+            <kbd>/</kbd>
+          </div>
+
+          <div class="topbar-actions">
+            <button class="icon-button notification-button" type="button" aria-label="Notifications">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                <path d="M10 21h4" />
+              </svg>
+              <span class="notification-count">3</span>
+            </button>
+            <button class="profile-button" type="button" aria-label="Open account menu">
+              <span class="avatar">DK</span>
+              <span class="profile-copy">
+                <strong>David Kolb</strong>
+                <small>Operations</small>
+              </span>
+            </button>
+          </div>
+        </header>
+
+        <main id="main-content" tabindex="-1"></main>
+      </section>
+    </div>
+
+    <div class="mobile-scrim" id="mobile-scrim" hidden></div>
+
+    <aside
+      class="detail-drawer"
+      id="detail-drawer"
+      aria-labelledby="drawer-title"
+      aria-hidden="true"
+    >
+      <div id="drawer-content"></div>
+    </aside>
+    <div class="drawer-scrim" id="drawer-scrim" hidden></div>
+
+    <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+      <form method="dialog">
+        <div class="dialog-kicker" id="confirm-kicker">Confirm action</div>
+        <h2 id="confirm-title">Continue?</h2>
+        <p id="confirm-copy"></p>
+        <div class="dialog-actions">
+          <button class="button secondary" value="cancel">Cancel</button>
+          <button class="button primary" id="confirm-action" value="confirm">Continue</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

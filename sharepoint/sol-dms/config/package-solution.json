@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "sol-dms-client-side-solution",
+    "id": "ce95e19a-a3c9-4240-b156-9daca79c0872",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": ""
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "SOL Document Control role experiences"
+      },
+      "longDescription": {
+        "default": "Portable SharePoint Online host for the SOL controlled document lifecycle."
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "SOL Document Control",
+        "description": "Activates the tenant-configured SOL Document Control client-side application.",
+        "id": "a9dd5b9c-aec0-417b-a72a-ec7aea273817",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/sol-dms.sppkg"
+  }
+}

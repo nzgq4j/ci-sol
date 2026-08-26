@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sol.example.invalid/schemas/dms-runtime-config.schema.json",
+  "title": "SOL DMS runtime configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "endpoints"],
+  "properties": {
+    "mode": { "const": "http" },
+    "endpoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "listSites": { "$ref": "#/$defs/endpoint" },
+        "searchDocuments": { "$ref": "#/$defs/endpoint" },
+        "getDocumentDetail": { "$ref": "#/$defs/endpoint" },
+        "setFavourite": { "$ref": "#/$defs/endpoint" },
+        "listContentTypes": { "$ref": "#/$defs/endpoint" },
+        "validateMetadata": { "$ref": "#/$defs/endpoint" },
+        "currentUser": { "$ref": "#/$defs/endpoint" },
+        "searchPeople": { "$ref": "#/$defs/endpoint" },
+        "userContext": { "$ref": "#/$defs/endpoint" },
+        "groupHealth": { "$ref": "#/$defs/endpoint" },
+        "authorize": { "$ref": "#/$defs/endpoint" },
+        "listFlows": { "$ref": "#/$defs/endpoint" },
+        "startControlScan": { "$ref": "#/$defs/endpoint" },
+        "listRetentionMappings": { "$ref": "#/$defs/endpoint" },
+        "recoveryStatus": { "$ref": "#/$defs/endpoint" },
+        "listChangeRequests": { "$ref": "#/$defs/endpoint" },
+        "listApprovals": { "$ref": "#/$defs/endpoint" },
+        "recordApproval": { "$ref": "#/$defs/endpoint" },
+        "listAcknowledgements": { "$ref": "#/$defs/endpoint" },
+        "recordAcknowledgement": { "$ref": "#/$defs/endpoint" },
+        "listAudit": { "$ref": "#/$defs/endpoint" },
+        "listDeployments": { "$ref": "#/$defs/endpoint" },
+        "platformSnapshot": { "$ref": "#/$defs/endpoint" },
+        "listIntegrations": { "$ref": "#/$defs/endpoint" },
+        "setIntegration": { "$ref": "#/$defs/endpoint" },
+        "listExceptions": { "$ref": "#/$defs/endpoint" },
+        "resolveException": { "$ref": "#/$defs/endpoint" }
+      }
+    }
+  },
+  "$defs": {
+    "endpoint": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url"],
+          "properties": {
+            "url": { "type": "string", "minLength": 1 },
+            "auth": { "enum": ["browser", "sharePoint", "entra"] },
+            "resource": { "type": "string", "minLength": 1 }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "auth": { "const": "entra" } }, "required": ["auth"] },
+              "then": { "required": ["resource"] }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

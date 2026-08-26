@@ -1,0 +1,23 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "whichFolder": "subdir",
+    "solutionName": "sol-dms",
+    "environment": "spo",
+    "packageManager": "npm",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "useGulp": false,
+    "componentType": "webpart",
+    "template": "react",
+    "componentName": "SolDms",
+    "componentDescription": "SOL role-based document control experience",
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "24.17.0",
+    "sdksVersions": {},
+    "version": "1.23.2",
+    "libraryName": "sol-dms",
+    "libraryId": "ce95e19a-a3c9-4240-b156-9daca79c0872",
+    "solutionShortDescription": "sol-dms description"
+  }
+}

@@ -1,0 +1,100 @@
+# DMS continuous integration — offline validation.
+# Requires no tenant, no credentials and no network access to Microsoft 365.
+#
+# Every gate here is one a contributor can run locally. Nothing in this file
+# reaches a Microsoft 365 tenant, and nothing in it mutates one.
+
+name: dms-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser -SkipPublisherCheck
+
+      - name: Validate configuration
+        shell: pwsh
+        run: ./src/provisioning/Test-DmsConfiguration.ps1 -Environment dev
+
+      - name: Verify PnP cmdlet usage against the indexed source
+        shell: pwsh
+        run: |
+          Import-Module ./src/modules/DmsProvisioning/DmsProvisioning.psd1 -Force
+          $r = Test-DmsPnPCmdletUsage
+          $r.Findings | ForEach-Object { Write-Error "$($_.File): $($_.Detail)" }
+          if (-not $r.IsValid) { throw "Fabricated PnP cmdlet or parameter detected" }
+          Write-Host "Verified $($r.CmdletUsages) PnP invocation(s) against source $($r.IndexCommit)"
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.5.0 -Force
+          $c = New-PesterConfiguration
+          $c.Run.Path = './tests/pester'
+          $c.Run.Exit = $true
+          $c.TestResult.Enabled = $true
+          $c.TestResult.OutputPath = 'test-results.xml'
+          Invoke-Pester -Configuration $c
+
+      # Generated docs are regenerated and the tree compared. Running the
+      # generators without comparing would let a stale committed doc pass, which
+      # is the drift the rule exists to catch.
+      - name: Check generated documentation is current
+        shell: pwsh
+        run: |
+          ./src/reporting/New-DmsDocumentation.ps1 | Out-Null
+          ./src/reporting/New-DmsTraceability.ps1  | Out-Null
+
+      - name: Fail on generated-doc drift
+        shell: bash
+        run: |
+          if ! git diff --exit-code -- docs/; then
+            echo "::error::Generated documentation is stale. Run New-DmsDocumentation.ps1 and New-DmsTraceability.ps1, then commit."
+            exit 1
+          fi
+
+      - name: Fail on unreferenced P0 requirements
+        shell: pwsh
+        run: |
+          $r = ./src/reporting/New-DmsTraceability.ps1
+          Write-Host "Requirements: $($r.requirementCount), P0: $($r.p0Count), unreferenced P0: $($r.unreferencedP0.Count)"
+          if ($r.unreferencedP0.Count -gt 0) { throw "P0 requirements with no reference: $($r.unreferencedP0 -join ', ')" }
+
+      - name: Plan deployment (no tenant, no mutation)
+        shell: pwsh
+        run: |
+          $s = ./src/provisioning/Deploy-Dms.ps1 -Environment dev -Mode Plan
+          if ($s.failedCount -gt 0) { throw "Planning reported $($s.failedCount) failure(s)" }
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xml
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on committed secrets
+        shell: pwsh
+        run: |
+          $hits = Get-ChildItem -Recurse -File -Include '*.json','*.ps1','*.psm1','*.yml','*.md' |
+            Where-Object { $_.FullName -notmatch '[\\/](\.git|artifacts)[\\/]' } |
+            Select-String -Pattern '(?i)(client_?secret|password)\s*[:=]\s*["'']?[A-Za-z0-9+/=_\-]{12,}' |
+            Where-Object { $_.Line -notmatch 'REDACTED|REQUIRES_|example|placeholder|REPLACE_WITH|\$\(|\$\{|Protect-Dms|[Pp]attern' }
+          if ($hits) { $hits | ForEach-Object { Write-Error $_ }; throw 'Possible committed secret' }
+          Write-Host 'No committed secrets detected'

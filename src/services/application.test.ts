@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { DmsApplication } from "./application";
 import { createDemoServices } from "./demo";
+import { createHttpServices } from "./http";
+import { withSharePointIdentity } from "./sharePointBootstrap";
 
 describe("DmsApplication governed actions", () => {
   it("loads all three role workspaces through typed boundaries", async () => {
@@ -9,6 +11,26 @@ describe("DmsApplication governed actions", () => {
     expect(snapshot.documents.length).toBeGreaterThan(0);
     expect(snapshot.platform.sites.length).toBeGreaterThan(0);
     expect(snapshot.staleSources).toEqual([]);
+    expect(snapshot.setupIssues).toEqual([]);
+  });
+
+  it("keeps the safe end-user shell available while tenant read models are commissioned", async () => {
+    const services = withSharePointIdentity(
+      createHttpServices({ mode: "http", endpoints: {} }),
+      { id: "user-1", displayName: "David Daniel" },
+    );
+    const snapshot = await new DmsApplication(services).loadWorkspace();
+    expect(snapshot.context.allowedRoles).toEqual(["endUser"]);
+    expect(snapshot.documents).toEqual([]);
+    expect(snapshot.platform.health).toBe("Unknown");
+    expect(snapshot.setupIssues.map((issue) => issue.source)).toEqual([
+      "Controlled Documents",
+      "Acknowledgement Evidence",
+      "Approval Evidence",
+      "Change Requests",
+      "Exception Register",
+      "Platform assurance",
+    ]);
   });
 
   it("records acknowledgement against the exact version and ETag", async () => {

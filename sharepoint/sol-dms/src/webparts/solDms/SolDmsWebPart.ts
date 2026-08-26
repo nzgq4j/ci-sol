@@ -16,6 +16,7 @@ import {
   type OperationEndpoint,
   type SolDmsRuntimeConfig
 } from '../../solDmsApp/services/http';
+import { withSharePointIdentity } from '../../solDmsApp/services/sharePointBootstrap';
 
 export interface ISolDmsWebPartProps {
   configurationUrl: string;
@@ -26,8 +27,17 @@ export default class SolDmsWebPart extends BaseClientSideWebPart<ISolDmsWebPartP
 
   public render(): void {
     const executor: HttpRequestExecutor = { execute: (endpoint, init) => this._execute(endpoint, init) };
+    const signedInUser = this.context.pageContext.user;
+    const services = withSharePointIdentity(
+      createHttpServices(this._runtimeConfig, executor),
+      {
+        id: signedInUser.loginName,
+        displayName: signedInUser.displayName,
+        email: signedInUser.email || undefined
+      }
+    );
     const element: React.ReactElement<ISolDmsProps> = React.createElement(SolDms, {
-      services: createHttpServices(this._runtimeConfig, executor)
+      services
     });
     ReactDom.render(element, this.domElement);
   }

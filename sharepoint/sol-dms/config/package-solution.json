@@ -3,7 +3,7 @@
   "solution": {
     "name": "sol-dms-client-side-solution",
     "id": "6b30f157-0d3c-4988-8843-eb6e1c3b8acd",
-    "version": "1.0.2.0",
+    "version": "1.0.3.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "SOL Document Control",
         "description": "Activates the tenant-configured SOL Document Control client-side application.",
         "id": "407c47af-65fa-4015-afef-bf750d7481f2",
-        "version": "1.0.2.0"
+        "version": "1.0.3.0"
       }
     ]
   },

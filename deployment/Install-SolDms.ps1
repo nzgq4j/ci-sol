@@ -607,7 +607,10 @@ if ($null -eq $existingPage) {
   $page = Add-PnPPage -Name $pageNameValue -Title $PageTitle -LayoutType SingleWebPartAppPage -Connection $connection
 } else {
   Write-Step "Converting the reviewed existing page SitePages/$pageNameValue.aspx to the full-page application layout."
-  $null = Set-PnPPage -Identity $existingPage -LayoutType SingleWebPartAppPage -HeaderType None -CommentsEnabled:$false -Connection $connection
+  # Address the server page by name. Passing a previously loaded ClientSidePage
+  # object back to Set-PnPPage can save that object's stale canvas over changes
+  # made by a later Add-PnPPageWebPart call.
+  $null = Set-PnPPage -Identity $pageNameValue -LayoutType SingleWebPartAppPage -HeaderType None -CommentsEnabled:$false -Connection $connection
   $page = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
 }
 
@@ -693,8 +696,35 @@ if ($null -ne $existingSolComponent) {
   Write-Step "Added exact component $solWebPartComponentId to the full-page host."
 }
 
-Write-Step 'Publishing the SharePoint page.'
-$null = Set-PnPPage -Identity $page -Title $PageTitle -LayoutType SingleWebPartAppPage -HeaderType None -CommentsEnabled:$false -Publish -Connection $connection
+Write-Step 'Reloading and verifying the live SharePoint page before publication.'
+$page = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
+$liveSolComponent = Get-PnPPageComponent -Page $page -Connection $connection |
+  Where-Object { Test-ComponentIdentity -Component $_ -ComponentId $solWebPartComponentId } |
+  Select-Object -First 1
+if ($null -eq $liveSolComponent) {
+  throw "SharePoint did not retain SOL Document Control component $solWebPartComponentId in the live page canvas. The page will not be published empty."
+}
+
+Write-Step 'Publishing the verified SharePoint page without rewriting its canvas.'
+# Publish by filename and do not reapply LayoutType here. The layout was saved
+# before component insertion; reusing the older page object here can overwrite
+# the newly saved component canvas.
+$null = Set-PnPPage -Identity $pageNameValue -Title $PageTitle -HeaderType None -CommentsEnabled:$false -Publish -Connection $connection
+
+$publishedPage = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
+$publishedSolComponent = Get-PnPPageComponent -Page $publishedPage -Connection $connection |
+  Where-Object { Test-ComponentIdentity -Component $_ -ComponentId $solWebPartComponentId } |
+  Select-Object -First 1
+if ($null -eq $publishedSolComponent) {
+  throw "SharePoint removed SOL Document Control component $solWebPartComponentId during publication. The published page is not valid."
+}
+
+$publishedPageItem = Get-PnPFile -Url "SitePages/$pageNameValue.aspx" -AsListItem -Connection $connection -ErrorAction Stop
+$publishedLayoutType = [string]$publishedPageItem.FieldValues['PageLayoutType']
+if ($publishedLayoutType -ne 'SingleWebPartAppPage') {
+  throw "SharePoint published SitePages/$pageNameValue.aspx with layout '$publishedLayoutType' instead of SingleWebPartAppPage."
+}
+Write-Step "Verified published full-page host with component $solWebPartComponentId."
 
 $pageUrl = "$($web.Url.TrimEnd('/'))/SitePages/$pageNameValue.aspx"
 $receipt = [ordered]@{

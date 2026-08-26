@@ -21,6 +21,12 @@ export interface WorkspaceSnapshot {
   exceptions: ControlException[];
   platform: PlatformSnapshot;
   staleSources: string[];
+  setupIssues: WorkspaceSetupIssue[];
+}
+
+export interface WorkspaceSetupIssue {
+  source: string;
+  message: string;
 }
 
 function valueOrThrow<T>(result: ServiceResult<T>): T {
@@ -32,10 +38,40 @@ function sourceIsStale<T>(result: ServiceResult<T>): string | undefined {
   return result.ok && result.meta.freshness !== "current" ? result.meta.source : undefined;
 }
 
+function optionalValue<T>(
+  source: string,
+  result: ServiceResult<T>,
+  fallback: T,
+  setupIssues: WorkspaceSetupIssue[],
+): T {
+  if (result.ok) return result.data;
+  if (result.error.code !== "UNCONFIGURED") {
+    throw Object.assign(new Error(result.error.message), { serviceError: result.error });
+  }
+  setupIssues.push({ source, message: result.error.message });
+  return fallback;
+}
+
+function unconfiguredPlatform(): PlatformSnapshot {
+  return {
+    health: "Unknown",
+    summary: "Platform assurance sources have not been configured.",
+    sites: [],
+    flows: [],
+    retention: [],
+    integrations: [],
+    deployments: [],
+    recovery: { result: "Unknown", openFindings: 0 },
+    audit: [],
+    metrics: [],
+  };
+}
+
 export class DmsApplication {
   constructor(private readonly services: DmsServices) {}
 
   async loadWorkspace(): Promise<WorkspaceSnapshot> {
+    const setupIssues: WorkspaceSetupIssue[] = [];
     const [context, documents, acknowledgements, approvals, changes, exceptions, platform] = await Promise.all([
       this.services.entraId.getUserContext(),
       this.services.sharePointDocuments.search({}),
@@ -47,12 +83,16 @@ export class DmsApplication {
     ]);
     return {
       context: valueOrThrow(context),
-      documents: valueOrThrow(documents),
-      acknowledgements: valueOrThrow(acknowledgements),
-      approvals: valueOrThrow(approvals),
-      changes: valueOrThrow(changes),
-      exceptions: valueOrThrow(exceptions),
-      platform: valueOrThrow(platform),
+      // Identity is required to establish a safe baseline role. The remaining
+      // read models are independently optional during tenant commissioning so
+      // one missing integration cannot blank the entire application shell.
+      // Governed writes continue to fail closed at their service boundaries.
+      documents: optionalValue("Controlled Documents", documents, [], setupIssues),
+      acknowledgements: optionalValue("Acknowledgement Evidence", acknowledgements, [], setupIssues),
+      approvals: optionalValue("Approval Evidence", approvals, [], setupIssues),
+      changes: optionalValue("Change Requests", changes, [], setupIssues),
+      exceptions: optionalValue("Exception Register", exceptions, [], setupIssues),
+      platform: optionalValue("Platform assurance", platform, unconfiguredPlatform(), setupIssues),
       staleSources: [
         sourceIsStale(context),
         sourceIsStale(documents),
@@ -62,6 +102,7 @@ export class DmsApplication {
         sourceIsStale(exceptions),
         sourceIsStale(platform),
       ].filter((source): source is string => Boolean(source)),
+      setupIssues,
     };
   }
 

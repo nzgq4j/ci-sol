@@ -1,0 +1,12 @@
+{
+  "product": "SOL Document Control",
+  "installedAtUtc": "2026-08-26T16:37:55.5408505+00:00",
+  "targetSiteUrl": "https://propfound.sharepoint.com/sites/DOX",
+  "pageUrl": "https://propfound.sharepoint.com/sites/DOX/SitePages/SOL-Document-Control.aspx",
+  "appCatalogScope": "Site",
+  "appCatalogUrl": "https://propfound.sharepoint.com/sites/DOX",
+  "packageSha256": "89B01D960E63F9DA9DE8CFCD771463E9DDB152D52D9A9B2C879BC260C79349F3",
+  "componentId": "772c04cc-f5af-4485-8e48-d4de27923fa0",
+  "runtimeConfigurationUrl": "SiteAssets/SOL-DMS/sol-dms-runtime.json",
+  "stagedUnconfigured": true
+}

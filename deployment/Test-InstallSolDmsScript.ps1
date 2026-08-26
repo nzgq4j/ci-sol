@@ -37,4 +37,49 @@ foreach ($command in $requiredCommands) {
   }
 }
 
-Write-Output "Install-SolDms.ps1 parsed successfully and contains all required deployment commands."
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$packageSolutionPath = Join-Path $repositoryRoot 'sharepoint/sol-dms/config/package-solution.json'
+$webPartManifestPath = Join-Path $repositoryRoot 'sharepoint/sol-dms/src/webparts/solDms/SolDmsWebPart.manifest.json'
+$packagePath = Join-Path $repositoryRoot 'sharepoint/sol-dms/sharepoint/solution/sol-dms.sppkg'
+
+$packageSolution = Get-Content -LiteralPath $packageSolutionPath -Raw | ConvertFrom-Json -Depth 20
+$webPartManifest = Get-Content -LiteralPath $webPartManifestPath -Raw | ConvertFrom-Json -Depth 20
+$solutionId = [guid]$packageSolution.solution.id
+$componentId = [guid]$webPartManifest.id
+$featureId = [guid]$packageSolution.solution.features[0].id
+$packageVersion = [version]$packageSolution.solution.version
+
+foreach ($identity in @($solutionId, $componentId)) {
+  if ($content -notmatch [regex]::Escape([string]$identity)) {
+    throw "Install-SolDms.ps1 is not bound to package identity $identity."
+  }
+}
+
+if (-not (Test-Path -LiteralPath $packagePath -PathType Leaf)) {
+  throw "The built SPFx package is missing: $packagePath"
+}
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archive = [IO.Compression.ZipFile]::OpenRead($packagePath)
+try {
+  $appManifestEntry = $archive.GetEntry('AppManifest.xml')
+  if ($null -eq $appManifestEntry) { throw 'The SPFx package does not contain AppManifest.xml.' }
+  $reader = [IO.StreamReader]::new($appManifestEntry.Open())
+  try { [xml]$appManifest = $reader.ReadToEnd() } finally { $reader.Dispose() }
+
+  if ([guid]$appManifest.App.ProductID -ne $solutionId) {
+    throw "The built package solution ID does not match package-solution.json ($solutionId)."
+  }
+  if ([version]$appManifest.App.Version -ne $packageVersion) {
+    throw "The built package version does not match package-solution.json ($packageVersion)."
+  }
+
+  $webPartEntry = "$featureId/WebPart_$componentId.xml"
+  if ($null -eq $archive.GetEntry($webPartEntry)) {
+    throw "The built package does not contain expected component definition $webPartEntry."
+  }
+} finally {
+  $archive.Dispose()
+}
+
+Write-Output "Install-SolDms.ps1 and sol-dms.sppkg validated: solution $solutionId, component $componentId, version $packageVersion."

@@ -51,7 +51,7 @@ The strings above are illustrative shapes, not deployable tenant values. Never p
 
 The repository includes [Install-SolDms.ps1](Install-SolDms.ps1), which performs the App Catalog upload, runtime-manifest upload, page creation, web-part configuration and page publication.
 
-It requires PowerShell 7.4 or later, PnP.PowerShell 3.4.1 or later, and a tenant-approved Entra application client ID for interactive PnP authentication:
+PnP.PowerShell requires PowerShell 7.4 or later. The installer can nevertheless be launched from Windows PowerShell 5.1: it detects the older host and relaunches itself with `pwsh.exe`, preserving the supplied parameters. PowerShell 7.4+, PnP.PowerShell 3.4.1+ and a tenant-approved Entra application client ID must be installed:
 
 ```powershell
 Install-Module PnP.PowerShell -RequiredVersion 3.4.1 -Scope CurrentUser
@@ -60,7 +60,7 @@ Install-Module PnP.PowerShell -RequiredVersion 3.4.1 -Scope CurrentUser
 First run a non-mutating preview with real tenant inputs:
 
 ```powershell
-pwsh ./deployment/Install-SolDms.ps1 `
+& ./deployment/Install-SolDms.ps1 `
   -TargetSiteUrl 'https://<tenant>.sharepoint.com/sites/<target-site>' `
   -TenantAppCatalogUrl 'https://<tenant>.sharepoint.com/sites/<app-catalog>' `
   -PnPClientId '<tenant-approved-pnp-client-id>' `

@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
-  "id": "7c36e2e7-eba7-43e1-886f-7b7a3d848c29",
+  "id": "772c04cc-f5af-4485-8e48-d4de27923fa0",
   "alias": "SolDmsWebPart",
   "componentType": "WebPart",
 

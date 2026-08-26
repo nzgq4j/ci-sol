@@ -2,8 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
     "name": "sol-dms-client-side-solution",
-    "id": "ce95e19a-a3c9-4240-b156-9daca79c0872",
-    "version": "1.0.0.0",
+    "id": "6b30f157-0d3c-4988-8843-eb6e1c3b8acd",
+    "version": "1.0.1.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -29,8 +29,8 @@
       {
         "title": "SOL Document Control",
         "description": "Activates the tenant-configured SOL Document Control client-side application.",
-        "id": "a9dd5b9c-aec0-417b-a72a-ec7aea273817",
-        "version": "1.0.0.0"
+        "id": "407c47af-65fa-4015-afef-bf750d7481f2",
+        "version": "1.0.1.0"
       }
     ]
   },

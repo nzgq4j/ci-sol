@@ -1,4 +1,4 @@
-#requires -Version 7.4
+#requires -Version 5.1
 
 <#
 .SYNOPSIS
@@ -18,9 +18,11 @@ grants tenant API permissions, or supplies missing tenant configuration.
   -WhatIf
 
 .NOTES
-Requires PnP.PowerShell 3.4.1 or later and a tenant-approved Entra application
-for interactive PnP PowerShell authentication. Placeholder values in examples
-are not deployable tenant configuration.
+The script may be launched from Windows PowerShell 5.1. It automatically
+relaunches itself under PowerShell 7.4 or later because PnP.PowerShell 3.4.1
+does not run in Windows PowerShell. A tenant-approved Entra application is
+still required for interactive PnP PowerShell authentication. Placeholder
+values in examples are not deployable tenant configuration.
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
@@ -36,8 +38,7 @@ param(
   [ValidateNotNullOrEmpty()]
   [string]$RuntimeConfigurationPath,
 
-  [ValidateNotNullOrEmpty()]
-  [string]$PackagePath = (Join-Path $PSScriptRoot '../sharepoint/sol-dms/sharepoint/solution/sol-dms.sppkg'),
+  [string]$PackagePath,
 
   [ValidateSet('Tenant', 'Site')]
   [string]$AppCatalogScope = 'Tenant',
@@ -74,12 +75,51 @@ param(
   [switch]$OverwriteReceipt
 )
 
+if ($PSVersionTable.PSVersion -lt [version]'7.4') {
+  $pwshCommand = Get-Command -Name 'pwsh.exe' -ErrorAction SilentlyContinue
+  if ($null -eq $pwshCommand) {
+    throw 'PowerShell 7.4 or later is required but pwsh.exe was not found. Install PowerShell 7, then rerun this same command.'
+  }
+
+  $forwardedArguments = [Collections.Generic.List[string]]::new()
+  $forwardedArguments.Add('-NoLogo')
+  $forwardedArguments.Add('-NoProfile')
+  $forwardedArguments.Add('-File')
+  $forwardedArguments.Add($PSCommandPath)
+
+  foreach ($parameterName in $PSBoundParameters.Keys) {
+    $parameterValue = $PSBoundParameters[$parameterName]
+    if ($parameterValue -is [Management.Automation.SwitchParameter]) {
+      if ($parameterValue.IsPresent) { $forwardedArguments.Add("-$parameterName") }
+      continue
+    }
+    if ($parameterValue -is [bool]) {
+      if ($parameterValue) { $forwardedArguments.Add("-$parameterName") }
+      continue
+    }
+
+    $forwardedArguments.Add("-$parameterName")
+    $forwardedArguments.Add([string]$parameterValue)
+  }
+
+  $childArguments = $forwardedArguments.ToArray()
+  & $pwshCommand.Source @childArguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "The PowerShell 7 installer process exited with code $LASTEXITCODE."
+  }
+  return
+}
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 
-$solWebPartComponentId = [guid]'7c36e2e7-eba7-43e1-886f-7b7a3d848c29'
-$solSolutionId = [guid]'ce95e19a-a3c9-4240-b156-9daca79c0872'
+if ([string]::IsNullOrWhiteSpace($PackagePath)) {
+  $PackagePath = Join-Path $PSScriptRoot '../sharepoint/sol-dms/sharepoint/solution/sol-dms.sppkg'
+}
+
+$solWebPartComponentId = [guid]'772c04cc-f5af-4485-8e48-d4de27923fa0'
+$solSolutionId = [guid]'6b30f157-0d3c-4988-8843-eb6e1c3b8acd'
 $requiredOperations = @(
   'listSites',
   'searchDocuments',

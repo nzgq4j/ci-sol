@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/row-formatting.schema.json",
+  "_comment": "Reader view formatting for Controlled Documents. PRD UX-003, UX-004, NFR-009. Uses only supported JSON formatting; no SPFx (ADR-013). Colours are paired with text so status is never conveyed by colour alone (WCAG 2.2 AA, 1.4.1).",
+  "hideSelection": false,
+  "rowFormatter": {
+    "elmType": "div",
+    "attributes": { "class": "sp-row-card" },
+    "style": { "padding": "8px", "border-bottom": "1px solid var(--neutralLight, #edebe9)" },
+    "children": [
+      {
+        "elmType": "div",
+        "style": { "display": "flex", "align-items": "center", "flex-wrap": "wrap", "gap": "8px" },
+        "children": [
+          {
+            "elmType": "span",
+            "style": { "font-weight": "600", "font-family": "monospace" },
+            "txtContent": "[$DmsDocumentId]",
+            "attributes": { "title": "Document ID" }
+          },
+          {
+            "elmType": "a",
+            "attributes": { "href": "[$FileRef]", "target": "_blank", "title": "Open the current effective revision" },
+            "style": { "font-weight": "600" },
+            "txtContent": "[$FileLeafRef]"
+          },
+          {
+            "elmType": "span",
+            "attributes": { "class": "=if([$DmsLifecycleStatus] == 'Effective', 'sp-css-backgroundColor-BgMintGreen sp-css-color-MintGreenFont', 'sp-css-backgroundColor-BgGold sp-css-color-GoldFont')" },
+            "style": { "padding": "2px 8px", "border-radius": "10px", "font-size": "12px" },
+            "txtContent": "=if([$DmsLifecycleStatus] == 'Effective', 'Effective  rev ' + [$DmsBusinessRevision], [$DmsLifecycleStatus] + '  rev ' + [$DmsBusinessRevision])"
+          }
+        ]
+      },
+      {
+        "elmType": "div",
+        "style": { "font-size": "12px", "color": "var(--neutralSecondary, #605e5c)", "margin-top": "4px" },
+        "txtContent": "=' Effective ' + toLocaleDateString([$DmsEffectiveDate]) + '  ·  Owner ' + [$DmsDocumentOwner.title] + '  ·  ' + [$DmsDocumentType] + '  ·  ' + [$DmsBusinessProcess] + '  ·  Applies to ' + [$DmsApplicability]"
+      },
+      {
+        "elmType": "div",
+        "attributes": { "role": "note" },
+        "style": {
+          "display": "=if([$DmsLifecycleStatus] == 'Superseded' || [$DmsLifecycleStatus] == 'Withdrawn', 'block', 'none')",
+          "background-color": "var(--warningBackground, #fed9cc)",
+          "padding": "6px 10px", "margin-top": "6px", "border-left": "4px solid var(--warningIcon, #d83b01)", "font-size": "12px"
+        },
+        "children": [
+          {
+            "elmType": "span",
+            "style": { "font-weight": "600" },
+            "txtContent": "=if([$DmsLifecycleStatus] == 'Superseded', 'SUPERSEDED — do not use. ', 'WITHDRAWN — do not use. ')"
+          },
+          {
+            "elmType": "span",
+            "txtContent": "=if([$DmsSupersededBy] != '', 'Replaced by ' + [$DmsSupersededBy] + '.', 'No replacement exists. Contact Document Control.')"
+          }
+        ]
+      }
+    ]
+  }
+}

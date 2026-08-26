@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "tenant": {
+    "tenantName": "propfound",
+    "tenantId": "9fd1307f-3666-4779-b6de-0d596aaf093a",
+    "sharePointAdminUrl": "https://propfound-admin.sharepoint.com",
+    "contentTypeHubUrl": "https://propfound.sharepoint.com/sites/contentTypeHub",
+    "defaultTimeZone": "Europe/London",
+    "defaultLanguage": "en-GB",
+    "auditRetentionDays": 180
+  },
+  "environments": {
+    "dev": {
+      "environmentType": "dev",
+      "dmsSiteUrl": "https://propfound.sharepoint.com/sites/DOX",
+      "powerPlatformEnvironmentUrl": "REQUIRES_TENANT_DISCOVERY",
+      "powerPlatformEnvironmentId": "REQUIRES_TENANT_DISCOVERY",
+      "pilotBusinessUnit": "REQUIRES_STAKEHOLDER_DECISION_OQ-04",
+      "allowProductionChanges": false,
+      "allowIrreversiblePurviewChanges": false,
+      "operatingMode": "ControlledAuthoring",
+      "externalSharing": "Disabled",
+      "staleCheckOutThresholdBusinessDays": 3,
+      "entraGroupPrefix": "DMS-DEV",
+      "requiresApprovalToDeploy": false,
+      "entraClientId": "56ac1ccd-e448-42f3-8e9d-230c56f194cb"
+    },
+    "test": {
+      "environmentType": "test",
+      "dmsSiteUrl": "REQUIRES_TENANT_DISCOVERY",
+      "powerPlatformEnvironmentUrl": "REQUIRES_TENANT_DISCOVERY",
+      "powerPlatformEnvironmentId": "REQUIRES_TENANT_DISCOVERY",
+      "pilotBusinessUnit": "REQUIRES_STAKEHOLDER_DECISION_OQ-04",
+      "allowProductionChanges": false,
+      "allowIrreversiblePurviewChanges": false,
+      "operatingMode": "ControlledAuthoring",
+      "externalSharing": "Disabled",
+      "staleCheckOutThresholdBusinessDays": 3,
+      "entraGroupPrefix": "DMS-TEST",
+      "requiresApprovalToDeploy": true
+    },
+    "prod": {
+      "environmentType": "prod",
+      "dmsSiteUrl": "REQUIRES_TENANT_DISCOVERY",
+      "powerPlatformEnvironmentUrl": "REQUIRES_TENANT_DISCOVERY",
+      "powerPlatformEnvironmentId": "REQUIRES_TENANT_DISCOVERY",
+      "pilotBusinessUnit": "REQUIRES_STAKEHOLDER_DECISION_OQ-04",
+      "allowProductionChanges": false,
+      "allowIrreversiblePurviewChanges": false,
+      "operatingMode": "ControlledAuthoring",
+      "externalSharing": "Disabled",
+      "staleCheckOutThresholdBusinessDays": 3,
+      "entraGroupPrefix": "DMS",
+      "requiresApprovalToDeploy": true
+    }
+  },
+  "provisional": [
+    {
+      "setting": "tenant.auditRetentionDays",
+      "openQuestion": "OQ-07",
+      "provisionalValue": "180",
+      "risk": "Purview Audit Standard retains audit records for a documented default period. If the approved evidence period is longer, audit licensing must be confirmed or evidence must rely on the Approval Evidence register (PRD F-010, NFR-012, R-12)."
+    },
+    {
+      "setting": "environments.*.operatingMode",
+      "openQuestion": "OQ-05",
+      "provisionalValue": "ControlledAuthoring (single-library pattern, ADR-001 Option A)",
+      "risk": "If Quality/Legal require every approved revision to be a separate immutable artefact, the Published Revisions library pattern must be enabled before production content is created (PRD F-013, R-20)."
+    },
+    {
+      "setting": "environments.*.staleCheckOutThresholdBusinessDays",
+      "openQuestion": "OQ-18",
+      "provisionalValue": "3",
+      "risk": "PRD MET-008 states an initial threshold of 3 business days. Confirm against agreed operating hours before pilot acceptance."
+    },
+    {
+      "setting": "tenant.defaultTimeZone",
+      "openQuestion": "OQ-16",
+      "provisionalValue": "Europe/London",
+      "risk": "PRD A-005 assumes a single primary operating timezone. Multi-region operation changes due-date calculation and business-calendar treatment."
+    },
+    {
+      "setting": "tenant.contentTypeHubUrl",
+      "openQuestion": "OQ-12",
+      "provisionalValue": "https://propfound.sharepoint.com/sites/contentTypeHub",
+      "risk": "Assumed from the standard Content Type Hub naming convention. Not confirmed by discovery. Confirm before publishing content types or they will be created in the wrong location."
+    },
+    {
+      "setting": "environments.dev.dmsSiteUrl",
+      "openQuestion": "OQ-04",
+      "provisionalValue": "https://propfound.sharepoint.com/sites/DOX",
+      "risk": "Test-bed site supplied by the product owner. It appears to be a Teams-connected site (CollabHome.aspx), which carries an associated Microsoft 365 group whose Members hold Edit by default. Verify that group membership before treating the library as the security boundary (PRD F-024, R-07)."
+    }
+  ]
+}

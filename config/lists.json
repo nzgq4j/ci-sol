@@ -1,0 +1,223 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Microsoft Lists registers backing the DMS. PRD section 10.2 and ADR-003 (Lists rather than Dataverse for MVP).",
+  "lists": [
+    {
+      "key": "DocumentRegister", "title": "Document Register", "urlPath": "Lists/DocumentRegister",
+      "description": "Master index of every controlled document and its current lifecycle summary. PRD DATA-005.",
+      "mvp": "Required", "template": "GenericList",
+      "indexedColumns": ["DmsDocumentId", "DmsLifecycleStatus", "DmsCurrentEffective", "DmsNextReviewDate", "DmsDocumentOwner"],
+      "permissions": { "inheritFromSite": false, "readers": ["DMS Readers"], "contributors": ["DMS Document Controllers"], "writeAlso": ["DMS Automation Service"], "note": "Ordinary readers see it read-only. It is maintained by automation, not hand-edited." },
+      "fields": [
+        { "internalName": "Title", "displayName": "Document Title", "type": "Text", "required": true },
+        { "internalName": "DmsDocumentId", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsDocumentType", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsBusinessFunction", "reuseSiteColumn": true },
+        { "internalName": "DmsBusinessProcess", "reuseSiteColumn": true },
+        { "internalName": "DmsDocumentOwner", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsLifecycleStatus", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsBusinessRevision", "reuseSiteColumn": true },
+        { "internalName": "DmsEffectiveDate", "reuseSiteColumn": true },
+        { "internalName": "DmsNextReviewDate", "reuseSiteColumn": true },
+        { "internalName": "DmsCurrentEffective", "reuseSiteColumn": true },
+        { "internalName": "DmsRetentionClass", "reuseSiteColumn": true },
+        { "internalName": "DmsApplicability", "reuseSiteColumn": true },
+        { "internalName": "DmsCurrentItemUrl", "displayName": "Current Revision Link", "type": "URL", "required": false, "description": "Direct authoritative link used by the portal so readers do not depend on search indexing. PRD NFR-017, R-10." },
+        { "internalName": "DmsHistoryViewUrl", "displayName": "History Link", "type": "URL", "required": false },
+        { "internalName": "DmsControlCompleteness", "displayName": "Control Completeness", "type": "Choice", "choices": ["Pass", "Fail", "Not Assessed"], "defaultValue": "Not Assessed", "description": "Result of the MET-001 completeness rule at the last activation or scheduled reconciliation." },
+        { "internalName": "DmsCompletenessFailures", "displayName": "Completeness Failures", "type": "Note", "description": "Human-readable list of the specific checks that failed. Feeds the Control Completeness report." }
+      ],
+      "requirements": ["DATA-005", "F-013", "F-027", "MET-001"]
+    },
+    {
+      "key": "ChangeRequests", "title": "Change Requests", "urlPath": "Lists/ChangeRequests",
+      "description": "New-document, revision, withdrawal and emergency-change requests. PRD DATA-003, WF-01.",
+      "mvp": "Required", "template": "GenericList",
+      "indexedColumns": ["DmsRequestId", "DmsRequestStatus", "DmsRequestedDocumentId"],
+      "permissions": { "inheritFromSite": false, "contributors": ["DMS Authors", "DMS Readers"], "note": "Any authenticated DMS user may raise a request; only Document Control may triage. Triage fields are enforced by permission and form configuration." },
+      "fields": [
+        { "internalName": "Title", "displayName": "Request Title", "type": "Text", "required": true },
+        { "internalName": "DmsRequestId", "displayName": "Request ID", "type": "Text", "required": true, "description": "System assigned, e.g. CR-2026-000123." },
+        { "internalName": "DmsRequestType", "displayName": "Request Type", "type": "Choice", "choices": ["New Document", "Revision", "Withdrawal", "Emergency Change"], "required": true },
+        { "internalName": "DmsJustification", "displayName": "Justification", "type": "Note", "required": true },
+        { "internalName": "DmsUrgency", "displayName": "Urgency", "type": "Choice", "choices": ["Routine", "High", "Emergency"], "defaultValue": "Routine", "required": true },
+        { "internalName": "DmsAffectedProcess", "reuseSiteColumn": false, "displayName": "Affected Process", "type": "TaxonomyFieldType", "termSet": "Business Process", "required": true },
+        { "internalName": "DmsRequestedDocumentId", "displayName": "Existing Document ID", "type": "Text", "required": false, "description": "Required for Revision and Withdrawal request types." },
+        { "internalName": "DmsProposedOwner", "displayName": "Proposed Owner", "type": "User", "required": true },
+        { "internalName": "DmsImpactedAudience", "displayName": "Impacted Audience", "type": "Note", "required": true },
+        { "internalName": "DmsRequestedEffectiveDate", "displayName": "Requested Effective Date", "type": "DateTime", "displayFormat": "DateOnly", "required": false },
+        { "internalName": "DmsRequestStatus", "displayName": "Request Status", "type": "Choice", "choices": ["Submitted", "In Triage", "Accepted", "Returned", "Rejected", "Escalated", "Cancelled"], "defaultValue": "Submitted", "required": true },
+        { "internalName": "DmsTriageDecisionBy", "displayName": "Triage Decision By", "type": "User" },
+        { "internalName": "DmsTriageDecisionDate", "displayName": "Triage Decision Date", "type": "DateTime" },
+        { "internalName": "DmsTriageRationale", "displayName": "Triage Rationale", "type": "Note", "description": "Mandatory for Returned, Rejected and Escalated outcomes." },
+        { "internalName": "DmsDuplicateOfRequestId", "displayName": "Duplicate Of", "type": "Text", "description": "Set when triage identifies a duplicate. PRD F-007." },
+        { "internalName": "DmsApprovalCorrelationId", "reuseSiteColumn": true }
+      ],
+      "requirements": ["F-007", "DATA-003", "WF-01"]
+    },
+    {
+      "key": "ApprovalEvidence", "title": "Approval Evidence", "urlPath": "Lists/ApprovalEvidence",
+      "description": "Durable, attributable record of every review and approval decision. Deliberately independent of Power Automate run history, which expires. PRD F-010, C-007, R-12.",
+      "mvp": "Required", "template": "GenericList",
+      "indexedColumns": ["DmsApprovalCorrelationId", "DmsDocumentId", "DmsDecisionOutcome"],
+      "permissions": {
+        "inheritFromSite": false,
+        "readers": ["DMS Auditors", "DMS Document Controllers", "DMS Records Managers"],
+        "contributors": ["DMS Automation Service"],
+        "note": "No interactive user has Contribute. Evidence is written only by the automation identity. Ordinary users cannot alter completed evidence, which PRD F-010 requires.",
+        "itemLevelPermissions": { "readAccess": "All", "writeAccess": "OwnOnly", "rationale": "Defence in depth against accidental edit; the primary control is the permission model." }
+      },
+      "fields": [
+        { "internalName": "Title", "displayName": "Evidence Title", "type": "Text", "required": true, "description": "Human-readable summary, e.g. 'QMS-SOP-0042 rev 3.0 - Technical Review - Approved'." },
+        { "internalName": "DmsApprovalCorrelationId", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsDocumentId", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsBusinessRevision", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsEvidenceFileVersion", "displayName": "File Version", "type": "Text", "required": true, "description": "Platform version label the decision applies to." },
+        { "internalName": "DmsEvidenceETag", "displayName": "File ETag", "type": "Text", "required": true, "description": "Proves the decision applies to exactly this content. PRD NFR-011." },
+        { "internalName": "DmsDecisionStage", "displayName": "Stage", "type": "Text", "required": true, "description": "Routing stage name, e.g. 'Technical Review', 'Quality Approval'." },
+        { "internalName": "DmsDecisionSequence", "displayName": "Stage Sequence", "type": "Number", "decimals": 0 },
+        { "internalName": "DmsDecisionActor", "displayName": "Decision By", "type": "User", "required": true },
+        { "internalName": "DmsDecisionActorRole", "displayName": "Role", "type": "Choice", "choices": ["Reviewer", "Approver", "Document Controller", "Records Manager", "System Automation"], "required": true },
+        { "internalName": "DmsDecisionOutcome", "displayName": "Outcome", "type": "Choice", "choices": ["Submitted", "Approved", "Rejected", "Returned", "Cancelled", "Invalidated", "Activated", "Superseded", "Withdrawn", "Delegated"], "required": true },
+        { "internalName": "DmsDecisionTimestampUtc", "displayName": "Decision Timestamp (UTC)", "type": "DateTime", "displayFormat": "DateTime", "required": true, "description": "PRD section 17.3 requires UTC for system events." },
+        { "internalName": "DmsDecisionComments", "displayName": "Comments", "type": "Note", "description": "Mandatory when the outcome is Rejected or Returned. PRD F-011." },
+        { "internalName": "DmsDelegatedFrom", "displayName": "Delegated From", "type": "User", "description": "Populated when a decision was taken under an approved delegation." },
+        { "internalName": "DmsTaskReference", "displayName": "Task Reference", "type": "Text", "description": "Approvals task identifier, for traceability back to the platform task." },
+        { "internalName": "DmsEvidenceRetentionClass", "displayName": "Evidence Retention Class", "type": "Text", "description": "Evidence retention is set by the file plan, not by flow history. PRD NFR-012." }
+      ],
+      "requirements": ["F-010", "F-021", "NFR-012", "DATA-004", "SEC-010"]
+    },
+    {
+      "key": "Exceptions", "title": "Exception Register", "urlPath": "Lists/Exceptions",
+      "description": "Failed flows, stale check-outs, integrity failures, permission and retention exceptions. PRD F-022, DATA-009, WF-06.",
+      "mvp": "Required", "template": "GenericList",
+      "indexedColumns": ["DmsExceptionType", "DmsSeverity", "DmsExceptionStatus", "DmsApprovalCorrelationId"],
+      "permissions": { "inheritFromSite": false, "readers": ["DMS Auditors"], "contributors": ["DMS Document Controllers", "DMS Platform Administrators", "DMS Automation Service"] },
+      "fields": [
+        { "internalName": "Title", "displayName": "Exception Summary", "type": "Text", "required": true },
+        { "internalName": "DmsApprovalCorrelationId", "reuseSiteColumn": true },
+        { "internalName": "DmsExceptionType", "displayName": "Exception Type", "type": "Choice", "required": true,
+          "choices": ["VersionIntegrity", "StaleCheckOut", "MissingRoute", "DuplicateCurrentRevision", "MissingCurrentRevision", "MissingApprovalEvidence", "RetentionLabelFailure", "NotificationFailure", "OwnerlessDocument", "FlowFailure", "ConnectionExpired", "PermissionException", "ExternalSharingException", "MigrationReconciliation", "ConfigurationDrift", "SearchFreshness"] },
+        { "internalName": "DmsSeverity", "displayName": "Severity", "type": "Choice", "choices": ["Critical", "High", "Medium", "Low"], "required": true },
+        { "internalName": "DmsIsBlocking", "displayName": "Blocks Publication", "type": "Boolean", "defaultValue": false, "required": true, "description": "A blocking exception prevents activation. PRD F-022." },
+        { "internalName": "DmsAffectedItemUrl", "displayName": "Affected Item", "type": "URL" },
+        { "internalName": "DmsDocumentId", "reuseSiteColumn": true },
+        { "internalName": "DmsErrorDetail", "displayName": "Error Detail", "type": "Note", "required": true, "description": "MUST NOT contain access tokens, secrets or document content. PRD section 17.3, SEC-004." },
+        { "internalName": "DmsExceptionOwner", "displayName": "Owner", "type": "User", "required": true },
+        { "internalName": "DmsRetryCount", "displayName": "Retry Count", "type": "Number", "decimals": 0, "defaultValue": 0 },
+        { "internalName": "DmsExceptionStatus", "displayName": "Status", "type": "Choice", "choices": ["Open", "In Progress", "Escalated", "Resolved", "Closed - No Action"], "defaultValue": "Open", "required": true },
+        { "internalName": "DmsDetectedUtc", "displayName": "Detected (UTC)", "type": "DateTime", "displayFormat": "DateTime", "required": true },
+        { "internalName": "DmsResolvedUtc", "displayName": "Resolved (UTC)", "type": "DateTime", "displayFormat": "DateTime" },
+        { "internalName": "DmsResolutionReason", "displayName": "Resolution Reason", "type": "Note", "description": "Mandatory to close. PRD F-022." },
+        { "internalName": "DmsIncidentReference", "displayName": "Incident/Ticket Reference", "type": "Text" }
+      ],
+      "requirements": ["F-022", "F-023", "DATA-009", "NFR-014", "MET-007"]
+    },
+    {
+      "key": "RoutingRules", "title": "Routing Rules", "urlPath": "Lists/RoutingRules",
+      "description": "Configurable review and approval routes resolved at submission. Changing a route must not require editing flow logic. PRD F-028.",
+      "mvp": "Required", "template": "GenericList",
+      "indexedColumns": ["DmsRuleDocumentType", "DmsRuleActive"],
+      "permissions": { "inheritFromSite": false, "readers": ["DMS Readers"], "contributors": ["DMS Document Controllers"] },
+      "seedFrom": "config/routing-rules.json",
+      "fields": [
+        { "internalName": "Title", "displayName": "Rule Name", "type": "Text", "required": true },
+        { "internalName": "DmsRuleDocumentType", "displayName": "Document Type", "type": "Text", "required": true, "description": "Value or '*' wildcard." },
+        { "internalName": "DmsRuleBusinessFunction", "displayName": "Business Function", "type": "Text", "defaultValue": "*" },
+        { "internalName": "DmsRuleSensitivity", "displayName": "Sensitivity", "type": "Text", "defaultValue": "*" },
+        { "internalName": "DmsRuleSpecificity", "displayName": "Specificity", "type": "Number", "decimals": 0, "required": true, "description": "Higher wins. Computed from the number of non-wildcard criteria." },
+        { "internalName": "DmsRuleStageName", "displayName": "Stage Name", "type": "Text", "required": true },
+        { "internalName": "DmsRuleStageSequence", "displayName": "Stage Sequence", "type": "Number", "decimals": 0, "required": true },
+        { "internalName": "DmsRuleStageMode", "displayName": "Stage Mode", "type": "Choice", "choices": ["Serial", "Parallel"], "required": true },
+        { "internalName": "DmsRuleApprovers", "displayName": "Assignees", "type": "UserMulti", "required": true },
+        { "internalName": "DmsRuleQuorum", "displayName": "Quorum", "type": "Choice", "choices": ["All", "Any", "Majority"], "defaultValue": "All", "required": true },
+        { "internalName": "DmsRuleDueBusinessDays", "displayName": "Due (business days)", "type": "Number", "decimals": 0, "required": true },
+        { "internalName": "DmsRuleEscalateTo", "displayName": "Escalate To", "type": "User" },
+        { "internalName": "DmsRuleActive", "displayName": "Active", "type": "Boolean", "defaultValue": true, "required": true }
+      ],
+      "requirements": ["F-009", "F-028", "OQ-13"]
+    },
+    {
+      "key": "ReviewFrequencies", "title": "Review Frequencies", "urlPath": "Lists/ReviewFrequencies",
+      "description": "Approved periodic-review intervals and reminder schedules. PRD F-015.",
+      "mvp": "Required", "template": "GenericList",
+      "permissions": { "inheritFromSite": false, "readers": ["DMS Readers"], "contributors": ["DMS Document Controllers"] },
+      "fields": [
+        { "internalName": "Title", "displayName": "Frequency Name", "type": "Text", "required": true },
+        { "internalName": "DmsFrequencyMonths", "displayName": "Months", "type": "Number", "decimals": 0, "required": true },
+        { "internalName": "DmsReminderOffsetsDays", "displayName": "Reminder Offsets (days before due)", "type": "Text", "required": true, "description": "Comma-separated, e.g. '90,30,7'." },
+        { "internalName": "DmsEscalationAfterDaysOverdue", "displayName": "Escalate After (days overdue)", "type": "Number", "decimals": 0, "required": true },
+        { "internalName": "DmsAppliesToDocumentType", "displayName": "Applies To Document Type", "type": "Text", "defaultValue": "*" },
+        { "internalName": "DmsFrequencyActive", "displayName": "Active", "type": "Boolean", "defaultValue": true }
+      ],
+      "requirements": ["F-015", "F-028"]
+    },
+    {
+      "key": "WorkflowConfiguration", "title": "Workflow Configuration", "urlPath": "Lists/WorkflowConfiguration",
+      "description": "Operational thresholds and switches read by the flows at runtime, so ordinary rule changes never require editing flow logic. PRD F-028, ADM-005.",
+      "mvp": "Required", "template": "GenericList",
+      "permissions": { "inheritFromSite": false, "readers": ["DMS Readers"], "contributors": ["DMS Platform Administrators"] },
+      "fields": [
+        { "internalName": "Title", "displayName": "Setting Key", "type": "Text", "required": true },
+        { "internalName": "DmsSettingValue", "displayName": "Value", "type": "Text", "required": true },
+        { "internalName": "DmsSettingType", "displayName": "Value Type", "type": "Choice", "choices": ["String", "Integer", "Boolean", "Json"], "required": true },
+        { "internalName": "DmsSettingDescription", "displayName": "Description", "type": "Note", "required": true },
+        { "internalName": "DmsSettingLastChangedBy", "displayName": "Last Changed By", "type": "User" },
+        { "internalName": "DmsSettingActive", "displayName": "Active", "type": "Boolean", "defaultValue": true }
+      ],
+      "seedSettings": [
+        { "key": "StaleCheckOutThresholdBusinessDays", "value": "3", "type": "Integer", "description": "PRD MET-008 initial threshold." },
+        { "key": "ActivationScheduleCron", "value": "0 6 * * *", "type": "String", "description": "Daily activation sweep, tenant default time zone. PRD WF-03." },
+        { "key": "ReviewSweepScheduleCron", "value": "0 7 * * *", "type": "String", "description": "Daily periodic-review sweep. PRD WF-04." },
+        { "key": "ExceptionSweepScheduleCron", "value": "0 */4 * * *", "type": "String", "description": "Four-hourly exception and reconciliation sweep. PRD NFR-014." },
+        { "key": "MaxSafeRetries", "value": "3", "type": "Integer", "description": "Bounded retry for idempotent steps. PRD NFR-006, NFR-015." },
+        { "key": "AgedBlockingExceptionHours", "value": "24", "type": "Integer", "description": "PRD MET-007 escalates blocking exceptions older than one business day." },
+        { "key": "NotificationsEnabled", "value": "true", "type": "Boolean", "description": "Master switch used during pilot cutover to avoid notifying users from a test environment." },
+        { "key": "AllowSameDayEffective", "value": "true", "type": "Boolean", "description": "Whether an effective date of today activates on the next sweep." }
+      ],
+      "requirements": ["F-028", "ADM-005", "NFR-014"]
+    },
+    {
+      "key": "Acknowledgements", "title": "Acknowledgements", "urlPath": "Lists/Acknowledgements",
+      "description": "Read-and-understand assignments and responses. Acknowledgement is NOT competence certification. PRD F-029, DATA-008.",
+      "mvp": "P1. Provisioned only when the pilot requires it.", "template": "GenericList",
+      "provisionWhen": "config.features.acknowledgements === true",
+      "indexedColumns": ["DmsDocumentId", "DmsAckStatus", "DmsAckAssignedTo"],
+      "permissions": { "inheritFromSite": false, "note": "Contains personal data. Access limited to the assignee, their manager and the process owner. PRD SEC-009, NFR-016." },
+      "fields": [
+        { "internalName": "Title", "displayName": "Assignment", "type": "Text", "required": true },
+        { "internalName": "DmsDocumentId", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsBusinessRevision", "reuseSiteColumn": true, "required": true, "description": "Assignment is revision-specific. A new revision creates a new assignment where required." },
+        { "internalName": "DmsAckAssignedTo", "displayName": "Assigned To", "type": "User", "required": true },
+        { "internalName": "DmsAckAssignedUtc", "displayName": "Assigned (UTC)", "type": "DateTime", "required": true },
+        { "internalName": "DmsAckDueDate", "displayName": "Due Date", "type": "DateTime", "displayFormat": "DateOnly", "required": true },
+        { "internalName": "DmsAckRespondedUtc", "displayName": "Responded (UTC)", "type": "DateTime" },
+        { "internalName": "DmsAckStatus", "displayName": "Status", "type": "Choice", "choices": ["Assigned", "Acknowledged", "Overdue", "Cancelled"], "defaultValue": "Assigned", "required": true },
+        { "internalName": "DmsAckRemindersSent", "displayName": "Reminders Sent", "type": "Number", "decimals": 0, "defaultValue": 0 }
+      ],
+      "requirements": ["F-029", "DATA-008", "MET-012", "NFR-016"]
+    },
+    {
+      "key": "MigrationEvidence", "title": "Migration Evidence", "urlPath": "Lists/MigrationEvidence",
+      "description": "Provenance and reconciliation evidence for migrated content. PRD DATA-012, F-037.",
+      "mvp": "P1. Required before any pilot migration.", "template": "GenericList",
+      "provisionWhen": "config.features.migration === true",
+      "indexedColumns": ["DmsMigrationBatchId", "DmsMigrationResult"],
+      "permissions": { "inheritFromSite": false, "readers": ["DMS Auditors"], "contributors": ["DMS Platform Administrators"] },
+      "fields": [
+        { "internalName": "Title", "displayName": "Source Item", "type": "Text", "required": true },
+        { "internalName": "DmsMigrationBatchId", "reuseSiteColumn": true, "required": true },
+        { "internalName": "DmsSourcePath", "displayName": "Source Path", "type": "Note", "required": true },
+        { "internalName": "DmsSourceIdentifier", "displayName": "Source Identifier", "type": "Text" },
+        { "internalName": "DmsSourceSizeBytes", "displayName": "Source Size (bytes)", "type": "Number", "decimals": 0 },
+        { "internalName": "DmsSourceModifiedUtc", "displayName": "Source Modified (UTC)", "type": "DateTime" },
+        { "internalName": "DmsSourceHash", "displayName": "Source Hash (SHA-256)", "type": "Text", "description": "Computed only where chain of custody requires it. PRD DATA-012." },
+        { "internalName": "DmsTargetItemUrl", "displayName": "Target Item", "type": "URL" },
+        { "internalName": "DmsTargetHash", "displayName": "Target Hash (SHA-256)", "type": "Text" },
+        { "internalName": "DmsMigrationResult", "displayName": "Result", "type": "Choice", "choices": ["Planned", "Imported", "Reconciled", "Quarantined", "Failed", "Skipped - Duplicate"], "required": true },
+        { "internalName": "DmsMigrationNotes", "displayName": "Notes", "type": "Note" }
+      ],
+      "requirements": ["F-037", "DATA-012", "INT-010"]
+    }
+  ]
+}

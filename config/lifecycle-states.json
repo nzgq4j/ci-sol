@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Business lifecycle state model for controlled documents. PRD F-005 requires this to remain separate from the native SharePoint Approval Status, which is modelled separately under 'platformApprovalStatus'.",
+  "fieldInternalName": "DmsLifecycleStatus",
+  "currentEffectiveFieldInternalName": "DmsCurrentEffective",
+
+  "platformApprovalStatus": {
+    "description": "Native SharePoint content-approval state. Platform-owned, never authoritative for business decisions. PRD section 2.8 and F-005.",
+    "values": ["Draft", "Pending", "Approved", "Rejected", "Scheduled"],
+    "rule": "No business rule may read platformApprovalStatus as a substitute for DmsLifecycleStatus. Activation sets both, in the order defined by transition T-11."
+  },
+
+  "states": [
+    { "key": "Requested",                "displayName": "Requested",                  "order": 10,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "A change request exists and has not yet been triaged.", "requirements": ["F-007"] },
+    { "key": "Triaged",                  "displayName": "Triaged",                    "order": 20,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "Document Control accepted the request and assigned owner, type and template.", "requirements": ["F-007"] },
+    { "key": "Authoring",                "displayName": "Authoring",                  "order": 30,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "A draft revision is being prepared. Minor versions only.", "requirements": ["F-003", "F-004"] },
+    { "key": "InReview",                 "displayName": "In Review",                  "order": 40,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "A specific file version and ETag are under review or approval.", "requirements": ["F-008", "F-009"] },
+    { "key": "Rework",                   "displayName": "Rework",                     "order": 50,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "A review or approval stage was rejected and returned with mandatory rationale.", "requirements": ["F-011"] },
+    { "key": "ApprovedPendingEffective", "displayName": "Approved Pending Effective", "order": 60,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "Approved but not yet authorised for operational use. Does not replace the current effective revision.", "requirements": ["F-012"] },
+    { "key": "Effective",                "displayName": "Effective",                  "order": 70,  "isTerminal": false, "currentEffective": true,  "readerVisible": true,  "description": "The single revision authorised for current operational use in its applicability context.", "requirements": ["F-012", "F-013"] },
+    { "key": "Superseded",               "displayName": "Superseded",                 "order": 80,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "Replaced by a later effective revision. Retained and discoverable only through the authorised history view.", "requirements": ["F-014"] },
+    { "key": "Withdrawn",                "displayName": "Withdrawn",                  "order": 90,  "isTerminal": false, "currentEffective": false, "readerVisible": false, "description": "Removed from operational use with no replacement, including emergency suspension.", "requirements": ["F-016"] },
+    { "key": "Obsolete",                 "displayName": "Obsolete",                   "order": 100, "isTerminal": true,  "currentEffective": false, "readerVisible": false, "description": "Terminal state. Retained only under the approved retention class until disposition.", "requirements": ["F-020"] }
+  ],
+
+  "transitions": [
+    { "id": "T-01", "from": "Requested", "to": "Triaged", "trigger": "TriageAccept", "allowedActors": ["DocumentController"], "preconditions": ["RequestRequiredFieldsComplete", "NoOpenDuplicateRequest"], "systemEffects": ["AssignDocumentId", "LinkOrCreateDocumentRegisterItem", "AssignOwnerAndTemplate"], "evidenceCreated": ["ChangeRequestDecision"], "requirements": ["F-002", "F-007"], "workflow": "WF-01", "idempotencyKey": "RequestId+TriageDecision" },
+    { "id": "T-02", "from": "Requested", "to": "Withdrawn", "trigger": "TriageRejectOrCancel", "allowedActors": ["DocumentController", "Requester"], "preconditions": ["RejectionRationaleProvided"], "systemEffects": ["CloseChangeRequest"], "evidenceCreated": ["ChangeRequestDecision"], "requirements": ["F-007"], "workflow": "WF-01", "idempotencyKey": "RequestId+TriageDecision" },
+    { "id": "T-03", "from": "Triaged", "to": "Authoring", "trigger": "BeginAuthoring", "allowedActors": ["DocumentController", "Author"], "preconditions": ["DocumentIdAssigned", "ContentTypeAndTemplateResolved", "OwnerIsActiveIdentity"], "systemEffects": ["CreateDraftFromTemplate", "SetMinorVersioning"], "evidenceCreated": [], "requirements": ["F-003", "F-004"], "workflow": "WF-02", "idempotencyKey": "DocumentId+BusinessRevision" },
+    { "id": "T-04", "from": "Triaged", "to": "Withdrawn", "trigger": "CancelAfterTriage", "allowedActors": ["DocumentController"], "preconditions": ["RejectionRationaleProvided"], "systemEffects": ["CloseChangeRequest"], "evidenceCreated": ["ChangeRequestDecision"], "requirements": ["F-007"], "workflow": "WF-01", "idempotencyKey": "DocumentId+BusinessRevision" },
+    { "id": "T-05", "from": "Authoring", "to": "InReview", "trigger": "SubmitForReview", "allowedActors": ["Author", "DocumentController"], "preconditions": ["MandatoryMetadataComplete", "ChangeSummaryProvided", "FileCheckedIn", "RoutingRuleResolves", "NotBlockedByOpenBlockingException"], "systemEffects": ["CaptureSubmittedVersion", "CaptureSubmittedETag", "GenerateApprovalCorrelationId", "CreateReviewTasks"], "evidenceCreated": ["ApprovalEvidence:Submitted"], "requirements": ["F-008", "F-009", "NFR-011"], "workflow": "WF-02", "idempotencyKey": "ApprovalCorrelationId" },
+    { "id": "T-06", "from": "Authoring", "to": "Withdrawn", "trigger": "AbandonDraft", "allowedActors": ["DocumentController"], "preconditions": ["RejectionRationaleProvided"], "systemEffects": ["CancelOpenTasks"], "evidenceCreated": ["ApprovalEvidence:Cancelled"], "requirements": ["F-016"], "workflow": "WF-02", "idempotencyKey": "DocumentId+BusinessRevision" },
+    { "id": "T-07", "from": "InReview", "to": "Rework", "trigger": "RejectWithRationale", "allowedActors": ["Reviewer", "Approver"], "preconditions": ["RejectionRationaleProvided"], "systemEffects": ["CancelRemainingStageTasks", "ReturnCommentsToAuthor", "PreserveCurrentEffectiveRevision"], "evidenceCreated": ["ApprovalEvidence:Rejected"], "requirements": ["F-011"], "workflow": "WF-02", "idempotencyKey": "ApprovalCorrelationId+Stage+Actor" },
+    { "id": "T-08", "from": "InReview", "to": "ApprovedPendingEffective", "trigger": "FinalApproval", "allowedActors": ["Approver"], "preconditions": ["AllRequiredStagesApproved", "SubmittedETagStillMatches", "EffectiveDateIsSet", "RetentionClassMapped"], "systemEffects": ["SetPlatformApprovalStatusApproved", "RecordApprovedVersion"], "evidenceCreated": ["ApprovalEvidence:Approved"], "requirements": ["F-010", "F-012", "F-018", "NFR-011"], "workflow": "WF-02", "idempotencyKey": "ApprovalCorrelationId+Stage+Actor" },
+    { "id": "T-09", "from": "InReview", "to": "Authoring", "trigger": "WithdrawSubmission", "allowedActors": ["Author", "DocumentController"], "preconditions": [], "systemEffects": ["CancelOpenTasks", "InvalidateApprovalCorrelationId"], "evidenceCreated": ["ApprovalEvidence:Cancelled"], "requirements": ["F-011"], "workflow": "WF-02", "idempotencyKey": "ApprovalCorrelationId" },
+    { "id": "T-10", "from": "Rework", "to": "Authoring", "trigger": "ResumeAuthoring", "allowedActors": ["Author", "DocumentController"], "preconditions": [], "systemEffects": ["NewApprovalInstanceRequiredOnResubmit"], "evidenceCreated": [], "requirements": ["F-011"], "workflow": "WF-02", "idempotencyKey": "DocumentId+BusinessRevision" },
+    { "id": "T-11", "from": "ApprovedPendingEffective", "to": "Effective", "trigger": "ScheduledActivation", "allowedActors": ["SystemAutomation", "DocumentController"], "preconditions": ["EffectiveDateReached", "ApprovedETagStillMatches", "MandatoryMetadataComplete", "ApprovalEvidenceComplete", "NoOpenBlockingException", "NoOtherEffectiveRevisionAfterSupersession"], "systemEffects": ["PublishMajorVersion", "SetCurrentEffectiveTrue", "UpdateDocumentRegister", "ApplyRetentionClass", "CreateAcknowledgementAssignments", "SendLinkBasedNotification"], "evidenceCreated": ["ApprovalEvidence:Activated"], "requirements": ["F-012", "F-013", "F-017", "F-018", "NFR-006"], "workflow": "WF-03", "idempotencyKey": "DocumentId+BusinessRevision+Activated" },
+    { "id": "T-12", "from": "ApprovedPendingEffective", "to": "Rework", "trigger": "ApprovalInvalidatedByContentChange", "allowedActors": ["SystemAutomation"], "preconditions": ["ApprovedETagMismatch"], "systemEffects": ["InvalidateApproval", "RaiseException:VersionIntegrity", "PreserveCurrentEffectiveRevision"], "evidenceCreated": ["ApprovalEvidence:Invalidated", "Exception:VersionIntegrity"], "requirements": ["F-008", "F-022", "NFR-011"], "workflow": "WF-03", "idempotencyKey": "ApprovalCorrelationId+Invalidated" },
+    { "id": "T-13", "from": "ApprovedPendingEffective", "to": "Withdrawn", "trigger": "CancelBeforeEffective", "allowedActors": ["DocumentController", "Approver"], "preconditions": ["RejectionRationaleProvided"], "systemEffects": ["CancelScheduledActivation", "PreserveCurrentEffectiveRevision"], "evidenceCreated": ["ApprovalEvidence:Cancelled"], "requirements": ["F-016"], "workflow": "WF-03", "idempotencyKey": "DocumentId+BusinessRevision" },
+    { "id": "T-14", "from": "Effective", "to": "Superseded", "trigger": "SupersededByNewRevision", "allowedActors": ["SystemAutomation", "DocumentController"], "preconditions": ["SupersedingRevisionIsEffective"], "systemEffects": ["SetCurrentEffectiveFalse", "SetSupersededByReference", "RemoveFromDefaultReaderViews"], "evidenceCreated": ["ApprovalEvidence:Superseded"], "requirements": ["F-013", "F-014"], "workflow": "WF-03", "idempotencyKey": "DocumentId+BusinessRevision+Superseded" },
+    { "id": "T-15", "from": "Effective", "to": "Withdrawn", "trigger": "WithdrawOrEmergencySuspend", "allowedActors": ["DocumentController", "Approver"], "preconditions": ["WithdrawalRationaleProvided", "WithdrawalAuthorised"], "systemEffects": ["SetCurrentEffectiveFalse", "RemoveFromDefaultReaderViews", "SendLinkBasedNotification"], "evidenceCreated": ["ApprovalEvidence:Withdrawn"], "requirements": ["F-016", "F-014"], "workflow": "WF-04", "idempotencyKey": "DocumentId+BusinessRevision+Withdrawn" },
+    { "id": "T-16", "from": "Superseded", "to": "Obsolete", "trigger": "RetentionArchive", "allowedActors": ["RecordsManager"], "preconditions": ["RetentionClassMapped", "NoLegalHold"], "systemEffects": ["ApplyTerminalRetentionTreatment"], "evidenceCreated": ["DispositionDecision"], "requirements": ["F-020"], "workflow": "WF-05", "idempotencyKey": "DocumentId+BusinessRevision+Obsolete" },
+    { "id": "T-17", "from": "Withdrawn", "to": "Obsolete", "trigger": "RetentionArchive", "allowedActors": ["RecordsManager"], "preconditions": ["RetentionClassMapped", "NoLegalHold"], "systemEffects": ["ApplyTerminalRetentionTreatment"], "evidenceCreated": ["DispositionDecision"], "requirements": ["F-020"], "workflow": "WF-05", "idempotencyKey": "DocumentId+BusinessRevision+Obsolete" },
+    { "id": "T-18", "from": "Withdrawn", "to": "Authoring", "trigger": "ReinstateViaApprovedRequest", "allowedActors": ["DocumentController"], "preconditions": ["ApprovedChangeRequestExists", "OwnerIsActiveIdentity"], "systemEffects": ["CreateNewBusinessRevision"], "evidenceCreated": ["ChangeRequestDecision"], "requirements": ["F-007", "F-016"], "workflow": "WF-01", "idempotencyKey": "DocumentId+NewBusinessRevision" }
+  ],
+
+  "nonTransitionEvents": [
+    { "id": "E-01", "state": "Effective", "trigger": "PeriodicReviewContinueValid", "allowedActors": ["DocumentOwner", "Approver"], "systemEffects": ["RecalculateNextReviewDate"], "evidenceCreated": ["ReviewDecision"], "rule": "The next review date may only move forward when an attributable Continue Valid decision is recorded. PRD F-015 forbids silent roll-forward.", "requirements": ["F-015", "F-016"], "workflow": "WF-04" },
+    { "id": "E-02", "state": "Effective", "trigger": "PeriodicReviewRevise", "allowedActors": ["DocumentOwner", "DocumentController"], "systemEffects": ["CreateLinkedChangeRequest"], "evidenceCreated": ["ReviewDecision", "ChangeRequest"], "rule": "A revision is authored as a new business revision. The current revision stays Effective until the new revision activates.", "requirements": ["F-015", "F-016"], "workflow": "WF-04" },
+    { "id": "E-03", "state": "*", "trigger": "StaleCheckOutDetected", "allowedActors": ["SystemAutomation"], "systemEffects": ["NotifyCheckOutOwner", "EscalateToDocumentController"], "evidenceCreated": ["Exception:StaleCheckOut"], "rule": "No automatic discard of checked-out content. Controller override requires a recorded justification.", "requirements": ["F-006", "F-023"], "workflow": "WF-06" },
+    { "id": "E-04", "state": "*", "trigger": "OwnerDeparted", "allowedActors": ["SystemAutomation"], "systemEffects": ["EscalateToDocumentController"], "evidenceCreated": ["Exception:OwnerlessDocument"], "rule": "PRD MET-005 targets zero ownerless effective documents.", "requirements": ["F-015", "F-024"], "workflow": "WF-04" }
+  ],
+
+  "invalidTransitionBehaviour": {
+    "action": "Reject",
+    "description": "A transition that is not declared above is rejected. The attempted transition is written to the Exception Register with severity Medium (or High when the target state is Effective), the requested change is not written to the item, and the caller receives a correlation ID.",
+    "mustNotSilentlyCoerce": true,
+    "examples": [
+      { "from": "Superseded", "to": "Effective", "reason": "Reinstating an older revision must be a new approved revision, never a state rollback. PRD F-013." },
+      { "from": "Authoring", "to": "Effective", "reason": "Publication requires approval and scheduled activation. PRD F-012." },
+      { "from": "Obsolete", "to": "Effective", "reason": "Obsolete is terminal. PRD F-020." },
+      { "from": "InReview", "to": "Effective", "reason": "Approval alone never activates a revision. PRD F-012." }
+    ],
+    "requirements": ["F-005", "F-022"]
+  },
+
+  "recoveryBehaviour": {
+    "principle": "Automation never leaves a document in an ambiguous current-effective condition. PRD F-013, F-022, NFR-006.",
+    "rules": [
+      { "condition": "Activation partially completed (new revision Effective, prior revision not Superseded)", "action": "Reconciliation detects more than one current effective revision, raises a High blocking exception, and the activation flow retries the supersession step using its idempotency key." },
+      { "condition": "Activation failed before publish", "action": "Revision remains ApprovedPendingEffective. Current effective revision is untouched. A Medium exception is raised and the next scheduled run retries." },
+      { "condition": "Zero effective revisions where the register expects one", "action": "High blocking exception assigned to Document Control. No automatic publication occurs." },
+      { "condition": "Retention label application failed after activation", "action": "Activation is not reversed. A High exception is raised for Records Management and the item is listed in the retention-coverage report." },
+      { "condition": "Notification failed after activation", "action": "Activation is not reversed. A Low exception is raised. PRD F-017." }
+    ]
+  },
+
+  "conformanceVectors": {
+    "description": "Executable test vectors used by Test-DmsConfiguration.ps1 and the Pester suite to prove the transition engine matches this model.",
+    "valid": [
+      { "from": "Requested", "to": "Triaged", "actor": "DocumentController" },
+      { "from": "Authoring", "to": "InReview", "actor": "Author" },
+      { "from": "InReview", "to": "Rework", "actor": "Reviewer" },
+      { "from": "InReview", "to": "ApprovedPendingEffective", "actor": "Approver" },
+      { "from": "ApprovedPendingEffective", "to": "Effective", "actor": "SystemAutomation" },
+      { "from": "Effective", "to": "Superseded", "actor": "SystemAutomation" },
+      { "from": "Effective", "to": "Withdrawn", "actor": "DocumentController" },
+      { "from": "Superseded", "to": "Obsolete", "actor": "RecordsManager" },
+      { "from": "Withdrawn", "to": "Authoring", "actor": "DocumentController" }
+    ],
+    "invalid": [
+      { "from": "Superseded", "to": "Effective", "actor": "DocumentController", "reason": "Rollback by state change is forbidden." },
+      { "from": "Authoring", "to": "Effective", "actor": "DocumentController", "reason": "Bypasses approval and activation." },
+      { "from": "Obsolete", "to": "Authoring", "actor": "DocumentController", "reason": "Obsolete is terminal." },
+      { "from": "InReview", "to": "Effective", "actor": "Approver", "reason": "Approval is not activation." },
+      { "from": "Authoring", "to": "ApprovedPendingEffective", "actor": "Author", "reason": "Author cannot self-approve." },
+      { "from": "ApprovedPendingEffective", "to": "Effective", "actor": "Author", "reason": "Author is not an authorised activation actor." },
+      { "from": "Effective", "to": "Superseded", "actor": "Reader", "reason": "Reader is not an authorised actor." }
+    ]
+  }
+}

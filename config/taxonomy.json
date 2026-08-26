@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Managed metadata term sets. Values are structural examples for the pilot and require confirmation against the chosen pilot business function. PRD OQ-04, OQ-12.",
+  "termGroup": "DMS Governed Taxonomy",
+  "status": "Provisional - term values require stakeholder confirmation (OQ-04, OQ-12). Term set structure and governance model are not provisional.",
+  "governance": {
+    "termStoreAdministrators": "Nominated Document Control and Information Architecture roles only.",
+    "deprecationRule": "Terms are deprecated, never deleted, so historical items remain resolvable. PRD section 17.3.",
+    "openTermSets": false,
+    "openTermSetsRationale": "Closed term sets prevent uncontrolled vocabulary growth, which would break refiners, routing and reporting."
+  },
+  "termSets": [
+    {
+      "name": "Business Function", "isOpen": false, "isAvailableForTagging": true,
+      "description": "Top-level organisational function that owns the document.",
+      "terms": [
+        { "name": "Quality", "children": [] },
+        { "name": "Operations", "children": [] },
+        { "name": "Health, Safety and Environment", "children": [] },
+        { "name": "Human Resources", "children": [] },
+        { "name": "Finance", "children": [] },
+        { "name": "Information Technology", "children": [] },
+        { "name": "Legal and Compliance", "children": [] },
+        { "name": "Commercial and Contracts", "children": [] }
+      ]
+    },
+    {
+      "name": "Business Process", "isOpen": false, "isAvailableForTagging": true,
+      "description": "The process the document supports. Hierarchy mirrors Business Function for filtered selection.",
+      "terms": [
+        { "name": "Quality", "children": ["Document Control", "Internal Audit", "Corrective Action", "Management Review", "Inspection and Surveillance"] },
+        { "name": "Operations", "children": ["Service Delivery", "Maintenance", "Logistics", "Work Planning"] },
+        { "name": "Health, Safety and Environment", "children": ["Risk Assessment", "Incident Management", "Permit to Work"] },
+        { "name": "Human Resources", "children": ["Recruitment", "Onboarding", "Training and Competence"] },
+        { "name": "Information Technology", "children": ["Access Management", "Change Management", "Backup and Recovery"] }
+      ]
+    },
+    {
+      "name": "Applicability", "isOpen": false, "isAvailableForTagging": true,
+      "description": "The context within which exactly one revision may be effective. PRD F-013. Changing this term set changes the uniqueness boundary and requires an architecture decision.",
+      "criticalNote": "The effective-revision uniqueness invariant is evaluated per Document ID AND applicability context.",
+      "terms": [
+        { "name": "All Locations", "children": [] },
+        { "name": "Corporate", "children": [] },
+        { "name": "Field Operations", "children": [] },
+        { "name": "Contractor", "children": [] }
+      ]
+    },
+    {
+      "name": "Site and Region", "isOpen": false, "isAvailableForTagging": true,
+      "description": "Optional geographic scoping. Multi-region retention variation is out of MVP scope. PRD OQ-16.",
+      "terms": [
+        { "name": "REQUIRES_STAKEHOLDER_DECISION_OQ-04", "children": [] }
+      ]
+    }
+  ]
+}

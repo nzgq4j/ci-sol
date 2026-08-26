@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0",
+  "description": "File-plan mapping template. PRD F-018. NO RETENTION PERIOD IN THIS FILE IS AUTHORITATIVE. Every period, trigger and disposition action must be supplied and approved by Records Management and Legal before production record capture.",
+  "status": "Provisional",
+  "blockingOpenQuestion": "OQ-03",
+  "productionGate": {
+    "rule": "Deploy-DmsPurview.ps1 refuses Apply mode while any class has retentionAuthority or period set to REQUIRES_RECORDS_APPROVAL.",
+    "rationale": "PRD R-03: configuring labels before the file plan is approved causes over-retention, premature disposal or inaccessible content."
+  },
+  "irreversibleControlsGate": {
+    "declareAsRegulatoryRecord": "PROHIBITED IN MVP. Requires separate written authorisation. PRD SEC-012, C-005, R-06.",
+    "preservationLock": "PROHIBITED IN MVP. Requires separate written authorisation.",
+    "automaticPermanentDeletion": "PROHIBITED IN MVP. Disposition review is the only approved path until Records Management authorises otherwise.",
+    "enforcedBy": "environments.*.allowIrreversiblePurviewChanges must be true AND an approved decision record must be referenced."
+  },
+  "retentionClasses": [
+    {
+      "recordClass": "Completed Inspection Record",
+      "appliesTo": { "contentType": "Operational Record", "recordClassValue": "Completed Inspection Record" },
+      "retentionAuthority": "REQUIRES_RECORDS_APPROVAL",
+      "trigger": "DmsEventDate",
+      "triggerType": "EventBased",
+      "period": "REQUIRES_RECORDS_APPROVAL",
+      "disposition": "DispositionReview",
+      "declareAsRecord": false,
+      "declareAsRegulatoryRecord": false,
+      "status": "Provisional",
+      "notes": "Candidate MVP pilot record class. PRD section 12.4 requires one operational-record class to validate the document-versus-record lifecycle."
+    },
+    {
+      "recordClass": "Controlled Document - Superseded Revision",
+      "appliesTo": { "contentType": "Controlled Document", "lifecycleStatus": "Superseded" },
+      "retentionAuthority": "REQUIRES_RECORDS_APPROVAL",
+      "trigger": "DmsEffectiveDate of the superseding revision",
+      "triggerType": "EventBased",
+      "period": "REQUIRES_RECORDS_APPROVAL",
+      "disposition": "DispositionReview",
+      "declareAsRecord": false,
+      "declareAsRegulatoryRecord": false,
+      "status": "Provisional",
+      "notes": "Retaining superseded revisions is what allows an auditor to reconstruct what was effective at a past date. PRD NFR-012."
+    },
+    {
+      "recordClass": "Approval Evidence",
+      "appliesTo": { "list": "ApprovalEvidence" },
+      "retentionAuthority": "REQUIRES_RECORDS_APPROVAL",
+      "trigger": "DmsDecisionTimestampUtc",
+      "triggerType": "EventBased",
+      "period": "REQUIRES_RECORDS_APPROVAL",
+      "disposition": "DispositionReview",
+      "declareAsRecord": false,
+      "declareAsRegulatoryRecord": false,
+      "status": "Provisional",
+      "notes": "PRD NFR-012 requires evidence to survive for the longer of the document evidence period or the applicable audit policy. PRD R-12 warns that relying on standard audit retention or flow history will lose evidence. Must be set explicitly, not inherited."
+    },
+    {
+      "recordClass": "Change Request",
+      "appliesTo": { "list": "ChangeRequests" },
+      "retentionAuthority": "REQUIRES_RECORDS_APPROVAL",
+      "trigger": "DmsTriageDecisionDate",
+      "triggerType": "EventBased",
+      "period": "REQUIRES_RECORDS_APPROVAL",
+      "disposition": "DispositionReview",
+      "declareAsRecord": false,
+      "declareAsRegulatoryRecord": false,
+      "status": "Provisional",
+      "notes": "Quality and change-control schedule. PRD DATA-003."
+    },
+    {
+      "recordClass": "Acknowledgement Response",
+      "appliesTo": { "list": "Acknowledgements" },
+      "retentionAuthority": "REQUIRES_RECORDS_APPROVAL",
+      "trigger": "DmsAckRespondedUtc",
+      "triggerType": "EventBased",
+      "period": "REQUIRES_RECORDS_APPROVAL",
+      "disposition": "DispositionReview",
+      "declareAsRecord": false,
+      "declareAsRegulatoryRecord": false,
+      "status": "Provisional",
+      "containsPersonalData": true,
+      "notes": "PRD NFR-016 and SEC-009 require personal data to be retained only as long as the approved evidence requirement. Storage limitation applies."
+    }
+  ],
+  "legalHoldInteraction": {
+    "rule": "A legal or eDiscovery hold overrides disposition. Items under hold are excluded from disposition processing and reported separately.",
+    "requirement": "F-020"
+  },
+  "proofOfDisposition": {
+    "rule": "Disposition outcomes must be exportable as evidence. No user-interface delete substitutes for disposition.",
+    "requirement": "F-020, DATA-011"
+  }
+}

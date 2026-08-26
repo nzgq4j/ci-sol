@@ -505,6 +505,63 @@ Describe 'Deferred apply actions bind their own target (PowerShell closure captu
         }
     }
 
+    Context 'Security assignments against a site whose groups do not exist' {
+        # The offline plan above is desired-state and cannot read groups. This exercises the ONLINE
+        # path, which is where the first real Apply failed: every grant was planned Create and every
+        # one of them failed with 'Group cannot be found'. Stubbing the happy path only is what let
+        # that reach the tenant.
+        BeforeAll {
+            function global:Get-PnPRoleDefinition { param($Identity,$Connection) @() }
+            function global:Get-PnPGroup { param($Identity,$Connection,$ErrorAction) throw "Group cannot be found." }
+            try {
+                $script:MissingSummary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSecurity.ps1') `
+                    -Environment dev -Mode Plan -Connection ([pscustomobject]@{ Url = 'https://stub' }) `
+                    -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            } finally {
+                foreach ($f in @('Get-PnPRoleDefinition','Get-PnPGroup')) { Remove-Item "function:global:$f" -ErrorAction SilentlyContinue }
+            }
+            $script:MissingPerms = @($MissingSummary.plan.actions | Where-Object resourceType -eq 'ListPermission')
+        }
+
+        It 'still plans every configured grant' { $MissingPerms.Count | Should -BeGreaterThan 10 }
+
+        It 'plans no grant as Create when its group is absent' {
+            @($MissingPerms | Where-Object change -eq 'Create') | Should -BeNullOrEmpty
+        }
+
+        It 'reports each unassignable grant as Blocked and names the group' {
+            @($MissingPerms | Where-Object change -eq 'Blocked').Count | Should -Be $MissingPerms.Count
+            $MissingPerms[0].reason | Should -Match "Group 'DMS-DEV-[A-Za-z]+' does not exist"
+        }
+
+        It 'attaches no apply script to a blocked grant' {
+            @($MissingPerms | Where-Object { $null -ne $_.applyScript }) | Should -BeNullOrEmpty
+        }
+    }
+
+    Context 'Security assignments against a site whose groups exist' {
+        BeforeAll {
+            function global:Get-PnPRoleDefinition { param($Identity,$Connection) @() }
+            function global:Get-PnPGroup { param($Identity,$Connection,$ErrorAction) [pscustomobject]@{ Title = $Identity } }
+            try {
+                $script:PresentSummary = & (Join-Path $RepoRoot 'src/provisioning/Deploy-DmsSecurity.ps1') `
+                    -Environment dev -Mode Plan -Connection ([pscustomobject]@{ Url = 'https://stub' }) `
+                    -InformationAction SilentlyContinue -WarningAction SilentlyContinue
+            } finally {
+                foreach ($f in @('Get-PnPRoleDefinition','Get-PnPGroup')) { Remove-Item "function:global:$f" -ErrorAction SilentlyContinue }
+            }
+            $script:PresentPerms = @($PresentSummary.plan.actions | Where-Object resourceType -eq 'ListPermission')
+        }
+
+        It 'plans the grants as Create once the groups are present' {
+            @($PresentPerms | Where-Object change -eq 'Create').Count | Should -Be $PresentPerms.Count
+        }
+
+        It 'blocks nothing on group existence' {
+            @($PresentSummary.plan.actions | Where-Object { $_.resourceType -eq 'RoleGroup' -and $_.change -eq 'Blocked' }) | Should -BeNullOrEmpty
+        }
+    }
+
     Context 'Taxonomy' {
         It 'provisions each term set and term against its own target' {
             $global:DmsStubCalls.Clear()

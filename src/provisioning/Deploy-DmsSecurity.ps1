@@ -9,7 +9,8 @@
     Entra group CREATION is deliberately out of scope for this script. Group naming, ownership and
     membership source are a governance decision (PRD D-006) and creating groups automatically would
     produce ownerless groups, which is precisely the risk PRD R-07 describes. The script verifies
-    that the required groups exist and reports the ones that do not.
+    that the required groups exist, reports the ones that do not, and refuses to plan any grant onto
+    a group it could not find - an unassignable grant is reported Blocked rather than attempted.
 .PARAMETER Environment
     Environment key.
 .PARAMETER Mode
@@ -87,10 +88,22 @@ foreach ($level in $config.SecurityRoles.customPermissionLevels) {
 }
 
 # ---------------------------------------------------------------- role groups (verify, never create)
-foreach ($role in @($config.SecurityRoles.roles | Where-Object { (Get-DmsPropertyOrDefault -InputObject $_ -Name 'status' -Default '') -notlike 'Not provisioned*' })) {
+# Group existence is read once here and kept, because the permission loop below needs it. Reading it
+# and then discarding it was why a run against a tenant that has none of the governed groups planned
+# every grant as Create and failed all of them at Apply with 'Group cannot be found' - the answer was
+# already in hand one loop earlier.
+$existingGroupNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$unprovisionedGroups = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
+foreach ($role in $config.SecurityRoles.roles) {
     $groupName = $role.groupNameTemplate -replace '\{prefix\}', $prefix
+    if ((Get-DmsPropertyOrDefault -InputObject $role -Name 'status' -Default '') -like 'Not provisioned*') {
+        [void]$unprovisionedGroups.Add($groupName)
+        continue
+    }
     $exists = $false
     if ($isOnline) { try { $null = Get-PnPGroup -Identity $groupName -Connection $Connection -ErrorAction Stop; $exists = $true } catch { $exists = $false } }
+    if ($exists) { [void]$existingGroupNames.Add($groupName) }
     if (-not $exists) {
         Add-DmsPlanAction -Plan $plan -ResourceType 'RoleGroup' -Target $groupName -Change 'Blocked' `
             -Reason "Entra group '$groupName' must be created and owned through the approved identity-governance process before permissions can be assigned. Automatic creation is refused because group naming, ownership and membership source are a governance decision (PRD D-006) and auto-created groups become ownerless (PRD R-07)." `
@@ -110,8 +123,28 @@ foreach ($role in $config.SecurityRoles.roles) {
         if (-not $container) { continue }
         if (Get-DmsPropertyOrDefault -InputObject $container -Name 'provisionWhen' -Default '') { continue }
 
+        $permTarget = "$($container.title) : $groupName -> $($perm.level)"
+
+        # A grant onto a group that is known not to exist is planned Blocked, not Create. Apply would
+        # otherwise raise the identical 'Group cannot be found' once per grant and bury the single
+        # actionable fact - that the governed groups have not been created yet - under dozens of
+        # failures. Offline the groups cannot be read, so the grant stays a desired-state Create
+        # rather than being reported as blocked on evidence that was never gathered.
+        if ($unprovisionedGroups.Contains($groupName)) {
+            Add-DmsPlanAction -Plan $plan -ResourceType 'ListPermission' -Target $permTarget -Change 'Blocked' `
+                -Reason "Role '$($role.key)' is not provisioned: $(Get-DmsPropertyOrDefault -InputObject $role -Name 'status' -Default 'no status recorded'). Its group is deliberately absent, so this grant is not assignable." `
+                -Requirements @('F-024','SEC-002') | Out-Null
+            continue
+        }
+        if ($isOnline -and -not $existingGroupNames.Contains($groupName)) {
+            Add-DmsPlanAction -Plan $plan -ResourceType 'ListPermission' -Target $permTarget -Change 'Blocked' `
+                -Reason "Group '$groupName' does not exist on the site, so this grant cannot be assigned. Create and own it through the approved identity-governance process - see the RoleGroup action for '$groupName' - then re-run. Automatic creation is refused per PRD D-006 and R-07." `
+                -Requirements @('F-024','SEC-002','D-006') | Out-Null
+            continue
+        }
+
         $capturedList = $container.title; $capturedGroup = $groupName; $capturedLevel = $perm.level
-        Add-DmsPlanAction -Plan $plan -ResourceType 'ListPermission' -Target "$($container.title) : $groupName -> $($perm.level)" -Change 'Create' `
+        Add-DmsPlanAction -Plan $plan -ResourceType 'ListPermission' -Target $permTarget -Change 'Create' `
             -Reason (Get-DmsPropertyOrDefault -InputObject $perm -Name 'note' -Default "Grant $($perm.level) to $groupName.") `
             -Requirements @('F-024','SEC-002') `
             -ApplyScript {

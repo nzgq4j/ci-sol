@@ -2,7 +2,7 @@
 
 > **Generated file.** Produced by `src/reporting/New-DmsTraceability.ps1`, which extracts every requirement ID directly from `SharePoint_DMS_PRD.md` and locates each one across configuration, code, flow specifications, tests and documentation. Do not edit by hand.
 
-Generated 2026-08-25. Requirement IDs found in the PRD: **167**.
+Generated 2026-08-26. Requirement IDs found in the PRD: **167**.
 
 ## Coverage status meanings
 
@@ -49,7 +49,7 @@ Generated 2026-08-25. Requirement IDs found in the PRD: **167**.
 | **F-030** | P1 | The system shall support Document Sets for approved case-file or multi-document work products. | Implemented, tenant validation pending | `config/content-types.json` |
 | **F-031** | P1 | The system shall generate a controlled PDF rendition when an approved process requires a fixed-format copy. | Specified | `docs/OPEN_DECISIONS.md` |
 | **F-032** | P1 | The system shall surface tasks and notifications in Teams where approved without making Teams the authoritative repository. | Not referenced | — |
-| **F-033** | P1 | The system shall provide a Power App intake and Document Control work queue if native list forms do not meet validated usability needs. | Specified | `docs/ARCHITECTURE_DECISIONS.md` |
+| **F-033** | P1 | The system shall provide a Power App intake and Document Control work queue if native list forms do not meet validated usability needs. | Specified | `docs/ARCHITECTURE_DECISIONS.md`<br>`docs/BACKLOG.md` |
 | **F-034** | P2 | The system may use document processing to classify content or extract metadata after accuracy and cost thresholds are approved. | Not referenced | — |
 | **F-035** | P2 | The system may generate routine documents from controlled templates and approved business data. | Not referenced | — |
 | **F-036** | P2 | The system may integrate an approved electronic-signature service where legal analysis defines signature identity, intent, consent, integrity, and ... | Specified | `docs/OPEN_DECISIONS.md` |
@@ -219,7 +219,7 @@ Generated 2026-08-25. Requirement IDs found in the PRD: **167**.
 | **OQ-01** |  | Which legal, contractual, quality, safety, privacy, records, and sector-specific regimes apply to the pilot and enterprise scope? | Specified | `docs/OPEN_DECISIONS.md`<br>`docs/PURVIEW_DESIGN.md` |
 | **OQ-02** |  | What Microsoft 365 licences and add-ons are owned, and which may be purchased? | Implemented, tenant validation pending | `src/reporting/README.md`<br>`docs/ARCHITECTURE_DECISIONS.md`<br>`docs/ENVIRONMENT_DISCOVERY.md`<br>`docs/OPEN_DECISIONS.md` |
 | **OQ-03** |  | What is the approved retention schedule/file plan, including triggers, periods, disposition, and proof requirements? | Implemented, tenant validation pending | `config/retention-map.example.json`<br>`src/modules/DmsProvisioning/Public/Configuration.ps1`<br>`src/provisioning/Deploy-DmsPurview.ps1`<br>`docs/ARCHITECTURE_DECISIONS.md` |
-| **OQ-04** |  | Which pilot business process, document types, operational record, and user population will validate the MVP? | Implemented, tenant validation pending | `config/environments.json`<br>`config/taxonomy.json`<br>`src/provisioning/Deploy-DmsTaxonomy.ps1`<br>`docs/ENVIRONMENT_DISCOVERY.md` |
+| **OQ-04** |  | Which pilot business process, document types, operational record, and user population will validate the MVP? | Implemented, tenant validation pending | `config/environments.json`<br>`config/taxonomy.json`<br>`src/provisioning/Deploy-DmsTaxonomy.ps1`<br>`docs/BUILD_STATUS.md` |
 | **OQ-05** |  | Is a single controlled library with approved major versions sufficient, or must each approved revision be a separate immutable artefact? | Implemented, tenant validation pending | `config/environments.example.json`<br>`config/environments.json`<br>`config/libraries.json`<br>`docs/ARCHITECTURE_DECISIONS.md` |
 | **OQ-06** |  | What RPO, RTO, recovery scope, retention, and exercise frequency apply? | Implemented, tenant validation pending | `config/metrics.json`<br>`docs/ARCHITECTURE_DECISIONS.md`<br>`docs/ARCHITECTURE.md`<br>`docs/BACKUP_RECOVERY_PLAN.md` |
 | **OQ-07** |  | What audit-evidence retention period is required, and does existing Audit licensing meet it? | Implemented, tenant validation pending | `config/environments.example.json`<br>`config/environments.json`<br>`config/environments.schema.json`<br>`docs/ARCHITECTURE.md` |

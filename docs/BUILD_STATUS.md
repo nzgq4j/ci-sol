@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Date | 25 August 2026 |
+| Date | 26 August 2026 |
 | Phase | Phase 1 complete (foundation built and validated offline). Phase 2 blocked on tenant access. |
 | Tenant changes made | **One, since reverted.** See section 1a. No site, library, list, column, content type, group, label or flow currently exists in any tenant. |
 | Next safe action | Create the nine Entra role groups, then `Deploy-Dms.ps1 -Environment dev -Mode Apply` |
@@ -47,6 +47,13 @@ that did not happen requires reporting tenant work that did.
 | Power Platform | 0 | 2 (no solution package, unresolved settings) |
 | **Total** | **126** | **21** |
 
+Those counts are what the tenant reported at the time and are left as observed. The Security row has
+since changed shape: the layer read group existence and then discarded it, so all 38 library grants
+were planned `Create` and every one failed at Apply with `Group cannot be found`. Grants onto a group
+the layer could not find are now planned **Blocked**, naming the group, so a run against a tenant
+without the governed groups reports one actionable fact instead of 38 identical failures. Offline the
+groups cannot be read, so an offline plan is unchanged and still shows the full desired state.
+
 ## 1. Verified results
 
 Everything below was executed in this environment, not asserted.
@@ -54,15 +61,16 @@ Everything below was executed in this environment, not asserted.
 | Check | Result |
 |---|---|
 | Configuration validation | **15/15 checks pass**, 2 warnings (both expected: unapproved retention, provisional settings) |
-| Test suite | **144/144 passing** — Pester 5.7.1 on PowerShell 7.4.6, 5.2s |
-| Deployment plan (dev) | **104 create · 6 compliant · 20 blocked · 0 failed** |
-| PnP cmdlet verification | **36 invocations** verified against PnP source commit `7e05503f` (2026-08-24) — 0 findings |
+| Test suite | **173/173 passing** — Pester 5.7.1 on PowerShell 7.4.6, 8.7s |
+| Deployment plan (dev, offline desired state) | **125 create · 6 compliant · 22 blocked · 0 failed** |
+| PnP cmdlet verification | **53 invocations** verified against PnP source commit `7e05503f` (2026-08-24) — 0 findings |
 | Requirements extracted from PRD | **167 IDs**, of which **27 P0 functional**; **0 unreferenced** |
 | Module surface | 26 exported functions |
 | Generated docs | Regenerated; drift check passes |
 
-The 20 blocked plan actions are **correct behaviour**: decision-gated libraries, feature-flagged
-lists, Entra groups that governance must create, and 5 unapproved retention classes.
+The 22 blocked plan actions are **correct behaviour**: decision-gated libraries, feature-flagged
+lists, Entra groups that governance must create, the grants that depend on those groups, and 5
+unapproved retention classes.
 
 ## 2. P0 requirement coverage
 

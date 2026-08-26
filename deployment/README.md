@@ -42,7 +42,7 @@ Upload `sharepoint/sol-dms/sharepoint/solution/sol-dms.sppkg` to the target tena
 
 The strings above are illustrative shapes, not deployable tenant values. Never place bearer tokens, client secrets, Power Automate signed trigger URLs, cookies, or API keys in the manifest.
 
-4. Add the **SOL Document Control** web part to a page.
+4. Add the **SOL Document Control** web part to a SharePoint `SingleWebPartAppPage`. A normal Article page leaves the SharePoint site header, navigation, authoring controls and comments around the application and is not the intended production experience.
 5. In its property pane, set **Runtime configuration URL** to the site-relative or same-origin URL of the JSON manifest.
 6. Have the target tenant administrator grant the SharePoint Online Client Extensibility principal only the scopes required by each configured Entra-protected resource. These permission names and scopes are tenant inputs and are intentionally not predeclared in the generic package. Use the tenant's approved API-access/consent process and retain the approval evidence before enabling an `entra` endpoint.
 7. Validate every role with representative accounts. Hiding a route is not authorisation: production services and SharePoint permissions must deny unauthorised calls.

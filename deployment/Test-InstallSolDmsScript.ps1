@@ -22,10 +22,14 @@ $requiredCommands = @(
   'Add-PnPSiteCollectionAppCatalog',
   'Get-PnPApp',
   'Add-PnPApp',
+  'Publish-PnPApp',
+  'Get-PnPFileInFolder',
   'Add-PnPFile',
+  'Get-PnPList',
   'Add-PnPPage',
   'Get-PnPPage',
   'Get-PnPPageComponent',
+  'Remove-PnPPageComponent',
   'Add-PnPPageWebPart',
   'Set-PnPPageWebPart',
   'Set-PnPPage'
@@ -77,6 +81,21 @@ try {
   $webPartEntry = "$featureId/WebPart_$componentId.xml"
   if ($null -eq $archive.GetEntry($webPartEntry)) {
     throw "The built package does not contain expected component definition $webPartEntry."
+  }
+
+  $clientScriptEntry = $archive.Entries |
+    Where-Object { $_.FullName -match '^ClientSideAssets/sol-dms-web-part_[a-f0-9]+\.js$' } |
+    Select-Object -First 1
+  if ($null -eq $clientScriptEntry) {
+    throw 'The built package does not contain the SOL DMS client-side JavaScript asset.'
+  }
+  $clientScriptReader = [IO.StreamReader]::new($clientScriptEntry.Open())
+  try { $clientScript = $clientScriptReader.ReadToEnd() } finally { $clientScriptReader.Dispose() }
+  if (-not $clientScript.Contains('.app-shell{')) {
+    throw 'The packaged client asset does not contain the global SOL application stylesheet.'
+  }
+  if ($clientScript -match '\.app-shell_[A-Za-z0-9_-]+') {
+    throw 'The packaged client asset renamed SOL application selectors as CSS modules; the SharePoint UI would render unstyled.'
   }
 } finally {
   $archive.Dispose()

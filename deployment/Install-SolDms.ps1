@@ -34,6 +34,12 @@ param(
   [Parameter(Mandatory)]
   [guid]$PnPClientId,
 
+  [ValidateSet('Interactive', 'DeviceLogin')]
+  [string]$AuthenticationMode = 'Interactive',
+
+  [ValidateRange(1, 5)]
+  [int]$ConnectionAttempts = 3,
+
   [Parameter(Mandatory)]
   [ValidateNotNullOrEmpty()]
   [string]$RuntimeConfigurationPath,
@@ -120,6 +126,7 @@ if ([string]::IsNullOrWhiteSpace($PackagePath)) {
 
 $solWebPartComponentId = [guid]'772c04cc-f5af-4485-8e48-d4de27923fa0'
 $solSolutionId = [guid]'6b30f157-0d3c-4988-8843-eb6e1c3b8acd'
+$legacySolWebPartComponentIds = @([guid]'7c36e2e7-eba7-43e1-886f-7b7a3d848c29')
 $requiredOperations = @(
   'listSites',
   'searchDocuments',
@@ -163,6 +170,50 @@ function Get-PropertyValue {
   $property = $InputObject.PSObject.Properties[$Name]
   if ($null -eq $property) { return $null }
   return $property.Value
+}
+
+function Connect-SolPnPOnline {
+  param(
+    [Parameter(Mandatory)][uri]$Url,
+    [Parameter(Mandatory)][guid]$ClientId,
+    [Parameter(Mandatory)][ValidateSet('Interactive', 'DeviceLogin')][string]$Mode,
+    [Parameter(Mandatory)][ValidateRange(1, 5)][int]$Attempts
+  )
+
+  for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+    $connectionParameters = @{
+      Url = $Url.AbsoluteUri
+      ClientId = $ClientId
+      ReturnConnection = $true
+      ValidateConnection = $true
+      ErrorAction = 'Stop'
+    }
+    if ($Mode -eq 'DeviceLogin') {
+      $connectionParameters.DeviceLogin = $true
+    } else {
+      $connectionParameters.Interactive = $true
+    }
+
+    try {
+      return Connect-PnPOnline @connectionParameters
+    } catch {
+      $messages = [Collections.Generic.List[string]]::new()
+      $exception = $_.Exception
+      while ($null -ne $exception) {
+        if (-not [string]::IsNullOrWhiteSpace($exception.Message) -and $exception.Message -notin $messages) {
+          $messages.Add($exception.Message)
+        }
+        $exception = $exception.InnerException
+      }
+      $detail = $messages -join ' -> '
+      if ($attempt -ge $Attempts) {
+        throw "Unable to connect to $($Url.AbsoluteUri) using $Mode after $Attempts attempt(s). $detail"
+      }
+      $delaySeconds = [Math]::Pow(2, $attempt)
+      Write-Warning "Connection attempt $attempt of $Attempts to $($Url.AbsoluteUri) failed: $detail Retrying in $delaySeconds seconds."
+      Start-Sleep -Seconds $delaySeconds
+    }
+  }
 }
 
 function Resolve-RequiredFile {
@@ -283,8 +334,7 @@ function Test-ComponentIdentity {
     $value = Get-PropertyValue -InputObject $Component -Name $propertyName
     if ($null -ne $value -and [string]$value -eq [string]$ComponentId) { return $true }
   }
-  return (Get-PropertyValue -InputObject $Component -Name 'Name') -eq 'SolDms' -or
-    (Get-PropertyValue -InputObject $Component -Name 'Title') -eq 'SOL Document Control'
+  return $false
 }
 
 function Get-ComponentInstanceId {
@@ -296,9 +346,48 @@ function Get-ComponentInstanceId {
   throw 'The existing SOL web-part instance does not expose an instance identifier.'
 }
 
+function Get-PackagedClientScriptNames {
+  param([Parameter(Mandatory)][string]$Path)
+
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  $archive = [IO.Compression.ZipFile]::OpenRead($Path)
+  try {
+    return @(
+      $archive.Entries |
+        Where-Object { $_.FullName -like 'ClientSideAssets/*.js' -and -not $_.FullName.EndsWith('/') } |
+        ForEach-Object { [IO.Path]::GetFileName($_.FullName) }
+    )
+  } finally {
+    $archive.Dispose()
+  }
+}
+
+function Get-PackagedSolutionVersion {
+  param([Parameter(Mandatory)][string]$Path)
+
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  $archive = [IO.Compression.ZipFile]::OpenRead($Path)
+  try {
+    $manifestEntry = $archive.GetEntry('AppManifest.xml')
+    if ($null -eq $manifestEntry) {
+      throw 'The reviewed SPFx package does not contain AppManifest.xml.'
+    }
+    $reader = [IO.StreamReader]::new($manifestEntry.Open())
+    try { [xml]$manifest = $reader.ReadToEnd() } finally { $reader.Dispose() }
+    return [version]$manifest.App.Version
+  } finally {
+    $archive.Dispose()
+  }
+}
+
 $resolvedPackagePath = Resolve-RequiredFile -Path $PackagePath -Description 'SPFx package' -Extension '.sppkg'
 $resolvedConfigurationPath = Resolve-RequiredFile -Path $RuntimeConfigurationPath -Description 'Runtime configuration' -Extension '.json'
 $null = Read-RuntimeConfiguration -Path $resolvedConfigurationPath -SiteUrl $TargetSiteUrl -PermitMissingOperations $AllowUnconfigured.IsPresent
+$expectedClientScripts = @(Get-PackagedClientScriptNames -Path $resolvedPackagePath)
+$expectedPackageVersion = Get-PackagedSolutionVersion -Path $resolvedPackagePath
+if ($expectedClientScripts.Count -eq 0) {
+  throw 'The reviewed SPFx package does not contain a packaged client-side JavaScript asset.'
+}
 
 if ($AppCatalogScope -eq 'Site' -and $null -ne $TenantAppCatalogUrl) {
   throw 'TenantAppCatalogUrl can only be used with -AppCatalogScope Tenant.'
@@ -341,8 +430,8 @@ if ($null -eq $availableModule) {
 }
 Import-Module $availableModule.Path -Force
 
-Write-Step "Connecting interactively to $($TargetSiteUrl.AbsoluteUri)."
-$connection = Connect-PnPOnline -Url $TargetSiteUrl.AbsoluteUri -Interactive -ClientId $PnPClientId -ReturnConnection -ValidateConnection
+Write-Step "Connecting to $($TargetSiteUrl.AbsoluteUri) using $AuthenticationMode authentication."
+$connection = Connect-SolPnPOnline -Url $TargetSiteUrl -ClientId $PnPClientId -Mode $AuthenticationMode -Attempts $ConnectionAttempts
 $web = Get-PnPWeb -Connection $connection -Includes Url, ServerRelativeUrl
 
 $appCatalogConnection = $connection
@@ -360,13 +449,13 @@ if ($AppCatalogScope -eq 'Tenant') {
   }
 
   Write-Step "Connecting directly to the tenant App Catalog at $($resolvedAppCatalogUrl.AbsoluteUri)."
-  $appCatalogConnection = Connect-PnPOnline -Url $resolvedAppCatalogUrl.AbsoluteUri -Interactive -ClientId $PnPClientId -ReturnConnection -ValidateConnection
+    $appCatalogConnection = Connect-SolPnPOnline -Url $resolvedAppCatalogUrl -ClientId $PnPClientId -Mode $AuthenticationMode -Attempts $ConnectionAttempts
 }
 
 $adminConnection = $null
 if ($EnsureSiteCollectionAppCatalog) {
   Write-Step "Connecting directly to the tenant administration site at $($TenantAdminUrl.AbsoluteUri)."
-  $adminConnection = Connect-PnPOnline -Url $TenantAdminUrl.AbsoluteUri -Interactive -ClientId $PnPClientId -ReturnConnection -ValidateConnection
+  $adminConnection = Connect-SolPnPOnline -Url $TenantAdminUrl -ClientId $PnPClientId -Mode $AuthenticationMode -Attempts $ConnectionAttempts
 
   $siteCollectionAppCatalog = Get-PnPSiteCollectionAppCatalog -CurrentSite -Connection $connection
   if ($null -eq $siteCollectionAppCatalog) {
@@ -403,11 +492,100 @@ if ($null -ne $existingConfiguration -and -not $OverwriteConfiguration) {
 }
 
 if ($SkipPackageUpload) {
-  Write-Step "Verifying the existing package in the $AppCatalogScope App Catalog."
+  Write-Step "Verifying exact packaged version $expectedPackageVersion in the $AppCatalogScope App Catalog."
   $catalogApp = Get-PnPApp -Identity $solSolutionId -Scope $AppCatalogScope -Connection $appCatalogConnection -ErrorAction Stop
   if ($null -eq $catalogApp -or -not $catalogApp.Deployed) {
     throw "SOL DMS package $solSolutionId is not deployed in the $AppCatalogScope App Catalog. Remove -SkipPackageUpload and deploy the reviewed package."
   }
+  $catalogVersionValue = Get-PropertyValue -InputObject $catalogApp -Name 'AppCatalogVersion'
+  $catalogVersion = $null
+  if ($null -eq $catalogVersionValue -or
+    -not [version]::TryParse([string]$catalogVersionValue, [ref]$catalogVersion) -or
+    $catalogVersion -ne $expectedPackageVersion) {
+    $reportedVersion = if ($null -eq $catalogVersion) { 'none' } else { [string]$catalogVersion }
+    throw "The deployed $AppCatalogScope App Catalog package is version $reportedVersion, but this installer contains version $expectedPackageVersion. Remove -SkipPackageUpload to deploy the reviewed package."
+  }
+  Write-Step "Verified deployed package version $catalogVersion; package upload is safely skipped."
+} elseif ($AppCatalogScope -eq 'Site') {
+  $packageFileName = [IO.Path]::GetFileName($resolvedPackagePath)
+  $catalogPackageUrl = "AppCatalog/$packageFileName"
+  $existingCatalogPackage = Get-PnPFile -Url $catalogPackageUrl -AsListItem -Connection $connection -ErrorAction SilentlyContinue
+  if ($null -ne $existingCatalogPackage -and -not $OverwritePackage) {
+    throw "The site App Catalog already contains $packageFileName. Use -OverwritePackage only after reviewing the replacement package."
+  }
+
+  Write-Step 'Stage 1/4: Uploading the package file directly to the DOX Apps for SharePoint library.'
+  $null = Add-PnPFile -Path $resolvedPackagePath -Folder 'AppCatalog' -Connection $connection -ErrorAction Stop
+  $catalogPackageFile = Get-PnPFile -Url $catalogPackageUrl -AsListItem -Connection $connection -ErrorAction SilentlyContinue
+  if ($null -eq $catalogPackageFile) {
+    throw "SharePoint returned from the upload but $catalogPackageUrl does not exist. The package was not delivered; no propagation wait was started."
+  }
+
+  Write-Step 'Stage 2/4: Waiting up to 60 seconds for SharePoint to validate the uploaded package.'
+  $validationDeadline = [DateTimeOffset]::UtcNow.AddSeconds(60)
+  $catalogApp = $null
+  $registeredPackageVersion = $null
+  do {
+    $catalogApp = Get-PnPApp -Identity $solSolutionId -Scope Site -Connection $connection -ErrorAction SilentlyContinue
+    $catalogVersionValue = if ($null -ne $catalogApp) { Get-PropertyValue -InputObject $catalogApp -Name 'AppCatalogVersion' } else { $null }
+    if ($null -ne $catalogVersionValue) {
+      $candidateVersion = $null
+      if ([version]::TryParse([string]$catalogVersionValue, [ref]$candidateVersion)) {
+        $registeredPackageVersion = $candidateVersion
+      }
+    }
+    if ($null -eq $catalogApp -or $registeredPackageVersion -ne $expectedPackageVersion) { Start-Sleep -Seconds 3 }
+  } while (($null -eq $catalogApp -or $registeredPackageVersion -ne $expectedPackageVersion) -and [DateTimeOffset]::UtcNow -lt $validationDeadline)
+  if ($null -eq $catalogApp -or $registeredPackageVersion -ne $expectedPackageVersion) {
+    $reportedVersion = if ($null -eq $registeredPackageVersion) { 'none' } else { [string]$registeredPackageVersion }
+    throw "The file $catalogPackageUrl exists, but SharePoint reports catalog version $reportedVersion instead of packaged version $expectedPackageVersion after 60 seconds. Review that file's App Package Error Message in Apps for SharePoint; an older catalog record must not be published as the new build."
+  }
+  Write-Step "SharePoint validated exact catalog version $registeredPackageVersion."
+
+  $packageError = Get-PropertyValue -InputObject $catalogApp -Name 'AppPackageErrorMessage'
+  $isValidPackage = Get-PropertyValue -InputObject $catalogApp -Name 'IsValidAppPackage'
+  if ($isValidPackage -eq $false -or -not [string]::IsNullOrWhiteSpace([string]$packageError)) {
+    throw "SharePoint rejected the uploaded package. App Package Error Message: $packageError"
+  }
+
+  Write-Step 'Stage 3/4: Publishing the validated package as a DOX-scoped solution.'
+  $null = Publish-PnPApp -Identity $solSolutionId -Scope Site -SkipFeatureDeployment -Force -Connection $connection
+  $deploymentDeadline = [DateTimeOffset]::UtcNow.AddSeconds(60)
+  $deploymentReady = $false
+  do {
+    $catalogApp = Get-PnPApp -Identity $solSolutionId -Scope Site -Connection $connection -ErrorAction SilentlyContinue
+    if ($null -ne $catalogApp) {
+      $deployedVersionValue = Get-PropertyValue -InputObject $catalogApp -Name 'AppCatalogVersion'
+      $deployedVersion = $null
+      $hasExpectedVersion = $null -ne $deployedVersionValue -and
+        [version]::TryParse([string]$deployedVersionValue, [ref]$deployedVersion) -and
+        $deployedVersion -eq $expectedPackageVersion
+      $currentVersionDeployed = Get-PropertyValue -InputObject $catalogApp -Name 'CurrentVersionDeployed'
+      $deploymentReady = $catalogApp.Deployed -and $hasExpectedVersion -and $currentVersionDeployed -ne $false
+    }
+    if (-not $deploymentReady) { Start-Sleep -Seconds 3 }
+  } while (-not $deploymentReady -and [DateTimeOffset]::UtcNow -lt $deploymentDeadline)
+  if (-not $deploymentReady) {
+    throw "SharePoint validated solution $solSolutionId version $expectedPackageVersion but did not mark that exact version as deployed within 60 seconds."
+  }
+  Write-Step "SharePoint reports exact version $expectedPackageVersion as deployed."
+
+  Write-Step 'Stage 4/4: Waiting up to 60 seconds for the packaged JavaScript to reach DOX Client Side Assets.'
+  $assetDeadline = [DateTimeOffset]::UtcNow.AddSeconds(60)
+  $missingClientScripts = @($expectedClientScripts)
+  do {
+    $missingClientScripts = @(
+      $expectedClientScripts | Where-Object {
+        $asset = Get-PnPFileInFolder -List 'Client Side Assets' -ItemName $_ -Connection $connection -ErrorAction SilentlyContinue
+        $null -eq $asset
+      }
+    )
+    if ($missingClientScripts.Count -gt 0) { Start-Sleep -Seconds 3 }
+  } while ($missingClientScripts.Count -gt 0 -and [DateTimeOffset]::UtcNow -lt $assetDeadline)
+  if ($missingClientScripts.Count -gt 0) {
+    throw "The package is present and marked deployed, but SharePoint did not materialise these client assets: $($missingClientScripts -join ', '). The failure is in App Catalog asset deployment, not page propagation."
+  }
+  Write-Step "Verified packaged JavaScript in DOX Client Side Assets: $($expectedClientScripts -join ', ')."
 } else {
   Write-Step "Uploading and publishing the package in the $AppCatalogScope App Catalog."
   $appParameters = @{
@@ -428,49 +606,50 @@ if ($null -eq $existingPage) {
   Write-Step "Creating the single-web-part page SitePages/$pageNameValue.aspx."
   $page = Add-PnPPage -Name $pageNameValue -Title $PageTitle -LayoutType SingleWebPartAppPage -Connection $connection
 } else {
-  Write-Step "Updating the reviewed existing page SitePages/$pageNameValue.aspx."
-  $page = $existingPage
-}
-
-Write-Step 'Waiting for the SOL web part to become available in the target site.'
-$deadline = [DateTimeOffset]::UtcNow.AddSeconds($ComponentWaitSeconds)
-$nextWaitUpdate = [DateTimeOffset]::UtcNow.AddSeconds(30)
-$availableComponent = $null
-do {
-  # Reload the page on every poll. PnP page objects cache the available-component
-  # collection, so polling one instance can otherwise miss a newly propagated app.
+  Write-Step "Converting the reviewed existing page SitePages/$pageNameValue.aspx to the full-page application layout."
+  $null = Set-PnPPage -Identity $existingPage -LayoutType SingleWebPartAppPage -HeaderType None -CommentsEnabled:$false -Connection $connection
   $page = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
-  $availableComponents = if ($null -ne (Get-Command -Name 'Get-PnPAvailablePageComponents' -ErrorAction SilentlyContinue)) {
-    Get-PnPAvailablePageComponents -Page $page -Connection $connection
-  } else {
-    Get-PnPPageComponent -Page $page -ListAvailable -Connection $connection
-  }
-  $availableComponent = $availableComponents |
-    Where-Object { Test-ComponentIdentity -Component $_ -ComponentId $solWebPartComponentId } |
-    Select-Object -First 1
-  if ($null -eq $availableComponent) {
-    if ([DateTimeOffset]::UtcNow -ge $nextWaitUpdate) {
-      $remainingSeconds = [Math]::Max(0, [Math]::Ceiling(($deadline - [DateTimeOffset]::UtcNow).TotalSeconds))
-      Write-Step "The component is still propagating; waiting for up to $remainingSeconds more seconds."
-      $nextWaitUpdate = [DateTimeOffset]::UtcNow.AddSeconds(30)
-    }
-    Start-Sleep -Seconds 5
-  }
-} while ($null -eq $availableComponent -and [DateTimeOffset]::UtcNow -lt $deadline)
-if ($null -eq $availableComponent) {
-  throw "SOL Document Control component $solWebPartComponentId was not available after $ComponentWaitSeconds seconds. Check App Catalog deployment and rerun with the appropriate overwrite/update switches."
 }
 
 Write-Step "Uploading the runtime configuration to $configurationSiteRelativeUrl."
+$configurationLibraryIdentity = $configurationFolderValue.Split('/')[0]
+$configurationLibrary = Get-PnPList -Identity $configurationLibraryIdentity -Includes 'EnableMinorVersions', 'EnableModeration', 'ForceCheckout' -Connection $connection -ErrorAction Stop
 $fileParameters = @{
   Path = $resolvedConfigurationPath
   Folder = $configurationFolderValue
   NewFileName = $ConfigurationFileName
-  Publish = $true
   Connection = $connection
   ErrorAction = 'Stop'
 }
+if ($configurationLibrary.ForceCheckout) {
+  $fileParameters.Checkout = $true
+  $fileParameters.CheckInComment = 'SOL DMS controlled runtime configuration deployment'
+  $fileParameters.CheckinType = if ($configurationLibrary.EnableMinorVersions) { 'MinorCheckIn' } else { 'MajorCheckIn' }
+}
+if ($configurationLibrary.EnableMinorVersions) {
+  $fileParameters.Publish = $true
+  $fileParameters.PublishComment = 'SOL DMS controlled runtime configuration deployment'
+} else {
+  Write-Step "The $configurationLibraryIdentity library uses major versions only; uploading the configuration without the inapplicable Publish operation."
+}
+if ($configurationLibrary.EnableModeration) {
+  $fileParameters.Approve = $true
+  $fileParameters.ApproveComment = 'SOL DMS controlled runtime configuration deployment'
+}
 $null = Add-PnPFile @fileParameters
+
+$pageComponents = @(Get-PnPPageComponent -Page $page -Connection $connection)
+foreach ($legacyComponentId in $legacySolWebPartComponentIds) {
+  $legacyComponents = @($pageComponents | Where-Object { Test-ComponentIdentity -Component $_ -ComponentId $legacyComponentId })
+  foreach ($legacyComponent in $legacyComponents) {
+    Write-Step "Removing legacy SOL web-part instance $legacyComponentId from the dedicated application page."
+    $legacyInstanceId = Get-ComponentInstanceId -Component $legacyComponent
+    $null = Remove-PnPPageComponent -Page $page -InstanceId $legacyInstanceId -Force -Connection $connection
+  }
+}
+if ($legacySolWebPartComponentIds.Count -gt 0) {
+  $page = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
+}
 
 $existingSolComponent = Get-PnPPageComponent -Page $page -Connection $connection |
   Where-Object { Test-ComponentIdentity -Component $_ -ComponentId $solWebPartComponentId } |
@@ -480,12 +659,42 @@ if ($null -ne $existingSolComponent) {
   $instanceId = Get-ComponentInstanceId -Component $existingSolComponent
   $null = Set-PnPPageWebPart -Page $page -Identity $instanceId -PropertiesJson $propertiesJson -Connection $connection
 } else {
-  Write-Step 'Adding the SOL Document Control web part.'
-  $null = Add-PnPPageWebPart -Page $page -Component $availableComponent -WebPartProperties $propertiesJson -Order 1 -Connection $connection
+  Write-Step "Adding SOL Document Control directly by component ID $solWebPartComponentId."
+  $componentDeadline = [DateTimeOffset]::UtcNow.AddSeconds($ComponentWaitSeconds)
+  $nextComponentUpdate = [DateTimeOffset]::UtcNow.AddSeconds(30)
+  $componentAdded = $false
+  $lastComponentError = $null
+  do {
+    try {
+      $page = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
+      $null = Add-PnPPageWebPart -Page $page -Component ([string]$solWebPartComponentId) -WebPartProperties $propertiesJson -Order 1 -Connection $connection -ErrorAction Stop
+      $componentAdded = $true
+    } catch {
+      $lastComponentError = $_.Exception.Message
+      $page = Get-PnPPage -Identity $pageNameValue -Connection $connection -ErrorAction Stop
+      $componentAdded = $null -ne (
+        Get-PnPPageComponent -Page $page -Connection $connection |
+          Where-Object { Test-ComponentIdentity -Component $_ -ComponentId $solWebPartComponentId } |
+          Select-Object -First 1
+      )
+      if (-not $componentAdded) {
+        if ([DateTimeOffset]::UtcNow -ge $nextComponentUpdate) {
+          $remainingSeconds = [Math]::Max(0, [Math]::Ceiling(($componentDeadline - [DateTimeOffset]::UtcNow).TotalSeconds))
+          Write-Step "Direct component insertion is not ready; retrying for up to $remainingSeconds more seconds. Last SharePoint response: $lastComponentError"
+          $nextComponentUpdate = [DateTimeOffset]::UtcNow.AddSeconds(30)
+        }
+        Start-Sleep -Seconds 5
+      }
+    }
+  } while (-not $componentAdded -and [DateTimeOffset]::UtcNow -lt $componentDeadline)
+  if (-not $componentAdded) {
+    throw "SharePoint deployed package $solSolutionId version $expectedPackageVersion and its client asset, but rejected direct insertion of component $solWebPartComponentId for $ComponentWaitSeconds seconds. Last SharePoint response: $lastComponentError"
+  }
+  Write-Step "Added exact component $solWebPartComponentId to the full-page host."
 }
 
 Write-Step 'Publishing the SharePoint page.'
-$null = Set-PnPPage -Identity $page -Title $PageTitle -CommentsEnabled:$false -Publish -Connection $connection
+$null = Set-PnPPage -Identity $page -Title $PageTitle -LayoutType SingleWebPartAppPage -HeaderType None -CommentsEnabled:$false -Publish -Connection $connection
 
 $pageUrl = "$($web.Url.TrimEnd('/'))/SitePages/$pageNameValue.aspx"
 $receipt = [ordered]@{

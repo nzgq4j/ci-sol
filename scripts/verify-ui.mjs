@@ -142,7 +142,10 @@ try {
   await page.keyboard.press("Shift+Tab");
   invariant(await page.evaluate(() => Boolean(document.activeElement?.closest(".detail-drawer"))), "Drawer focus escaped on reverse tab.");
   await page.keyboard.press("Escape");
-  await page.locator(".detail-drawer[aria-hidden=true]").waitFor();
+  await page.waitForFunction(() => {
+    const drawer = document.querySelector(".detail-drawer");
+    return drawer?.getAttribute("aria-hidden") === "true" && drawer.hasAttribute("hidden") && drawer.inert;
+  });
   await page.waitForFunction(() => document.activeElement?.getAttribute("data-document-id") === "WI-SEC-021");
   invariant(await documentTrigger.evaluate((element) => element === document.activeElement), "Closing the drawer did not restore focus to its trigger.");
 

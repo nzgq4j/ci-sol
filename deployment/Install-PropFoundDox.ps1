@@ -12,7 +12,8 @@ PowerShell 5.1 to PowerShell 7.4 or later.
 
 [CmdletBinding()]
 param(
-  [switch]$WhatIf
+  [switch]$WhatIf,
+  [switch]$ResumePageProvisioning
 )
 
 $installerPath = Join-Path $PSScriptRoot 'Install-SolDms.ps1'
@@ -21,17 +22,26 @@ $receiptPath = Join-Path $PSScriptRoot '../deployment-receipts/sol-dms-productio
 
 $parameters = @{
   TargetSiteUrl = [uri]'https://propfound.sharepoint.com/sites/DOX'
-  TenantAdminUrl = [uri]'https://propfound-admin.sharepoint.com'
   PnPClientId = [guid]'56ac1ccd-e448-42f3-8e9d-230c56f194cb'
+  AuthenticationMode = 'Interactive'
+  ConnectionAttempts = 3
   RuntimeConfigurationPath = $runtimeConfigurationPath
   AppCatalogScope = 'Site'
-  EnsureSiteCollectionAppCatalog = $true
   AllowUnconfigured = $true
   UpdateExistingPage = $true
-  OverwritePackage = $true
+  OverwriteConfiguration = $true
+  OverwriteReceipt = $true
   ComponentWaitSeconds = 600
   ReceiptPath = $receiptPath
   WhatIf = $WhatIf
+}
+
+if ($ResumePageProvisioning) {
+  $parameters.SkipPackageUpload = $true
+} else {
+  $parameters.TenantAdminUrl = [uri]'https://propfound-admin.sharepoint.com'
+  $parameters.EnsureSiteCollectionAppCatalog = $true
+  $parameters.OverwritePackage = $true
 }
 
 & $installerPath @parameters

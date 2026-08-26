@@ -3,9 +3,9 @@
 | Field | Value |
 |---|---|
 | Date | 26 August 2026 |
-| Phase | Phase 1 complete (foundation built and validated offline). Phase 2 blocked on tenant access. |
-| Tenant changes made | **One, since reverted.** See section 1a. No site, library, list, column, content type, group, label or flow currently exists in any tenant. |
-| Next safe action | Create the nine Entra role groups, then `Deploy-Dms.ps1 -Environment dev -Mode Apply` |
+| Phase | Phase 2 in progress. A partial Apply has run against the dev site. |
+| Tenant changes made | **Yes — a partial Apply against `sites/DOX` on 25 August 2026 created taxonomy and SharePoint objects, and 58 actions failed.** See section 1b. Nothing exists in any test or production tenant. |
+| Next safe action | Re-run `Deploy-Dms.ps1 -Environment dev -Mode Apply -Layer Taxonomy,SharePoint` to complete the failed actions, then create the nine Entra role groups before the Security layer |
 
 ---
 
@@ -27,6 +27,39 @@ Access, Read) and reports all four DMS levels as Create. The site is back to its
 
 This is recorded rather than omitted because the same discipline that forbids claiming tenant work
 that did not happen requires reporting tenant work that did.
+
+## 1b. A partial Apply has run against the dev site
+
+On 25 August 2026 an Apply ran against `https://propfound.sharepoint.com/sites/DOX` for the Taxonomy,
+SharePoint and Security layers. **Objects were created and they still exist.** The counts below are as
+the operator's run reported them; they have not been re-read from the tenant by this repository since,
+so treat them as the last known state rather than as verified current state.
+
+| Layer | Applied | Failed |
+|---|---:|---:|
+| Taxonomy | 22 | 0 |
+| SharePoint | 41 | 20 |
+| Security | 5 | 38 |
+| **Total** | **68** | **58** |
+
+What the failures were, and what has since been fixed in code:
+
+| Failure | Cause | Status |
+|---|---|---|
+| 3 person fields (`UserMulti`) | `UserMulti` is a valid SharePoint *schema* type but is absent from the CSOM `FieldType` enum, so `Add-PnPField` cannot create it | Fixed — created from field XML via `Add-PnPFieldFromXml` |
+| `Controlled Document` field bindings | Content-type binding aborted on the first missing field, so later bindings never ran | Fixed — each binding is attempted independently and failures are collected |
+| 7 lists | A helper called from inside a deferred closure was unresolvable in that scope | Fixed — field specs are resolved before the closure is built |
+| 6 views | Depended on fields that the aborted binding never created | Expected to clear once the bindings above succeed |
+| 38 library and list grants | The nine `DMS-DEV-*` Entra groups do not exist | Fixed in classification — such grants are now planned **Blocked**, naming the group, instead of attempted and failed |
+
+A second Taxonomy Apply then failed 17 times with `There is already a term with the same default label
+and parent term`, because the layer checked the term group and term set for existence but never the
+terms. That confirmed the 22 taxonomy items are present. Fixed — terms are now enumerated and
+classified Compliant, Update or Create.
+
+**Nothing has been removed.** The taxonomy term group, term sets, terms, and the SharePoint columns,
+content types and libraries that succeeded remain on the DOX site. The next Apply is expected to be
+additive over them.
 
 ### Verified against the live tenant
 
